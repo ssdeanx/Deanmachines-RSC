@@ -3,7 +3,7 @@ import { LibSQLStore, LibSQLVector } from '@mastra/libsql';
 import { fastembed } from '@mastra/fastembed';
 import { z } from 'zod';
 import { PinoLogger } from '@mastra/loggers';
-import type { CoreMessage, Telemetry } from '@mastra/core';
+import type { CoreMessage } from '@mastra/core';
 import { maskStreamTags } from '@mastra/core/utils';
 import { MemoryProcessor } from '@mastra/core/memory';
 import { TokenLimiter } from '@mastra/memory/processors';
@@ -66,14 +66,15 @@ const summarySchema = z.object({ resourceId: z.string().nonempty(), threadId: z.
 export const agentMemory = new Memory({
   storage: agentStorage,
   vector: agentVector,
-  embedder: fastembed,
+  embedder: fastembed.base,
   options: {
     lastMessages: 1000,
     semanticRecall: {
-      topK: 3,
+      topK: 5, // Number of similar messages to retrieve
+      // Range of messages to consider around each match
       messageRange: {
-        before: 5,
-        after: 2,
+        before: 5, // Consider 5 messages before the match
+        after: 2, // Consider 2 messages after the match
       },
     },
     workingMemory: {

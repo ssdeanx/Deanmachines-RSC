@@ -105,14 +105,15 @@ export const graphTool = createGraphRAGTool({
   id: 'graph_rag',
   vectorStoreName: "agentMemory",
   indexName: "context",
-  model: fastembed,
+  model: fastembed.base,
   enableFilter: true,
   includeSources: true,
   graphOptions: {
-    dimension: 384,
+    dimension: 768, // Default dimension for fastembed.base
     threshold: 0.7,
     randomWalkSteps: 100,
     restartProb: 0.15,
+   
   },
   description: "Analyze document relationships and patterns using graph-based retrieval with optional document chunking capabilities"
 });
