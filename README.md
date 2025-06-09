@@ -36,7 +36,7 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
 ```mermaid
-%%{init: {'theme': 'default', 'themeVariables': {'primaryColor': '#4A90E2', 'edgeLabelBackground':'#ffffff', 'tertiaryColor': '#f0f0f0'}}}%%
+%%{init: {'theme': 'default', 'themeVariables': {'primaryColor': '#4A90E2', 'edgeLabelBackground':'#f0f0f0', 'tertiaryColor': '#000000'}}}%%
 %%{flowchart: {curve: 'linear'}}%%
 %%{flowchart: {nodeSpacing: 50, rankSpacing: 50}}%%
 %%{flowchart: {defaultRenderer: 'dagre', htmlLabels: true, nodeSpacing: 50, rankSpacing: 50, useMaxWidth: false, padding: 10, fontSize: 14, fontFamily: 'Arial'}}%%
