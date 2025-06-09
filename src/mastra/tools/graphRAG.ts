@@ -7,7 +7,7 @@ import {
   createDocumentChunkerTool
 } from '@mastra/rag';
 import { z } from 'zod';
-import { generateId } from 'ai'; // Standard ID generation
+import { generateId, ToolExecutionOptions } from 'ai'; // Standard ID generation
 import { PinoLogger } from '@mastra/loggers';
 import { RuntimeContext } from "@mastra/core/runtime-context";
 import { fastembed } from '@mastra/fastembed';
@@ -126,9 +126,18 @@ export const documentChunkerTool = createTool({
   description: 'Chunk documents into smaller pieces with comprehensive validation and metadata extraction',
   inputSchema: documentChunkerInputSchema,
   outputSchema: documentChunkerOutputSchema,
-  execute: async (context: ToolExecutionContext<typeof documentChunkerInputSchema>, options: { input: z.infer<typeof documentChunkerInputSchema> }): Promise<z.infer<typeof documentChunkerOutputSchema>> => {
+  // Removed explicit ToolExecutionContext type annotation to allow inference
+  // Explicitly type the destructured argument, ensuring 'input' is recognized by intersecting the inferred
+  // ToolExecutionContext with a type that defines 'input'.
+  execute: async ({ input, context }: ToolExecutionContext<typeof documentChunkerInputSchema> & { input: z.infer<typeof documentChunkerInputSchema> }): Promise<z.infer<typeof documentChunkerOutputSchema>> => {
     const startTime = Date.now();
-    const input = options.input;
+    
+    // The 'input' is now directly available from destructuring.
+    // Zod parsing will handle validation, including if input is unexpectedly undefined/null.
+    // Adding an explicit check for clarity or specific error handling if needed.
+    if (!input) {
+      throw new Error('Input is required for document chunking');
+    }
     
     try {
       // Validate input against schema
@@ -186,6 +195,7 @@ export const documentChunkerTool = createTool({
         metadata: chunk.metadata || {},
         size: (chunk.content || chunk.text || '').length
       }));
+      
       const result = {
         chunks: transformedChunks,
         totalChunks: transformedChunks.length,
@@ -205,8 +215,10 @@ export const documentChunkerTool = createTool({
       logger.error('Document chunking failed', { error: error instanceof Error ? error.message : String(error) });
       throw new Error(`Document chunking failed: ${error instanceof Error ? error.message : String(error)}`);
     }
+  }
+});
 
-  }});/**
+/**
  * Enhanced GraphRAG query tool with comprehensive validation and document processing
  */
 export const enhancedGraphRAGTool = createTool({
@@ -214,7 +226,7 @@ export const enhancedGraphRAGTool = createTool({
   description: 'Advanced graph-based RAG with document chunking, relationship analysis, and comprehensive validation',
   inputSchema: graphRAGInputSchema,
   outputSchema: graphRAGOutputSchema,
-  execute: async ({ context, input }): Promise<z.infer<typeof graphRAGOutputSchema>> => {
+  execute: async ({ context, input }: ToolExecutionContext<typeof graphRAGInputSchema> & { input: z.infer<typeof graphRAGInputSchema> }): Promise<z.infer<typeof graphRAGOutputSchema>> => {
     const startTime = Date.now();
     
     try {
@@ -230,17 +242,23 @@ export const enhancedGraphRAGTool = createTool({
 
       // Process document if provided
       if (validatedInput.document && documentChunkerTool?.execute) {
-        const chunkerResult = await documentChunkerTool.execute({ 
-          context,
-          input: {
-            document: {
-              text: validatedInput.document.text,
-              type: validatedInput.document.type,
-              metadata: validatedInput.document.metadata
-            },
-            chunkParams: validatedInput.chunkParams
-          }
-        });
+        // Prepare the specific input for the documentChunkerTool
+        const chunkerToolInputData = {
+          document: {
+            text: validatedInput.document.text,
+            type: validatedInput.document.type,
+            metadata: validatedInput.document.metadata,
+          },
+          chunkParams: validatedInput.chunkParams,
+        };
+
+        const chunkerExecutionContext: ToolExecutionContext<typeof documentChunkerInputSchema> = {
+          ...(context as any),
+          context: chunkerToolInputData,
+          runtimeContext: new RuntimeContext(new Map())
+        };
+        
+        const chunkerResult = await documentChunkerTool.execute(chunkerExecutionContext);
         
         documentChunks = chunkerResult.chunks.map(chunk => ({
           id: chunk.id,
@@ -291,11 +309,11 @@ export const enhancedGraphRAGTool = createTool({
 
       // Execute GraphRAG query
       const graphResult = await graphTool.execute({ 
-        context, 
-        input: { 
-          queryText: validatedInput.query, 
+        context: {
+          queryText: validatedInput.query,
           topK: validatedInput.topK
-        }
+        },
+        runtimeContext
       });
 
       const processingTime = Date.now() - startTime;
@@ -319,7 +337,7 @@ export const enhancedGraphRAGTool = createTool({
         totalChunks: (graphResult.sources || []).length + documentChunks.length,
         graphStats: {
           nodes: (graphResult.sources || []).length,
-          edges: Math.floor((graphResult.sources || []).length * 1.5), // Estimated
+          edges: Math.floor((graphResult.sources || []).length * 1.5),
           avgConnections: (graphResult.sources || []).length > 0 ? 1.5 : 0
         },
         processingTime,
@@ -344,7 +362,7 @@ export const enhancedGraphRAGTool = createTool({
       throw new Error(`GraphRAG query failed: ${error instanceof Error ? error.message : String(error)}`);
     }
 
-  }});
+  }});  
   
   /**
  * Runtime context for GraphRAG tool configuration
@@ -353,7 +371,7 @@ export const runtimeContext = new RuntimeContext<{
   vectorStoreName: string;
   indexName: string;
   topK: number;
-  filter: any;
+  filter: Record<string, unknown>;
   model: string;
   description: string;
   graphOptions: {
@@ -363,16 +381,15 @@ export const runtimeContext = new RuntimeContext<{
     restartProb: number;
   };
 }>();
-
 // Set default runtime context values
-runtimeContext.set("vectorStoreName", "agentVector");
+runtimeContext.set("vectorStoreName", "agentStorage");
 runtimeContext.set("indexName", "context");
 runtimeContext.set("topK", 5);
 runtimeContext.set("filter", { category: "context" });
 runtimeContext.set("model", "fastembed");
 runtimeContext.set("description", "Analyze context relationships to find complex patterns and connections in the data");
 runtimeContext.set("graphOptions", {
-  dimension: 384,
+  dimension: 768,
   threshold: 0.7,
   randomWalkSteps: 100,
   restartProb: 0.15,

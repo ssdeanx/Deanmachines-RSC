@@ -1,8 +1,7 @@
-import { google } from '@ai-sdk/google';
 import { Agent } from '@mastra/core/agent';
-import { Memory } from '@mastra/memory';
-import { LibSQLStore } from '@mastra/libsql';
+import { createTracedGoogleModel } from '../config';
 import { weatherTool } from '../tools/weather-tool';
+import { agentMemory } from '../agentMemory';
 
 export const weatherAgent = new Agent({
   name: 'Weather Agent',
@@ -18,11 +17,14 @@ export const weatherAgent = new Agent({
 
       Use the weatherTool to fetch current weather data.
 `,
-  model: google('gemini-1.5-pro-latest'),
-  tools: { weatherTool },
-  memory: new Memory({
-    storage: new LibSQLStore({
-      url: 'file:../mastra.db', // path is relative to the .mastra/output directory
+  model: createTracedGoogleModel('gemini-2.5-flash-preview-05-20', {
+          name: 'weather-agent',
+          tags: ['agent', 'weather', 'debug'],
+          thinkingConfig: {
+              thinkingBudget: 0,
+              includeThoughts: false,
+          },
     }),
-  }),
+  tools: { weatherTool },
+  memory: agentMemory
 });
