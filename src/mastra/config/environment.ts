@@ -1,0 +1,41 @@
+/**
+ * Environment configuration for AI-Volt
+ * Validates and exports environment variables
+ */
+
+import { z } from "zod";
+
+// Define environment schema
+const envSchema = z.object({
+  GOOGLE_GENERATIVE_AI_API_KEY: z.string().min(1, "Google AI API key is required"),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
+  PORT: z.coerce.number().default(3141),
+
+  LANGSMITH_TRACING: z.string().default("true").transform((val) => val === "true"),
+  LANGSMITH_API_KEY: z.string().min(1, "LangSmith API key is required"),
+  LANGSMITH_ENDPOINT: z.string().default("https://api.smith.langchain.com"),
+  LANGSMITH_PROJECT: z.string().default("pr-warmhearted-jewellery-74"),
+  // Database configuration for LibSQL/Turso (optional - defaults to local SQLite)
+  DATABASE_URL: z.string().min(1, "Database URL is required"),
+  DATABASE_AUTH_TOKEN: z.string().min(1, "Database Auth is required"),
+  GITHUB_TOKEN: z.string().min(1, "GitHub API key is required"),
+});
+// Validate environment variables
+const validateEnv = () => {
+  try {
+    return envSchema.parse(process.env);
+  } catch (error) {
+    console.error("❌ Environment validation failed:");
+    if (error instanceof z.ZodError) {
+      error.errors.forEach((err) => {
+        console.error(`  - ${err.path.join(".")}: ${err.message}`);
+      });
+    }
+    process.exit(1);
+  }
+};
+
+export const env = validateEnv();
+
+export type Environment = z.infer<typeof envSchema>;
