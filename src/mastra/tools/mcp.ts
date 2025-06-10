@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { MCPClient } from "@mastra/mcp";
 import { PinoLogger } from '@mastra/loggers';
-import { RuntimeContext } from "@mastra/core/runtime-context";
+
 
 const logger = new PinoLogger({ name: 'mcp', level: 'info' });
 
@@ -15,7 +15,7 @@ const mcpToolSchema = z.object({
 
 const mcpToolsSchema = z.record(mcpToolSchema.nullable()).transform(tools => {
   // Filter out null values during validation
-  const filtered: Record<string, any> = {};
+  const filtered: Record<string, z.infer<typeof mcpToolSchema>> = {};
   for (const [key, value] of Object.entries(tools)) {
     if (value != null) {
       filtered[key] = value;
@@ -23,7 +23,6 @@ const mcpToolsSchema = z.record(mcpToolSchema.nullable()).transform(tools => {
   }
   return filtered;
 });
-
 const mcpResourceSchema = z.object({
   uri: z.string(),
   name: z.string().optional(),
@@ -75,35 +74,6 @@ export const mcpStdio = new MCPClient({
         logger.info(`[MCP:time] ${logMessage.message}`, { level: logMessage.level });
       }
     },
-//    everything: {
-//      command: "npx",
-//      args: ["-y", "@modelcontextprotocol/server-everything"],
-//      timeout: 60000,
-//      enableServerLogs: true,
-//      logger: (logMessage) => {
-//        logger.info(`[MCP:everything] ${logMessage.message}`, { level: logMessage.level });
-//      }
-//    },
-//    jsSandbox: {
-//      command: "docker",
-//      args: [
-//        "run",
-//        "-i",
-//        "--rm",
-//        "-v",
-//        "/var/run/docker.sock:/var/run/docker.sock",
-//        "-v",
-//        "C:\\Users\\dm\\Documents\\node-code-sandbox-mcp\\workspace:/workspace",
-//        "--env-file",
-//        "C:\\Users\\dm\\Documents\\node-code-sandbox-mcp\\.env",
-//        "node-code-sandbox-mcp"
-//      ],
-//      timeout: 45000,
-//      enableServerLogs: true,
-//      logger: (logMessage) => {
-//        logger.info(`[MCP:jsSandbox] ${logMessage.message}`, { level: logMessage.level });
-//      }
-//    },
     docker: {
       command: "docker",
       args: ["run", "-i", "--rm", "alpine/socat", "STDIO", "TCP:host.docker.internal:8811"],
@@ -116,68 +86,6 @@ export const mcpStdio = new MCPClient({
   },
 });
 
-/**
- * Secondary MCP Client for SSE-based Smithery servers
- * Only initialized if SMITHERY_API is available
- */
-//export const mcpSmithery = smitheryApi ? new MCPClient({
-//  id: 'smithery-sse-servers',
-//  timeout: 60000,
-//  servers: {
-//    winterm: {
-//      url: new URL(`https://server.smithery.ai/@capecoma/winterm-mcp/mcp?api_key=${smitheryApi}`),
-//      requestInit: {
-//        headers: {
-//          'Authorization': `Bearer ${smitheryApi}`,
-//          'Content-Type': 'application/json',
-//        },
-//      },
-//      // Required for SSE connections with custom headers (bug workaround)
-//      eventSourceInit: {
-//        fetch(input: Request | URL | string, init?: RequestInit) {
-//          const headers = new Headers(init?.headers || {});
-//          headers.set('Authorization', `Bearer ${smitheryApi}`);
-//          headers.set('Content-Type', 'application/json');
-//          return fetch(input, {
-//            ...init,
-//            headers,
-//          });
-//        },
-//      },
-//      timeout: 30000,/
-//      enableServerLogs: true,
-//      logger: (logMessage) => {
-//        logger.info(`[MCP:winterm] ${logMessage.message}`, { level: logMessage.level });
-//      }
-//    },
-//    duckduckgo: {
-//      url: new URL(`https://server.smithery.ai/@nickclyde/duckduckgo-mcp-server/mcp?api_key=${smitheryApi}`),
-//      requestInit: {
-//        headers: {
-//          'Authorization': `Bearer ${smitheryApi}`,
-//          'Content-Type': 'application/json',
-//        },
-//      },
-      // Required for SSE connections with custom headers (bug workaround)
-//      eventSourceInit: {
-///        fetch(input: Request | URL | string, init?: RequestInit) {
-//          const headers = new Headers(init?.headers || {});
-//          headers.set('Authorization', `Bearer ${smitheryApi}`);
-//          headers.set('Content-Type', 'application/json');
-//          return fetch(input, {
-//            ...init,
-//            headers,
-//          });
-//        },
-//      },
-//      timeout: 30000,
-//      enableServerLogs: true,
-//      logger: (logMessage) => {
-//        logger.info(`[MCP:duckduckgo] ${logMessage.message}`, { level: logMessage.level });
-//      }
-//    }
-//  },
-//}) : null;
 
 /**
  * Main MCP interface - routes operations to appropriate client (Stdio or Smithery)
@@ -186,8 +94,8 @@ export const mcpStdio = new MCPClient({
 export const mcp = {  /**
    * Get all tools from both clients as an object (for Agent compatibility)
    */
-  async getTools(): Promise<Record<string, any>> {
-    const allTools: Record<string, any> = {};
+  async getTools(): Promise<Record<string, unknown>> {
+    const allTools: Record<string, unknown> = {};
     
     try {
       const stdioTools = await mcpStdio.getTools();
@@ -220,11 +128,10 @@ export const mcp = {  /**
 //    }
     
     return allTools;
-  },  /**
-   * Get all tools as a flat array (for internal processing)
+  },  /**   * Get all tools as a flat array (for internal processing)
    */
-  async getToolsArray(): Promise<any[]> {
-    const tools: any[] = [];
+  async getToolsArray(): Promise<unknown[]> {
+    const tools: unknown[] = [];
     
     try {
       const stdioTools = await mcpStdio.getTools();
@@ -252,7 +159,6 @@ export const mcp = {  /**
     
     return tools;
   },
-
   /**
    * Get all toolsets from both clients
    */
@@ -281,7 +187,7 @@ export const mcp = {  /**
   /**
    * Call a tool on the appropriate server
    */
-  async callTool(server: string, toolName: string, args: any = {}) {
+  async callTool(server: string, toolName: string, args: Record<string, unknown> = {}) {
     const client = this.getClientForServer(server);
     if (!client) {
       throw new Error(`Server '${server}' not found in any MCP client`);
@@ -295,7 +201,6 @@ export const mcp = {  /**
     
     return await serverToolset[toolName](args);
   },
-
   /**
    * List tools for a specific server
    */
@@ -466,7 +371,7 @@ export class MCPTracker {
     resource?: string;
     duration: number;
     status: 'success' | 'error';
-    metadata?: any;
+    metadata?: Record<string, unknown>;
   }> = [];
 
   /**
@@ -479,7 +384,7 @@ export class MCPTracker {
     status: 'success' | 'error',
     tool?: string,
     resource?: string,
-    metadata?: any
+    metadata?: Record<string, unknown>
   ): void {
     const record = {
       timestamp: new Date().toISOString(),
@@ -573,8 +478,7 @@ export class MCPTracker {
 }
 
 /**
- * Enhanced MCP operation wrapper with comprehensive tracing
- * 
+ * Enhanced MCP operation wrapper with comprehensive tracing * 
  * @param server - MCP server name
  * @param operation - Operation type (e.g., 'listTools', 'callTool', 'listResources')
  * @param fn - Function to execute
@@ -653,13 +557,13 @@ export const traceMCPOperation = async <T>(
 export const executeTracedMCPTool = async (
   server: string,
   toolName: string,
-  args: any = {}
-): Promise<any> => {
+  args: Record<string, unknown> = {}
+): Promise<unknown> => {
   return await traceMCPOperation(
     server,
     'callTool',
     async () => {      const tools = await mcp.listTools(server);
-      const tool = tools.find((t: any) => t.name === toolName);
+      const tool = tools.find((t: { name: string }) => t.name === toolName);
       
       if (!tool) {
         throw new Error(`Tool '${toolName}' not found on server '${server}'`);
@@ -670,7 +574,6 @@ export const executeTracedMCPTool = async (
     toolName
   );
 };
-
 /**
  * Traced MCP resource access
  * 
@@ -681,7 +584,7 @@ export const executeTracedMCPTool = async (
 export const getTracedMCPResource = async (
   server: string,
   resourceUri: string
-): Promise<any> => {
+): Promise<Record<string, unknown>> => {
   return await traceMCPOperation(
     server,
     'readResource',
@@ -692,14 +595,13 @@ export const getTracedMCPResource = async (
     resourceUri
   );
 };
-
 /**
  * Traced MCP server tools listing
  * 
  * @param server - MCP server name
  * @returns Available tools with tracing
  */
-export const listTracedMCPTools = async (server: string): Promise<any[]> => {
+export const listTracedMCPTools = async (server: string): Promise<{ name: string; description?: string }[]> => {
   return await traceMCPOperation(
     server,
     'listTools',
@@ -708,29 +610,27 @@ export const listTracedMCPTools = async (server: string): Promise<any[]> => {
     }
   );
 };
-
 /**
  * Traced MCP server resources listing
  * 
  * @param server - MCP server name
  * @returns Available resources with tracing
  */
-export const listTracedMCPResources = async (server: string): Promise<any[]> => {
+export const listTracedMCPResources = async (server: string): Promise<{ name: string; description?: string }[]> => {
   return await traceMCPOperation(
     server,
     'listResources',    async () => {
-      const resources = await mcp.resources.list() as Record<string, any[]>;
+      const resources = await mcp.resources.list() as Record<string, { name: string; description?: string }[]>;
       return resources[server] || [];
     }
   );
 };
-
 /**
  * Traced MCP toolsets retrieval for dynamic usage
  * 
  * @returns All toolsets from all servers with tracing
  */
-export const getTracedMCPToolsets = async (): Promise<any> => {
+export const getTracedMCPToolsets = async (): Promise<Record<string, unknown>> => {
   return await traceMCPOperation(
     'all-servers',
     'getToolsets',
@@ -739,28 +639,30 @@ export const getTracedMCPToolsets = async (): Promise<any> => {
     }
   );
 };
-
 /**
  * Traced MCP tools retrieval for static usage
  * 
  * @returns All tools from all servers with tracing
  */
-export const getTracedMCPTools = async (): Promise<any[]> => {
+export const getTracedMCPTools = async (): Promise<{ name: string; description?: string }[]> => {
   return await traceMCPOperation(
     'all-servers',
     'getTools',
     async () => {
-      return await mcp.getToolsArray();
+      const tools = await mcp.getToolsArray();
+      return tools.map(tool => ({
+        name: tool.id || tool.label || 'unnamed-tool',
+        description: tool.description || (tool as any).inputSchema?.description
+      }));
     }
   );
 };
-
 /**
  * Traced MCP resource listing across all servers
  * 
  * @returns Resources grouped by server with tracing
  */
-export const listAllTracedMCPResources = async (): Promise<Record<string, any[]>> => {
+export const listAllTracedMCPResources = async (): Promise<Record<string, { name: string; description?: string }[]>> => {
   return await traceMCPOperation(
     'all-servers',
     'listAllResources',
@@ -769,13 +671,12 @@ export const listAllTracedMCPResources = async (): Promise<Record<string, any[]>
     }
   );
 };
-
 /**
  * Traced MCP resource templates listing
  * 
  * @returns Resource templates grouped by server with tracing
  */
-export const getTracedMCPResourceTemplates = async (): Promise<Record<string, any[]>> => {
+export const getTracedMCPResourceTemplates = async (): Promise<Record<string, { name: string; description?: string }[]>> => {
   return await traceMCPOperation(
     'all-servers',
     'getResourceTemplates',
@@ -784,7 +685,6 @@ export const getTracedMCPResourceTemplates = async (): Promise<Record<string, an
     }
   );
 };
-
 /**
  * Traced MCP resource subscription
  * 
@@ -795,7 +695,7 @@ export const getTracedMCPResourceTemplates = async (): Promise<Record<string, an
 export const subscribeToTracedMCPResource = async (
   server: string,
   resourceUri: string
-): Promise<any> => {
+): Promise<Record<string, unknown>> => {
   return await traceMCPOperation(
     server,
     'subscribeResource',
@@ -806,7 +706,6 @@ export const subscribeToTracedMCPResource = async (
     resourceUri
   );
 };
-
 /**
  * Traced MCP resource unsubscription
  * 
@@ -817,7 +716,7 @@ export const subscribeToTracedMCPResource = async (
 export const unsubscribeFromTracedMCPResource = async (
   server: string,
   resourceUri: string
-): Promise<any> => {
+): Promise<Record<string, unknown>> => {
   return await traceMCPOperation(
     server,
     'unsubscribeResource',
@@ -828,7 +727,6 @@ export const unsubscribeFromTracedMCPResource = async (
     resourceUri
   );
 };
-
 /**
  * Enhanced MCP resource reading with caching and performance tracking
  * 
@@ -841,7 +739,7 @@ export const getEnhancedTracedMCPResource = async (
   server: string,
   resourceUri: string,
   useCache: boolean = false
-): Promise<{ content: any; metadata: any }> => {
+): Promise<{ content: unknown; metadata: Record<string, string | number | boolean> }> => {
   return await traceMCPOperation(
     server,
     'enhancedReadResource',
@@ -902,13 +800,15 @@ export const getEnhancedTracedMCPResource = async (
     resourceUri
   );
 };
-
 // Simple in-memory cache for resources
-const resourceCache = new Map<string, { content: any; metadata: any; timestamp: number }>();
+const resourceCache = new Map<string, { 
+  content: unknown; 
+  metadata: Record<string, string | number | boolean>; 
+  timestamp: number 
+}>();
 
 /**
- * Clear resource cache
- */
+ * Clear resource cache */
 export function clearMCPResourceCache() {
   resourceCache.clear();
   //observabilityLogger.info('MCP resource cache cleared');

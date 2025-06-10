@@ -2,15 +2,14 @@
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
 import { weatherWorkflow } from './workflows/weather-workflow';
-import { weatherAgent } from './agents/weather-agent';
-import { masterAgent } from './agents/master-agent';
+import { agentRegistry } from './agents';
 
 import { langsmithConfig, createTelemetryConfig, EnhancedAISDKExporter } from './config';
 import { Client } from 'langsmith';
 
 export const mastra = new Mastra({
     workflows: { weatherWorkflow },
-    agents: { weatherAgent, masterAgent },
+    agents: agentRegistry,
     logger: new PinoLogger({
         name: 'Mastra',
         level: 'info',

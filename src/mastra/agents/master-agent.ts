@@ -14,12 +14,11 @@ export const masterAgent = new Agent({
   name: "masterAgent",
   instructions:
     "You are the master assistant that can answer questions and help with tasks. You are the master of all assistants and you can use the tools provided to you to help you.  Your job is to debug and fix problems with the user.",
-  model: createTracedGoogleModel('gemini-2.5-flash-preview-05-20', {
-        name: 'master-agent',
+  model: createTracedGoogleModel('gemini-2.5-flash-preview-05-20', { // use the this model for all agents
         tags: ['agent', 'master', 'debug'],
         thinkingConfig: {
-            thinkingBudget: 1024,
-            includeThoughts: true,
+            thinkingBudget: 0, // no thinking budget
+            includeThoughts: false, // do not include thoughts in the response  so we use most powerful model at best price
         },
   }),
   tools: {
