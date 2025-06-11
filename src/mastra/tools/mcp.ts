@@ -1,8 +1,134 @@
 import { MCPClient } from "@mastra/mcp";
 import { PinoLogger } from '@mastra/loggers';
+import { z } from 'zod';
 
 
 const logger = new PinoLogger({ name: 'mcp', level: 'info' });
+
+/**
+ * Transform Zod schemas to remove ZodNull types that Google AI models don't support
+ * Converts ZodNull to optional strings to maintain compatibility
+ * @param schema - Any Zod schema object
+ * @returns Transformed schema without ZodNull types
+ */
+function transformSchemaForGoogleAI(schema: unknown): unknown {
+  if (!schema || typeof schema !== 'object') {
+    return schema;
+  }
+
+  const schemaObj = schema as Record<string, unknown>;
+
+  // Handle different Zod schema types
+  if (schemaObj._def) {
+    const defObj = schemaObj._def as Record<string, unknown>;
+    const typeName = defObj.typeName;
+    
+    // Replace ZodNull with optional string
+    if (typeName === 'ZodNull') {
+      return z.string().optional().describe('Converted from null for Google AI compatibility');
+    }
+    
+    // Handle ZodUnion that might contain ZodNull
+    if (typeName === 'ZodUnion' && defObj.options) {
+      const options = defObj.options as unknown[];
+      const filteredOptions = options
+        .map((option: unknown) => transformSchemaForGoogleAI(option))        .filter((option: unknown) => {
+          const optionObj = option as Record<string, unknown>;
+          const optionDef = optionObj._def as Record<string, unknown>;
+          return optionDef?.typeName !== 'ZodNull';
+        });
+      
+      if (filteredOptions.length === 1) {
+        return (filteredOptions[0] as z.ZodTypeAny).optional();
+      } else if (filteredOptions.length > 1) {
+        return z.union(filteredOptions as [z.ZodTypeAny, z.ZodTypeAny, ...z.ZodTypeAny[]]);
+      } else {
+        return z.string().optional().describe('Converted from null union for Google AI compatibility');
+      }
+    }
+    
+    // Handle ZodOptional
+    if (typeName === 'ZodOptional') {
+      return z.optional(transformSchemaForGoogleAI(defObj.innerType) as z.ZodTypeAny);
+    }
+    
+    // Handle ZodObject
+    if (typeName === 'ZodObject' && defObj.shape) {
+      const shapeFunc = defObj.shape as () => Record<string, unknown>;
+      const shape = shapeFunc();
+      const transformedShape: Record<string, z.ZodTypeAny> = {};
+      for (const [key, value] of Object.entries(shape)) {
+        transformedShape[key] = transformSchemaForGoogleAI(value) as z.ZodTypeAny;
+      }
+      return z.object(transformedShape);
+    }
+    
+    // Handle ZodArray
+    if (typeName === 'ZodArray') {
+      return z.array(transformSchemaForGoogleAI(defObj.type) as z.ZodTypeAny);
+    }
+    
+    // Handle ZodRecord
+    if (typeName === 'ZodRecord') {
+      if (defObj.valueType) {
+        return z.record(transformSchemaForGoogleAI(defObj.valueType) as z.ZodTypeAny);
+      }
+      return schema;
+    }
+  }
+  
+  // Handle plain objects that might contain schemas
+  if (typeof schema === 'object' && !Array.isArray(schema)) {
+    const transformed: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(schemaObj)) {
+      transformed[key] = transformSchemaForGoogleAI(value);
+    }
+    return transformed;
+  }
+  
+  // Handle arrays
+  if (Array.isArray(schema)) {
+    return schema.map(item => transformSchemaForGoogleAI(item));
+  }
+  
+  return schema;
+}
+
+/**
+ * Transform MCP tools to remove ZodNull types and ensure Google AI compatibility
+ * @param tools - Raw MCP tools object
+ * @returns Transformed tools compatible with Google AI models
+ */
+function transformMCPToolsForGoogleAI(tools: Record<string, unknown>): Record<string, unknown> {
+  const transformedTools: Record<string, unknown> = {};
+  
+  for (const [toolName, tool] of Object.entries(tools)) {
+    if (tool && typeof tool === 'object') {
+      const toolObj = tool as Record<string, unknown>;
+      const transformedTool = { ...toolObj };
+      
+      // Transform input schema if present
+      if (transformedTool.inputSchema) {
+        transformedTool.inputSchema = transformSchemaForGoogleAI(transformedTool.inputSchema);
+      }
+      
+      // Transform output schema if present
+      if (transformedTool.outputSchema) {
+        transformedTool.outputSchema = transformSchemaForGoogleAI(transformedTool.outputSchema);
+      }
+      
+      // Transform any other schema fields
+      if (transformedTool.schema) {
+        transformedTool.schema = transformSchemaForGoogleAI(transformedTool.schema);
+      }
+      
+      transformedTools[toolName] = transformedTool;
+      logger.debug(`Transformed tool ${toolName} for Google AI compatibility`);
+    }
+  }
+  
+  return transformedTools;
+}
 
 /**
  * Primary MCP Client for Stdio-based servers (filesystem, docker, local tools)
@@ -17,7 +143,7 @@ export const mcpStdio = new MCPClient({
       args: [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "C:\\Users\\dm\\Documents\\deanmachines",
+        "C:\\Users\\dm\\Documents\\deanmachines-rsc",
       ],
       timeout: 60000,
       enableServerLogs: true,
@@ -27,34 +153,64 @@ export const mcpStdio = new MCPClient({
     },
     git: {
       command: "uvx",
-      args: ["mcp-server-git", "--repository", "C:\\Users\\dm\\Documents\\deanmachines"],
+      args: ["mcp-server-git", "--repository", "C:\\Users\\dm\\Documents\\deanmachines-rsc"],
       timeout: 60000,
       enableServerLogs: true,
       logger: (logMessage) => {
         logger.info(`[MCP:git] ${logMessage.message}`, { level: logMessage.level });
       }
     },
-    time: {
+    fetch: {
       command: "uvx",
-      args: ["mcp-server-time", "--local-timezone=America/New_York"],
+      args: ["mcp-server-fetch"],
       timeout: 60000,
       enableServerLogs: true,
       logger: (logMessage) => {
-        logger.info(`[MCP:time] ${logMessage.message}`, { level: logMessage.level });
+        logger.info(`[MCP:fetch] ${logMessage.message}`, { level: logMessage.level });
       }
     },
-    docker: {
-      command: "docker",
-      args: ["run", "-i", "--rm", "alpine/socat", "STDIO", "TCP:host.docker.internal:8811"],
-      timeout: 25000,
+    puppeteer: {
+      command: "npx",
+      args: ["-y", "@modelcontextprotocol/server-puppeteer"],
+      timeout: 60000,
       enableServerLogs: true,
       logger: (logMessage) => {
-        logger.info(`[MCP:docker] ${logMessage.message}`, { level: logMessage.level });
+        logger.info(`[MCP:puppeteer] ${logMessage.message}`, { level: logMessage.level });
       }
     },
-  },
+//    githubchat: {
+//      command: "uvx",
+//      args: ["github-chat-mcp"],
+//      env: {
+//        GITHUB_TOKEN: process.env.GITHUB_TOKEN! || ""
+//      },
+//      timeout: 60000,
+//      enableServerLogs: true,
+//      logger: (logMessage) => {
+//        logger.info(`[MCP:githubchat] ${logMessage.message}`, { level: logMessage.level });
+//      }
+//    },
+    github: {
+      command: "npx",
+      args: [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      env: {
+        GITHUB_TOKEN: process.env.GITHUB_TOKEN! || ""
+      }
+    }
+//    docker: {
+//      command: "docker",
+//      args: ["run", "-i", "--rm", "alpine/socat", "STDIO", "TCP:host.docker.internal:8811"],
+//      timeout: 25000,
+//      enableServerLogs: true,
+//      logger: (logMessage) => {
+//        logger.info(`[MCP:docker] ${logMessage.message}`, { level: logMessage.level });
+//      }
+//    },
+},
 });
-
 
 /**
  * Main MCP interface - routes operations to appropriate client (Stdio or Smithery)
@@ -96,8 +252,12 @@ export const mcp = {  /**
 //      }
 //    }
     
-    return allTools;
-  },  /**   * Get all tools as a flat array (for internal processing)
+    // Transform tools to ensure Google AI compatibility (remove ZodNull types)
+    const transformedTools = transformMCPToolsForGoogleAI(allTools);
+    logger.info(`Transformed ${Object.keys(transformedTools).length} MCP tools for Google AI compatibility`);
+    
+    return transformedTools;
+  },/**   * Get all tools as a flat array (for internal processing)
    */
   async getToolsArray(): Promise<unknown[]> {
     const tools: unknown[] = [];
