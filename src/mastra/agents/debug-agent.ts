@@ -4,6 +4,7 @@ import { graphTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
 import { createTracedGoogleModel } from '../config';
+import { mcp } from '../tools/mcp';
 
 const logger = new PinoLogger({ name: 'debugAgent', level: 'info' });
 logger.info('Initializing debugAgent');
@@ -46,10 +47,10 @@ export const debugAgent = new Agent({
       thinkingBudget: 0,
       includeThoughts: false,
     },
-  }),
-  tools: {
+  }),  tools: {
     graphTool,
     vectorQueryTool,
+    ...await mcp.getTools(),
   },
   memory: agentMemory
 });

@@ -2,6 +2,7 @@ import { Agent } from '@mastra/core/agent';
 import { createTracedGoogleModel } from '../config';
 import { weatherTool } from '../tools/weather-tool';
 import { agentMemory } from '../agentMemory';
+import { mcp } from '../tools/mcp';
 
 export const weatherAgent = new Agent({
   name: 'Weather Agent',
@@ -25,6 +26,9 @@ export const weatherAgent = new Agent({
               includeThoughts: false,
           },
     }),
-  tools: { weatherTool },
+  tools: { 
+    weatherTool,
+    ...await mcp.getTools(),
+  },
   memory: agentMemory
 });

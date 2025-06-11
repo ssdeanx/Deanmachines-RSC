@@ -1,39 +1,8 @@
-import { z } from 'zod';
 import { MCPClient } from "@mastra/mcp";
 import { PinoLogger } from '@mastra/loggers';
 
 
 const logger = new PinoLogger({ name: 'mcp', level: 'info' });
-
-// Zod schemas for MCP validation - handles null values properly
-const mcpToolSchema = z.object({
-  name: z.string(),
-  description: z.string().optional(),
-  inputSchema: z.any().optional(),
-  outputSchema: z.any().optional(),
-}).passthrough(); // Allow additional properties
-
-const mcpToolsSchema = z.record(mcpToolSchema.nullable()).transform(tools => {
-  // Filter out null values during validation
-  const filtered: Record<string, z.infer<typeof mcpToolSchema>> = {};
-  for (const [key, value] of Object.entries(tools)) {
-    if (value != null) {
-      filtered[key] = value;
-    }
-  }
-  return filtered;
-});
-const mcpResourceSchema = z.object({
-  uri: z.string(),
-  name: z.string().optional(),
-  description: z.string().optional(),
-  mimeType: z.string().optional(),
-}).passthrough();
-
-const mcpResourcesSchema = z.array(mcpResourceSchema.nullable()).transform(resources => 
-  resources.filter(resource => resource != null)
-);
-
 
 /**
  * Primary MCP Client for Stdio-based servers (filesystem, docker, local tools)
@@ -650,10 +619,21 @@ export const getTracedMCPTools = async (): Promise<{ name: string; description?:
     'getTools',
     async () => {
       const tools = await mcp.getToolsArray();
-      return tools.map(tool => ({
-        name: tool.id || tool.label || 'unnamed-tool',
-        description: tool.description || (tool as any).inputSchema?.description
-      }));
+      return tools.map((tool: unknown) => {
+        // Type guard for tool objects
+        if (typeof tool === 'object' && tool !== null) {
+          const toolObj = tool as Record<string, unknown>;
+          const inputSchema = toolObj.inputSchema as Record<string, unknown> | undefined;
+          return {
+            name: (toolObj.id as string) || (toolObj.label as string) || (toolObj.name as string) || 'unnamed-tool',
+            description: (toolObj.description as string) || (inputSchema?.description as string) || undefined
+          };
+        }
+        return {
+          name: 'unknown-tool',
+          description: undefined
+        };
+      });
     }
   );
 };

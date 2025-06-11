@@ -6,6 +6,7 @@ import { PinoLogger } from "@mastra/loggers";
 import { weatherTool } from "../tools/weather-tool";
 import { stockPriceTool } from "../tools/stock-tools";
 import { createTracedGoogleModel } from '../config';
+import { mcp } from '../tools/mcp';
 
 const logger = new PinoLogger({ name: 'masterAgent', level: 'info' });
 logger.info('Initializing masterAgent');
@@ -20,12 +21,12 @@ export const masterAgent = new Agent({
             thinkingBudget: 0, // no thinking budget
             includeThoughts: false, // do not include thoughts in the response  so we use most powerful model at best price
         },
-  }),
-  tools: {
+  }),  tools: {
     graphTool,
     vectorQueryTool,
     weatherTool,
     stockPriceTool,
+    ...await mcp.getTools(),
   },
   memory: agentMemory
 });

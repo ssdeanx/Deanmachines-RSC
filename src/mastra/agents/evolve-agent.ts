@@ -5,6 +5,7 @@ import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { stockPriceTool } from "../tools/stock-tools";
 import { PinoLogger } from "@mastra/loggers";
 import { createTracedGoogleModel } from '../config';
+import { mcp } from '../tools/mcp';
 
 const logger = new PinoLogger({ name: 'evolveAgent', level: 'info' });
 logger.info('Initializing evolveAgent');
@@ -40,11 +41,11 @@ export const evolveAgent = new Agent({
       thinkingBudget: 0,
       includeThoughts: false,
     },
-  }),
-  tools: {
+  }),  tools: {
     graphTool,
     vectorQueryTool,
     stockPriceTool,
+    ...await mcp.getTools(),
   },
   memory: agentMemory
 });
