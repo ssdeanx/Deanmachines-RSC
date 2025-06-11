@@ -143,7 +143,7 @@ export const mcpStdio = new MCPClient({
       args: [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "C:\\Users\\dm\\Documents\\deanmachines-rsc",
+        "C:\\Users\\dm\\Documents\\deanmachines-rsc\\.next\\var",
       ],
       timeout: 60000,
       enableServerLogs: true,
@@ -198,8 +198,46 @@ export const mcpStdio = new MCPClient({
       ],
       env: {
         GITHUB_TOKEN: process.env.GITHUB_TOKEN! || ""
+      },
+      timeout: 60000,
+      enableServerLogs: true,
+      logger: (logMessage) => {
+        logger.info(`[MCP:github] ${logMessage.message}`, { level: logMessage.level });
+      }
+    },
+    memoryGraph: {
+      command: "npx",
+      args: [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      env: {
+        "MEMORY_FILE_PATH": "C:\\Users\\dm\\Documents\\deanmachines-rsc\\graphs.json"
+      },
+      timeout: 60000,
+      enableServerLogs: true,
+      logger: (logMessage) => {
+        logger.info(`[MCP:memoryGraph] ${logMessage.message}`, { level: logMessage.level });
+      }
+    },
+    ddgsearch: {
+      command: "uvx",
+      args: ["duckduckgo-mcp-server"],
+      timeout: 60000,
+      enableServerLogs: true,
+      logger: (logMessage) => {
+        logger.info(`[MCP:memoryGraph] ${logMessage.message}`, { level: logMessage.level }); // Note: This logger prefix seems to be a copy-paste error from memoryGraph, consider changing to [MCP:ddgsearch]
       }
     }
+//  terminalController: {
+//    command: "uvx",
+//    args: ["terminal_controller", "C:\\Users\\dm\\Documents\\deanmachines-rsc\\.next\\var"],
+//    timeout: 60000,
+//    enableServerLogs: true,
+//    logger: (logMessage) => {
+//      logger.info(`[MCP:terminalController] ${logMessage.message}`, { level: logMessage.level });
+//    }
+//  }
 //    docker: {
 //      command: "docker",
 //      args: ["run", "-i", "--rm", "alpine/socat", "STDIO", "TCP:host.docker.internal:8811"],

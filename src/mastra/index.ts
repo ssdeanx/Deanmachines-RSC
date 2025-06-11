@@ -2,13 +2,19 @@
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
 import { weatherWorkflow } from './workflows/weather-workflow';
+import { codeGraphMakerWorkflow } from './workflows/code-graph-maker';
+import { advancedCodeGraphMakerWorkflow } from './workflows/code-graph-maker-advanced';
 import { agentRegistry } from './agents';
 
 import { langsmithConfig, createTelemetryConfig, EnhancedAISDKExporter } from './config';
 import { Client } from 'langsmith';
 
 export const mastra = new Mastra({
-    workflows: { weatherWorkflow },
+    workflows: { 
+        weatherWorkflow,
+        codeGraphMakerWorkflow,
+        advancedCodeGraphMakerWorkflow 
+    },
     agents: agentRegistry,
     logger: new PinoLogger({
         name: 'Mastra',

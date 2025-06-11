@@ -53,6 +53,11 @@ import { analyzerAgent } from './analyzer-agent';
 import { strategizerAgent } from './strategizer-agent';
 import { evolveAgent } from './evolve-agent';
 
+// Additional exports for workflow usage
+export { analyzerAgent } from './analyzer-agent';
+export { strategizerAgent } from './strategizer-agent';
+export { evolveAgent } from './evolve-agent';
+
 /**
  * Agent registry object for easy access and management
  * Provides a structured way to access all available agents
