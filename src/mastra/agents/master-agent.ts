@@ -10,8 +10,10 @@ import { mcp } from '../tools/mcp';
 import { z } from 'zod';
 
 const logger = new PinoLogger({ name: 'masterAgent', level: 'info' });
-logger.info('Initializing masterAgent');
 
+logger.debug("Debug message"); // Won't be logged because level is INFO
+logger.info("Master agent initialized");
+logger.error("An error occurred"); // Logged as ERROR
 /**
  * Comprehensive Zod schemas for Master Agent validation
  * Prevents Google AI model ZodNull validation errors
@@ -107,7 +109,7 @@ export function validateMasterAgentInput(input: unknown): z.infer<typeof masterA
   try {
     return masterAgentInputSchema.parse(input);
   } catch (error) {
-    logger.error('Master agent input validation failed', { error, input });
+    logger.error(`Master agent input validation failed: ${error}`);
     throw error;
   }
 }
@@ -122,7 +124,7 @@ export function validateMasterAgentOutput(output: unknown): z.infer<typeof maste
   try {
     return masterAgentOutputSchema.parse(output);
   } catch (error) {
-    logger.error('Master agent output validation failed', { error, output });
+    logger.error(`Master agent output validation failed: ${error}`);
     throw error;
   }
 }

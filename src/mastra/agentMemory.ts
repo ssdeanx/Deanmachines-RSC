@@ -70,7 +70,7 @@ export const agentMemory = new Memory({
   options: {
     lastMessages: 1000,
     semanticRecall: {
-      topK: 5, // Number of similar messages to retrieve
+      topK: 8, // Number of similar messages to retrieve
       // Range of messages to consider around each match
       messageRange: {
         before: 5, // Consider 5 messages before the match
@@ -373,6 +373,7 @@ export async function generateMemorySummary(
 
     // Generate summary with Google Gemini model
     const model = google('gemini-2.0-flash-exp');
+    logger.info(`Generating memory summary with prompt: ${prompt.substring(0, 50)}...`);
 
     const result = await model.doGenerate({
       inputFormat: 'messages',
@@ -554,7 +555,7 @@ export async function initializeVectorIndexes(): Promise<void> {
     // Create message embeddings index
     await agentVector.createIndex({
       indexName: 'context',
-      dimension: 384, // Adjust based on your embedding model
+      dimension: 768, // Adjust based on your embedding model
       metric: 'cosine'
     });
 
