@@ -4,43 +4,22 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { TopNavbar } from '@/components/landing/TopNavbar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { 
-  Play, 
-  Pause, 
-  RotateCcw, 
   Zap, 
   Brain, 
   MessageSquare, 
   Code, 
-  Database, 
-  Cpu, 
   Sparkles,
   Send,
-  ChevronRight,
-  Check,
-  Star,
   Rocket,
   Users,
   Globe,
-  ArrowRight,
-  Settings,
-  BarChart3,
-  CheckCircle,
-  Monitor,
-  Smartphone,
-  Clock,
-  Shield,
-  Eye,
-  Download
+  ArrowRight
 } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
-import Link from 'next/link';
 
 interface DemoMessage {
   id: string;
@@ -66,7 +45,6 @@ export default function DemoPage() {
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [codeExample, setCodeExample] = useState('');
-  const [animationPlaying, setAnimationPlaying] = useState(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
@@ -302,8 +280,7 @@ const smartQuery = await db.query(\`
                       Experience natural language interactions with our AI. Ask questions, 
                       request code generation, or get help with complex problems.
                     </p>
-                    
-                    <div className="space-y-3">
+                      <div className="space-y-3">
                       {[
                         "Generate a React component for me",
                         "How can I optimize my database queries?",
@@ -484,9 +461,7 @@ const smartQuery = await db.query(\`
                       Watch our AI agents work autonomously to complete complex tasks, 
                       make decisions, and integrate with various systems.
                     </p>
-                  </div>
-
-                  <div className="grid md:grid-cols-3 gap-6">
+                  </div>                  <div className="grid md:grid-cols-3 gap-6">
                     {[
                       {
                         name: "Code Review Agent",
@@ -509,7 +484,7 @@ const smartQuery = await db.query(\`
                         status: "active",
                         task: "Processing 10k records",
                         progress: 67,
-                        icon: Database,
+                        icon: Brain,
                         color: "text-purple-400"
                       }
                     ].map((agent, index) => (
@@ -562,7 +537,9 @@ const smartQuery = await db.query(\`
                       transition={{ duration: 0.5, delay: 0.5 }}
                       className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 border border-yellow-400/30 rounded-full px-6 py-3"
                     >
-                      <Check className="w-5 h-5 text-green-400" />
+                      <div className="w-5 h-5 bg-green-400 rounded-full flex items-center justify-center">
+                        <div className="w-2 h-2 bg-white rounded-full" />
+                      </div>
                       <span className="text-white font-medium">
                         All agents operating at optimal performance
                       </span>

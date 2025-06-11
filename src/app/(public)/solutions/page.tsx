@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { ArrowRight, CheckCircle, Zap, Brain, Users, Building, Rocket, Globe } from 'lucide-react';
+import { ArrowRight, CheckCircle, Zap, Brain, Building, Rocket } from 'lucide-react';
 
 const solutions = [
   {
