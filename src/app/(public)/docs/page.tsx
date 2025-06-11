@@ -11,209 +11,17 @@ import {
   BookOpen, 
   Code, 
   Rocket, 
-  ArrowRight
-} from 'lucide-react';
-import Link from 'next/link';
-
-/**
- * Documentation page with comprehensive guides and tutorials
- * 
- * Features interactive code examples and searchable documentation
- * Dark theme with yellow neon accents for consistent branding
- * 
- * @returns {JSX.Element} The rendered documentation page
- */
-export default function DocsPage() {
-  return (
-    <div className="min-h-screen bg-background">
-      <TopNavbar />
-      
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        {/* Hero Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
-          <motion.h1 
-            className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-foreground mb-6"
-            animate={{ 
-              textShadow: [
-                "0 0 10px rgba(241, 196, 15, 0.3)",
-                "0 0 20px rgba(241, 196, 15, 0.5)",
-                "0 0 10px rgba(241, 196, 15, 0.3)"
-              ]
-            }}
-            transition={{ duration: 3, repeat: Infinity }}
-          >
-            Documentation & <span className="text-primary neon-text">Guides</span>
-          </motion.h1>
-          <motion.p 
-            className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            Everything you need to build, deploy, and scale intelligent applications with DeanMachines RSC.
-          </motion.p>
-          
-          <motion.div 
-            className="flex flex-col sm:flex-row gap-4 justify-center"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-          >
-            <Button 
-              asChild 
-              size="lg" 
-              className="bg-primary text-primary-foreground hover:bg-primary/90 neon-glow pulse-glow"
-            >
-              <Link href="/docs/quick-start">
-                <Rocket className="w-5 h-5 mr-2" />
-                Quick Start Guide
-              </Link>
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              asChild
-              className="glass-effect border-primary/30 hover:border-primary/60"
-            >
-              <Link href="/docs/api">
-                <Code className="w-5 h-5 mr-2" />
-                API Reference
-              </Link>
-            </Button>
-          </motion.div>
-        </motion.div>
-
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Documentation Cards */}
-          {[
-            {
-              title: "Getting Started",
-              description: "Learn the basics and get your first AI agent running",
-              icon: <BookOpen className="w-6 h-6" />,
-              items: ["Installation", "Quick Start", "Basic Concepts"],
-              href: "/docs/getting-started"
-            },
-            {
-              title: "API Reference",
-              description: "Complete API documentation with examples",
-              icon: <Code className="w-6 h-6" />,
-              items: ["Agent API", "Memory API", "Tools API"],
-              href: "/docs/api"
-            },
-            {
-              title: "Examples",
-              description: "Real-world examples and use cases",
-              icon: <Rocket className="w-6 h-6" />,
-              items: ["Chatbots", "Workflows", "Integrations"],
-              href: "/docs/examples"
-            }
-          ].map((section, index) => (
-            <motion.div
-              key={section.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 + 0.6 }}
-            >
-              <Card className="glass-effect border-primary/20 hover:border-primary/40 transition-all duration-300 h-full">
-                <CardHeader>
-                  <div className="text-primary bg-primary/10 p-3 rounded-lg w-fit mb-4">
-                    {section.icon}
-                  </div>
-                  <CardTitle className="text-xl text-foreground">{section.title}</CardTitle>
-                  <CardDescription>{section.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2 mb-6">
-                    {section.items.map((item, idx) => (
-                      <li key={idx} className="text-sm text-muted-foreground">
-                        • {item}
-                      </li>
-                    ))}
-                  </ul>
-                  <Button 
-                    asChild 
-                    className="w-full glass-effect border-primary/30 hover:border-primary/60"
-                    variant="outline"
-                  >
-                    <Link href={section.href}>
-                      Learn More <ArrowRight className="w-4 h-4 ml-2" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Quick Start Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1 }}
-          className="mt-16"
-        >
-          <Card className="glass-effect border-primary/20 neon-glow">
-            <CardHeader>
-              <CardTitle className="text-2xl text-primary neon-text">Quick Start</CardTitle>
-              <CardDescription>
-                Get up and running in under 5 minutes
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="install" className="space-y-6">
-                <TabsList className="grid grid-cols-3 bg-muted/20 glass-effect">
-                  <TabsTrigger value="install">Install</TabsTrigger>
-                  <TabsTrigger value="configure">Configure</TabsTrigger>
-                  <TabsTrigger value="deploy">Deploy</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="install" className="space-y-4">
-                  <h3 className="text-lg font-semibold text-foreground">Installation</h3>
-                  <div className="bg-muted/20 rounded-lg p-4 font-mono text-sm overflow-x-auto glass-effect">
-                    <pre className="text-foreground">npm install -g deanmachines-rsc{'\n'}npx create-deanmachines-app my-app</pre>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="configure" className="space-y-4">
-                  <h3 className="text-lg font-semibold text-foreground">Configuration</h3>
-                  <div className="bg-muted/20 rounded-lg p-4 font-mono text-sm overflow-x-auto glass-effect">
-                    <pre className="text-foreground"># .env.local{'\n'}AI_PROVIDER_API_KEY=your_key_here{'\n'}DATABASE_URL=your_db_url</pre>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="deploy" className="space-y-4">
-                  <h3 className="text-lg font-semibold text-foreground">Deploy</h3>
-                  <div className="bg-muted/20 rounded-lg p-4 font-mono text-sm overflow-x-auto glass-effect">
-                    <pre className="text-foreground">npm run build{'\n'}npm run deploy</pre>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-          </Card>
-        </motion.div>
-      </main>
-    </div>
-  );
-}
-  BookOpen, 
-  Code, 
-  Rocket, 
-  Settings, 
-  Database, 
-  Brain,
   ArrowRight,
-  ExternalLink,
+  Shield,
+  Settings,
+  Brain,
   Copy,
   CheckCircle,
   Zap,
-  Shield
+  ExternalLink
 } from 'lucide-react';
 import Link from 'next/link';
+
 
 /**
  * Documentation page with comprehensive guides, API references, and tutorials
@@ -392,43 +200,42 @@ export default function DocsPage() {
                   <CardTitle className="text-lg text-primary neon-text">Navigation</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {documentationSections.map((section, sectionIndex) => (
+                  {documentationSections.map((section) => (
                     <motion.div key={section.category} variants={itemVariants}>
                       <div className="flex items-center gap-2 mb-3">
                         <div className="text-primary">{section.icon}</div>
                         <h3 className="font-semibold text-foreground">{section.category}</h3>
                       </div>
                       <ul className="space-y-2 ml-7">
-                        {section.items.map((item, itemIndex) => (
-                          <motion.li 
-                            key={item.title}
-                            whileHover={{ x: 5 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                          >
-                            <Link 
-                              href={item.href}
-                              className="flex items-center justify-between text-sm text-muted-foreground hover:text-primary transition-colors group"
+                        {section.items.map((item) => (
+                          <li key={item.title}>
+                            <motion.div
+                              whileHover={{ x: 5 }}
+                              transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             >
-                              <span className="group-hover:neon-text">{item.title}</span>
-                              {item.badge && (
-                                <Badge 
-                                  variant="secondary" 
-                                  className="text-xs glass-effect"
-                                >
-                                  {item.badge}
-                                </Badge>
-                              )}
-                            </Link>
-                          </motion.li>
+                              <Link 
+                                href={item.href}
+                                className="flex items-center justify-between text-sm text-muted-foreground hover:text-primary transition-colors group"
+                              >
+                                <span className="group-hover:neon-text">{item.title}</span>
+                                {item.badge && (
+                                  <Badge 
+                                    variant="secondary" 
+                                    className="text-xs glass-effect"
+                                  >
+                                    {item.badge}
+                                  </Badge>
+                                )}
+                              </Link>
+                            </motion.div>
+                          </li>
                         ))}
                       </ul>
                     </motion.div>
-                  ))}
-                </CardContent>
+                  ))}                </CardContent>
               </Card>
             </div>
           </motion.div>
-
           {/* Main Content */}
           <motion.div 
             className="lg:col-span-3"

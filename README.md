@@ -1,5 +1,5 @@
 <div align="left" style="position: relative;">
-<img src="https://img.icons8.com/?size=512&id=55494&format=png" align="right" width="30%" style="margin: -20px 0 0 20px;">
+<img src="https://raw.githubusercontent.com/PKief/vscode-material-icon-theme/ec559a9f6bfd399b82bb44393651661b08aaf7ba/icons/folder-markdown-open.svg" align="right" width="30%" style="margin: -20px 0 0 20px;">
 <h1>DEANMACHINES-RSC</h1>
 <p align="left">
 	<em><code>❯ REPLACE-ME</code></em>
@@ -14,38 +14,37 @@
 </div>
 <br clear="right">
 
-## 🔗 Quick Links
+##  Quick Links
 
-- [� Quick Links](#-quick-links)
-- [📍 Overview](#-overview)
-- [👾 Features](#-features)
-- [📁 Project Structure](#-project-structure)
-  - [📂 Project Index](#-project-index)
-- [🚀 Getting Started](#-getting-started)
-  - [☑️ Prerequisites](#️-prerequisites)
-  - [⚙️ Installation](#️-installation)
-  - [🤖 Usage](#-usage)
-  - [🧪 Testing](#-testing)
-- [📌 Project Roadmap](#-project-roadmap)
-- [🔰 Contributing](#-contributing)
-- [🎗 License](#-license)
-- [🙌 Acknowledgments](#-acknowledgments)
+- [ Overview](#-overview)
+- [ Features](#-features)
+- [ Project Structure](#-project-structure)
+  - [ Project Index](#-project-index)
+- [ Getting Started](#-getting-started)
+  - [ Prerequisites](#-prerequisites)
+  - [ Installation](#-installation)
+  - [ Usage](#-usage)
+  - [ Testing](#-testing)
+- [ Project Roadmap](#-project-roadmap)
+- [ Contributing](#-contributing)
+- [ License](#-license)
+- [ Acknowledgments](#-acknowledgments)
 
 ---
 
-## 📍 Overview
+##  Overview
 
 <code>❯ REPLACE-ME</code>
 
 ---
 
-## 👾 Features
+##  Features
 
 <code>❯ REPLACE-ME</code>
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```sh
 └── Deanmachines-RSC/
@@ -74,6 +73,7 @@
     │   ├── app
     │   │   ├── api
     │   │   │   └── auth
+    │   │   │       └── [...nextauth]
     │   │   ├── favicon.ico
     │   │   ├── globals.css
     │   │   ├── layout.tsx
@@ -177,7 +177,7 @@
 ```
 
 
-### 📂 Project Index
+###  Project Index
 <details open>
 	<summary><b><code>DEANMACHINES-RSC/</code></b></summary>
 	<details> <!-- __root__ Submodule -->
@@ -652,9 +652,9 @@
 </details>
 
 ---
-## 🚀 Getting Started
+##  Getting Started
 
-### ☑️ Prerequisites
+###  Prerequisites
 
 Before getting started with Deanmachines-RSC, ensure your runtime environment meets the following requirements:
 
@@ -662,7 +662,7 @@ Before getting started with Deanmachines-RSC, ensure your runtime environment me
 - **Package Manager:** Npm
 
 
-### ⚙️ Installation
+###  Installation
 
 Install Deanmachines-RSC using one of the following methods:
 
@@ -690,7 +690,7 @@ Install Deanmachines-RSC using one of the following methods:
 
 
 
-### 🤖 Usage
+###  Usage
 Run Deanmachines-RSC using the following command:
 **Using `npm`** &nbsp; [<img align="center" src="https://img.shields.io/badge/npm-CB3837.svg?style={badge_style}&logo=npm&logoColor=white" />](https://www.npmjs.com/)
 
@@ -699,7 +699,7 @@ Run Deanmachines-RSC using the following command:
 ```
 
 
-### 🧪 Testing
+###  Testing
 Run the test suite using the following command:
 **Using `npm`** &nbsp; [<img align="center" src="https://img.shields.io/badge/npm-CB3837.svg?style={badge_style}&logo=npm&logoColor=white" />](https://www.npmjs.com/)
 
@@ -709,7 +709,7 @@ Run the test suite using the following command:
 
 
 ---
-## 📌 Project Roadmap
+##  Project Roadmap
 
 - [X] **`Task 1`**: <strike>Implement feature one.</strike>
 - [ ] **`Task 2`**: Implement feature two.
@@ -717,7 +717,7 @@ Run the test suite using the following command:
 
 ---
 
-## 🔰 Contributing
+##  Contributing
 
 - **💬 [Join the Discussions](https://github.com/ssdeanx/Deanmachines-RSC/discussions)**: Share your insights, provide feedback, or ask questions.
 - **🐛 [Report Issues](https://github.com/ssdeanx/Deanmachines-RSC/issues)**: Submit bugs found or log feature requests for the `Deanmachines-RSC` project.
@@ -760,13 +760,13 @@ Run the test suite using the following command:
 
 ---
 
-## 🎗 License
+##  License
 
 This project is protected under the [SELECT-A-LICENSE](https://choosealicense.com/licenses) License. For more details, refer to the [LICENSE](https://choosealicense.com/licenses/) file.
 
 ---
 
-## 🙌 Acknowledgments
+##  Acknowledgments
 
 - List any resources, contributors, inspiration, etc. here.
 

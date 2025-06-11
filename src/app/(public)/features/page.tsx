@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { TopNavbar } from '@/components/landing/TopNavbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Brain, Zap, Shield, Cpu, Globe, Rocket, CheckCircle, ArrowRight } from 'lucide-react';
+import { Brain, Zap, Shield, Cpu, Globe, Rocket, CheckCircle } from 'lucide-react';
 
 const features = [
   {
