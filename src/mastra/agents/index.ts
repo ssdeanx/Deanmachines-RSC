@@ -49,6 +49,9 @@ import { specialAgent } from './special-agent';
 import { supervisorAgent } from './supervisor-agent';
 import { sysadminAgent } from './sysadmin-agent';
 import { utilityAgent } from './utility-agent';
+import { analyzerAgent } from './analyzer-agent';
+import { strategizerAgent } from './strategizer-agent';
+import { evolveAgent } from './evolve-agent';
 
 /**
  * Agent registry object for easy access and management
@@ -57,7 +60,10 @@ import { utilityAgent } from './utility-agent';
 export const agentRegistry = {
   // Core agents
   master: masterAgent,
-  weather: weatherAgent,
+  strategizer: strategizerAgent,
+  analyzer: analyzerAgent,
+  evolve: evolveAgent,
+  supervisor: supervisorAgent,
 
   // Domain-specific agents
   browser: browserAgent,
@@ -74,9 +80,9 @@ export const agentRegistry = {
   processing: processingAgent,
   research: researchAgent,
   special: specialAgent,
-  supervisor: supervisorAgent,
   sysadmin: sysadminAgent,
   utility: utilityAgent,
+  weather: weatherAgent,
 } as const;
 
 /**
@@ -84,9 +90,9 @@ export const agentRegistry = {
  * Groups agents by their primary domain expertise
  */
 export const agentCategories = {
-  core: ['master', 'weather'] as const,
+  core: ['master', 'supervisor', 'analyzer', 'strategizer', 'evolve'] as const,
   development: ['code', 'git', 'docker', 'debug'] as const,
-  data: ['data', 'graph', 'processing', 'research'] as const,
+  data: ['data', 'graph', 'processing', 'research', 'weather'] as const,
   management: ['manager', 'supervisor', 'marketing'] as const,
   operations: ['sysadmin', 'browser', 'utility'] as const,
   creative: ['design', 'documentation'] as const,
@@ -133,6 +139,10 @@ export function hasAgent(agentName: string): agentName is keyof typeof agentRegi
  */
 export const agentMetadata = {
   master: { description: 'Master assistant for debugging and problem-solving', tags: ['core', 'debug', 'master'] },
+  strategizer: { description: 'Strategic planning and goal setting expert', tags: ['core', 'planning', 'strategy'] },
+  analyzer: { description: 'Data analysis and insights generation specialist', tags: ['core', 'data', 'analysis'] },
+  evolve: { description: 'Agent evolution and improvement specialist', tags: ['core', 'evolution', 'improvement'] },
+  supervisor: { description: 'Agent coordination and orchestration specialist', tags: ['supervisor', 'coordination', 'orchestration'] },
   weather: { description: 'Weather information and forecasting assistant', tags: ['weather', 'data', 'api'] },
   browser: { description: 'Web automation and browser interaction specialist', tags: ['web', 'automation', 'scraping'] },
   code: { description: 'Code analysis, generation, and optimization expert', tags: ['development', 'code', 'analysis'] },
@@ -148,7 +158,6 @@ export const agentMetadata = {
   processing: { description: 'Data processing and workflow automation expert', tags: ['processing', 'automation', 'workflow'] },
   research: { description: 'Research and information analysis specialist', tags: ['research', 'analysis', 'information'] },
   special: { description: 'Multi-domain expert for unique and complex tasks', tags: ['special', 'multi-domain', 'innovation'] },
-  supervisor: { description: 'Agent coordination and orchestration specialist', tags: ['supervisor', 'coordination', 'orchestration'] },
   sysadmin: { description: 'System administration and DevOps expert', tags: ['sysadmin', 'devops', 'infrastructure'] },
   utility: { description: 'General-purpose utility and helper functions', tags: ['utility', 'general', 'helper'] },
 } as const;
