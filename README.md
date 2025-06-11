@@ -9,38 +9,48 @@
 <p align="left">Built with the tools and technologies:</p>
 <p align="left">
 	<a href="https://skillicons.dev">
-		<img src="https://skillicons.dev/icons?i=css,ai,md,react&theme=light">
+		<img src="https://skillicons.dev/icons?i=vercel,ts,threejs,npm,vitest,css,ai,md,react,nextjs,d3,gcp,git,github&perline=8" alt="Skill Icons">
 	</a></p>
 </div>
 <br clear="right">
 
 ##  Quick Links
 
-- [ Overview](#-overview)
-- [ Features](#-features)
-- [ Project Structure](#-project-structure)
-  - [ Project Index](#-project-index)
-- [ Getting Started](#-getting-started)
-  - [ Prerequisites](#-prerequisites)
-  - [ Installation](#-installation)
-  - [ Usage](#-usage)
-  - [ Testing](#-testing)
-- [ Project Roadmap](#-project-roadmap)
-- [ Contributing](#-contributing)
-- [ License](#-license)
-- [ Acknowledgments](#-acknowledgments)
+- [Quick Links](#quick-links)
+- [Overview](#overview)
+- [Features](#features)
+- [Project Structure](#project-structure)
+	- [Project Index](#project-index)
+- [Getting Started](#getting-started)
+	- [Prerequisites](#prerequisites)
+	- [Installation](#installation)
+	- [Usage](#usage)
+	- [Testing](#testing)
+- [Project Roadmap](#project-roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
 
 ---
 
 ##  Overview
 
-<code>❯ REPLACE-ME</code>
+Deanmachines-RSC is an advanced AI-powered application and research platform built with Next.js 15, TypeScript, and the Mastra AI framework. It features a modular, agent-based backend architecture that leverages autonomous agents, robust memory management, and Model Context Protocol (MCP) integration for intelligent code analysis, automation, and workflow orchestration. The system is designed for extensibility, observability (LangSmith, OpenTelemetry), and seamless integration with Google AI (Gemini) via the Vercel AI SDK. Key capabilities include multi-agent collaboration, dynamic tool execution, and advanced code graph generation for software repositories.
 
 ---
 
 ##  Features
 
-<code>❯ REPLACE-ME</code>
+- **Mastra AI Framework**: Modular, type-safe agent and workflow system for orchestrating complex AI tasks and automations.
+- **Autonomous Agents**: Specialized agents (e.g., gitAgent, codeAgent, graphAgent, dataAgent, supervisorAgent, analyzerAgent, designAgent) for code analysis, data processing, graph generation, and more.
+- **Code Graph Maker Workflows**: Analyze GitHub repositories and generate multi-format (SVG, HTML, JSON) code dependency graphs using real MCP tools and agent coordination.
+- **MCP Integration**: Full support for Model Context Protocol for advanced AI-driven code understanding and tool interoperability.
+- **Google AI (Gemini) via Vercel AI SDK**: Primary AI provider for all intelligent operations, ensuring state-of-the-art model performance.
+- **Persistent Storage**: LibSQL/Turso for structured and vector data, supporting agent memory and semantic search.
+- **Observability**: Integrated tracing (OpenTelemetry, LangSmith) and logging (PinoLogger) for robust monitoring and debugging.
+- **Frontend**: Next.js 15, React 19, and Tailwind CSS for a modern, responsive UI and seamless agent interaction.
+- **Security & Validation**: Zod schemas for rigorous input/output validation, secure environment variable management, and best-practice error handling throughout.
+- **Extensible Tooling**: Easily add new tools and agents following strict project patterns and validation standards.
 
 ---
 
