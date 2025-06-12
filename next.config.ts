@@ -23,6 +23,7 @@ const nextConfig: NextConfig = {
     "eslintcc",
     "langsmith",
     "langsmith/vercel",
+    "@copilotkit/runtime"
   ],
   /* config options here */
 };

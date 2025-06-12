@@ -1,13 +1,25 @@
-
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
 import { weatherWorkflow } from './workflows/weather-workflow';
 import { codeGraphMakerWorkflow } from './workflows/code-graph-maker';
 import { advancedCodeGraphMakerWorkflow } from './workflows/code-graph-maker-advanced';
 import { agentRegistry } from './agents';
+import { registerCopilotKit } from "@mastra/agui";
 
 import { langsmithConfig, createTelemetryConfig, EnhancedAISDKExporter } from './config';
 import { Client } from 'langsmith';
+
+// Generated on [Current Date Time]
+/**
+ * Defines the runtime context for the weather agent.
+ * This context can store information like user preferences or session data.
+ */
+interface WeatherRuntimeContext {
+  /** The unique identifier for the user. */
+  "user-id": string;
+  /** The temperature scale preference ("celsius" or "fahrenheit"). */
+  "temperature-scale": "celsius" | "fahrenheit";
+}
 
 export const mastra = new Mastra({
     workflows: { 
@@ -64,6 +76,24 @@ export const mastra = new Mastra({
                 //     }
                 // }
             }
+        },
+        server: {
+            cors: {
+                origin: "*",
+                allowMethods: ["*"],
+                allowHeaders: ["*"],
+            }
+        },
+        apiRoutes: [
+            registerCopilotKit<WeatherRuntimeContext>({
+                path: "/copilotkit",
+                resourceId: "weatherAgent",
+                setContext: (c, runtimeContext) => {
+          // TypeScript will enforce the correct types here
+          runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+          runtimeContext.set("temperature-scale", "celsius"); // Only "celsius" | "fahrenheit" allowed
         }
+            })
+        ]
     })
 });
