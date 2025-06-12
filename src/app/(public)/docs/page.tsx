@@ -1,4 +1,4 @@
-// Generated on 2025-01-27
+// Generated on June 12, 2025
 'use client';
 
 import { motion } from 'framer-motion';
@@ -7,10 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  BookOpen, 
-  Code, 
-  Rocket, 
+import {
+  BookOpen,
+  Code,
+  Rocket,
   ArrowRight,
   Shield,
   Settings,
@@ -25,41 +25,41 @@ import Link from 'next/link';
 
 /**
  * Documentation page with comprehensive guides, API references, and tutorials
- * 
+ *
  * Features interactive code examples, searchable documentation, and progressive disclosure
  * Dark theme with yellow neon accents for consistent branding
- * 
+ *
  * @returns {JSX.Element} The rendered documentation page
  */
 export default function DocsPage() {
   const quickStartSteps = [
     {
       icon: <Code className="w-6 h-6" />,
-      title: "Install DeanMachines RSC",
-      description: "Get started with our CLI tool and create your first project",
-      code: "npm install -g deanmachines-rsc\nnpx create-deanmachines-app my-app",
+      title: "Clone & Install",
+      description: "Get started by cloning the repository and installing dependencies",
+      code: "git clone https://github.com/ssdeanx/Deanmachines-RSC\ncd Deanmachines-RSC\nnpm install",
       time: "2 minutes"
     },
     {
       icon: <Settings className="w-6 h-6" />,
       title: "Configure Environment",
       description: "Set up your API keys and environment variables",
-      code: "# .env.local\nAI_PROVIDER_API_KEY=your_key_here\nDATABASE_URL=your_db_url",
-      time: "1 minute"
+      code: "# Copy .env.example to .env and configure:\nGOOGLE_GENERATIVE_AI_API_KEY=your_gemini_key\nDATABASE_URL=your_libsql_url\nDATABASE_AUTH_TOKEN=your_auth_token\nLANGSMITH_API_KEY=your_langsmith_key\nGITHUB_TOKEN=your_github_token",
+      time: "3 minutes"
     },
     {
       icon: <Brain className="w-6 h-6" />,
-      title: "Create Your First Agent",
-      description: "Build an intelligent agent with memory and tools",
-      code: "import { createAgent } from 'deanmachines-rsc';\n\nconst agent = createAgent({\n  name: 'MyAgent',\n  memory: true,\n  tools: ['web-search', 'calculator']\n});",
-      time: "5 minutes"
+      title: "Start Development",
+      description: "Run both Next.js frontend and Mastra backend",
+      code: "# Terminal 1: Start Next.js frontend\nnpm run dev\n\n# Terminal 2: Start Mastra backend\nnpm run dev:mastra",
+      time: "1 minute"
     },
     {
       icon: <Rocket className="w-6 h-6" />,
-      title: "Deploy & Scale",
-      description: "Deploy your application to production with one command",
-      code: "npm run deploy\n# Your app is now live!",
-      time: "3 minutes"
+      title: "Access Playground",
+      description: "Interact with AI agents through the CopilotKit interface",
+      code: "# Frontend: http://localhost:3000\n# Mastra Backend: http://localhost:4111\n# Playground: http://localhost:3000/playground",
+      time: "Instant"
     }
   ];
 
@@ -69,39 +69,39 @@ export default function DocsPage() {
       icon: <BookOpen className="w-5 h-5" />,
       items: [
         { title: "Installation", href: "/docs/installation", badge: "Essential" },
-        { title: "Quick Start Guide", href: "/docs/quick-start", badge: "Popular" },
+        { title: "Environment Setup", href: "/docs/environment", badge: "Required" },
         { title: "Basic Concepts", href: "/docs/concepts", badge: null },
-        { title: "First Project", href: "/docs/first-project", badge: "Tutorial" }
+        { title: "Architecture Overview", href: "/docs/architecture", badge: "Important" }
       ]
     },
     {
-      category: "Core Features", 
+      category: "Mastra Framework",
       icon: <Brain className="w-5 h-5" />,
       items: [
-        { title: "Intelligent Agents", href: "/docs/agents", badge: "Core" },
-        { title: "Memory Systems", href: "/docs/memory", badge: "Advanced" },
-        { title: "Tool Integration", href: "/docs/tools", badge: "Popular" },
-        { title: "Workflow Automation", href: "/docs/workflows", badge: null }
+        { title: "Agents", href: "/docs/mastra/agents", badge: "Core" },
+        { title: "Memory & Storage", href: "/docs/mastra/memory", badge: "Advanced" },
+        { title: "Tools & MCP", href: "/docs/mastra/tools", badge: "Popular" },
+        { title: "Workflows", href: "/docs/mastra/workflows", badge: "Automation" }
       ]
     },
     {
-      category: "API Reference",
+      category: "CopilotKit Integration",
       icon: <Code className="w-5 h-5" />,
       items: [
-        { title: "Agent API", href: "/docs/api/agents", badge: null },
-        { title: "Memory API", href: "/docs/api/memory", badge: null },
-        { title: "Tools API", href: "/docs/api/tools", badge: null },
-        { title: "Webhooks", href: "/docs/api/webhooks", badge: "Beta" }
+        { title: "Setup & Configuration", href: "/docs/copilotkit/setup", badge: "Essential" },
+        { title: "Components & Hooks", href: "/docs/copilotkit/components", badge: "UI" },
+        { title: "Agent Integration", href: "/docs/copilotkit/agents", badge: "Core" },
+        { title: "Custom Actions", href: "/docs/copilotkit/actions", badge: "Advanced" }
       ]
     },
     {
-      category: "Deployment",
+      category: "Deployment & Production",
       icon: <Rocket className="w-5 h-5" />,
       items: [
         { title: "Production Setup", href: "/docs/deployment/production", badge: "Important" },
-        { title: "Scaling Guide", href: "/docs/deployment/scaling", badge: "Advanced" },
-        { title: "Monitoring", href: "/docs/deployment/monitoring", badge: null },
-        { title: "Security", href: "/docs/deployment/security", badge: "Critical" }
+        { title: "Environment Variables", href: "/docs/deployment/environment", badge: "Security" },
+        { title: "Monitoring & Observability", href: "/docs/deployment/monitoring", badge: "LangSmith" },
+        { title: "Scaling & Performance", href: "/docs/deployment/scaling", badge: "Advanced" }
       ]
     }
   ];
@@ -124,7 +124,7 @@ export default function DocsPage() {
   return (
     <div className="min-h-screen bg-background">
       <TopNavbar />
-      
+
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Hero Section */}
         <motion.div
@@ -133,9 +133,9 @@ export default function DocsPage() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <motion.h1 
+          <motion.h1
             className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-foreground mb-6"
-            animate={{ 
+            animate={{
               textShadow: [
                 "0 0 10px rgba(241, 196, 15, 0.3)",
                 "0 0 20px rgba(241, 196, 15, 0.5)",
@@ -146,25 +146,25 @@ export default function DocsPage() {
           >
             Documentation & <span className="text-primary neon-text">Guides</span>
           </motion.h1>
-          <motion.p 
+          <motion.p
             className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 }}
           >
-            Everything you need to build, deploy, and scale intelligent applications with DeanMachines RSC. 
+            Everything you need to build, deploy, and scale intelligent applications with DeanMachines RSC.
             From quick start tutorials to advanced API references.
           </motion.p>
-          
-          <motion.div 
+
+          <motion.div
             className="flex flex-col sm:flex-row gap-4 justify-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
           >
-            <Button 
-              asChild 
-              size="lg" 
+            <Button
+              asChild
+              size="lg"
               className="bg-primary text-primary-foreground hover:bg-primary/90 neon-glow pulse-glow"
             >
               <Link href="/docs/quick-start">
@@ -172,9 +172,9 @@ export default function DocsPage() {
                 Quick Start Guide
               </Link>
             </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
+            <Button
+              variant="outline"
+              size="lg"
               asChild
               className="glass-effect border-primary/30 hover:border-primary/60"
             >
@@ -188,7 +188,7 @@ export default function DocsPage() {
 
         <div className="grid lg:grid-cols-4 gap-8">
           {/* Sidebar Navigation */}
-          <motion.div 
+          <motion.div
             className="lg:col-span-1"
             variants={containerVariants}
             initial="hidden"
@@ -213,14 +213,14 @@ export default function DocsPage() {
                               whileHover={{ x: 5 }}
                               transition={{ type: "spring", stiffness: 300, damping: 30 }}
                             >
-                              <Link 
+                              <Link
                                 href={item.href}
                                 className="flex items-center justify-between text-sm text-muted-foreground hover:text-primary transition-colors group"
                               >
                                 <span className="group-hover:neon-text">{item.title}</span>
                                 {item.badge && (
-                                  <Badge 
-                                    variant="secondary" 
+                                  <Badge
+                                    variant="secondary"
                                     className="text-xs glass-effect"
                                   >
                                     {item.badge}
@@ -237,7 +237,7 @@ export default function DocsPage() {
             </div>
           </motion.div>
           {/* Main Content */}
-          <motion.div 
+          <motion.div
             className="lg:col-span-3"
             variants={containerVariants}
             initial="hidden"
@@ -288,9 +288,9 @@ export default function DocsPage() {
                                 <p className="text-muted-foreground mb-4">{step.description}</p>
                                 <div className="bg-muted/20 rounded-lg p-4 font-mono text-sm overflow-x-auto glass-effect">
                                   <pre className="text-foreground">{step.code}</pre>
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm" 
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
                                     className="mt-2 float-right opacity-70 hover:opacity-100"
                                   >
                                     <Copy className="w-4 h-4" />
@@ -310,25 +310,25 @@ export default function DocsPage() {
                 <motion.div variants={containerVariants} className="grid gap-6">
                   {[
                     {
-                      title: "Customer Support Bot",
-                      description: "Build an intelligent customer support agent with memory and context awareness",
-                      features: ["Natural Language Processing", "Memory Persistence", "Multi-Channel Support"],
+                      title: "Multi-Agent Code Analysis",
+                      description: "Use Git, Code, and Graph agents to analyze repositories and generate dependency graphs",
+                      features: ["Repository Cloning", "Code Graph Generation", "Multi-Agent Coordination"],
                       difficulty: "Beginner",
+                      time: "15 min"
+                    },
+                    {
+                      title: "Weather & Stock Analysis",
+                      description: "Combine Weather and Data agents for comprehensive market analysis",
+                      features: ["Real-time Weather Data", "Stock Price Analysis", "Correlation Insights"],
+                      difficulty: "Intermediate",
                       time: "30 min"
                     },
                     {
-                      title: "Data Analysis Pipeline",
-                      description: "Create automated data processing workflows with AI-powered insights",
-                      features: ["Automated Data Processing", "AI Insights", "Real-time Monitoring"],
-                      difficulty: "Intermediate",
-                      time: "1 hour"
-                    },
-                    {
-                      title: "Content Generation System",
-                      description: "Build a scalable content creation platform with AI assistance",
-                      features: ["Multi-format Content", "Brand Voice Training", "Quality Scoring"],
+                      title: "Research & Documentation",
+                      description: "Use Research and Documentation agents to create comprehensive project docs",
+                      features: ["Web Research", "Content Generation", "Technical Writing"],
                       difficulty: "Advanced",
-                      time: "2 hours"
+                      time: "45 min"
                     }
                   ].map((example, index) => (
                     <motion.div key={index} variants={itemVariants}>
@@ -337,7 +337,7 @@ export default function DocsPage() {
                           <div className="flex items-center justify-between">
                             <CardTitle className="text-xl text-foreground">{example.title}</CardTitle>
                             <div className="flex gap-2">
-                              <Badge 
+                              <Badge
                                 variant={example.difficulty === 'Beginner' ? 'default' : example.difficulty === 'Intermediate' ? 'secondary' : 'destructive'}
                                 className="glass-effect"
                               >
@@ -363,8 +363,8 @@ export default function DocsPage() {
                                 ))}
                               </ul>
                             </div>
-                            <Button 
-                              asChild 
+                            <Button
+                              asChild
                               className="w-full glass-effect border-primary/30 hover:border-primary/60"
                               variant="outline"
                             >
@@ -385,21 +385,21 @@ export default function DocsPage() {
                   {[
                     {
                       icon: <Brain className="w-6 h-6" />,
-                      title: "Advanced Agent Architectures",
-                      description: "Learn to build complex multi-agent systems with hierarchical coordination",
-                      topics: ["Multi-Agent Coordination", "Hierarchical Planning", "Distributed Memory"]
+                      title: "Advanced Agent Patterns",
+                      description: "Master complex agent architectures with real Mastra implementations",
+                      topics: ["Agent Coordination", "Memory Management", "Tool Integration", "Runtime Contexts"]
                     },
                     {
                       icon: <Shield className="w-6 h-6" />,
-                      title: "Security & Privacy",
-                      description: "Implement enterprise-grade security for your AI applications",
-                      topics: ["Data Encryption", "Access Control", "Audit Logging"]
+                      title: "Production Deployment",
+                      description: "Deploy DeanMachines RSC with enterprise-grade reliability",
+                      topics: ["LibSQL/Turso Setup", "LangSmith Observability", "Environment Security", "Scaling Strategies"]
                     },
                     {
                       icon: <Zap className="w-6 h-6" />,
-                      title: "Performance Optimization",
-                      description: "Scale your applications to handle millions of requests",
-                      topics: ["Caching Strategies", "Load Balancing", "Resource Management"]
+                      title: "CopilotKit Mastery",
+                      description: "Build sophisticated AI interfaces with CopilotKit and Mastra",
+                      topics: ["Custom Components", "Agent Switching", "Real-time Updates", "State Management"]
                     }
                   ].map((topic, index) => (
                     <motion.div key={index} variants={itemVariants}>
@@ -427,8 +427,8 @@ export default function DocsPage() {
                                 ))}
                               </div>
                             </div>
-                            <Button 
-                              asChild 
+                            <Button
+                              asChild
                               className="w-full glass-effect border-primary/30 hover:border-primary/60"
                               variant="outline"
                             >

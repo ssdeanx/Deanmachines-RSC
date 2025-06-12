@@ -14,7 +14,7 @@ interface AboutSectionProps {
 
 /**
  * AboutSection component with cutting-edge 2025 animations
- * 
+ *
  * Showcases company information and team details with modern design
  * Dark theme with yellow neon accents
  */
@@ -48,8 +48,13 @@ export function AboutSection({ className }: AboutSectionProps) {
   ];
 
   return (
-    <section className={`py-24 bg-gradient-to-br from-background to-primary/5 ${className || ''}`}>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section className={`py-24 gradient-mesh cyber-grid relative overflow-hidden ${className || ''}`}>
+      {/* Enhanced Background Effects */}
+      <div className="absolute inset-0 holographic opacity-10" />
+      <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-primary/3 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/3 left-1/4 w-80 h-80 bg-accent/3 rounded-full blur-3xl animate-pulse delay-2000" />
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
@@ -58,10 +63,11 @@ export function AboutSection({ className }: AboutSectionProps) {
           viewport={{ once: true }}
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4">
-            About <span className="text-primary neon-text">DeanMachines</span>
-          </h2>          <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            We&apos;re pioneering the future of AI-driven applications with cutting-edge technology, 
-            autonomous agents, and developer-first approach. Our mission is to democratize AI 
+            About <span className="text-primary text-glow">DeanMachines</span>
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            We&apos;re pioneering the future of AI-driven applications with cutting-edge technology,
+            autonomous agents, and developer-first approach. Our mission is to democratize AI
             and make intelligent applications accessible to everyone.
           </p>
         </motion.div>
@@ -84,16 +90,16 @@ export function AboutSection({ className }: AboutSectionProps) {
               transition={{ delay: index * 0.1 }}
               viewport={{ once: true }}
             >
-              <Card className="glass-effect border-primary/20 hover:border-primary/40 transition-all duration-300 backdrop-blur-xl hover:neon-glow">
+              <Card className="glass-effect-strong neon-border hover:electric-pulse transition-all duration-300 backdrop-blur-xl hover:text-glow">
                 <CardContent className="pt-6">
                   <motion.div
-                    className="mx-auto mb-4 p-3 rounded-full bg-primary/10 w-fit"
-                    whileHover={{ rotate: 360 }}
+                    className="mx-auto mb-4 p-3 rounded-full bg-primary/20 w-fit neon-glow-subtle"
+                    whileHover={{ rotate: 360, scale: 1.1 }}
                     transition={{ duration: 0.6 }}
                   >
                     <stat.icon className="w-6 h-6 text-primary" />
                   </motion.div>
-                  <div className="text-2xl font-bold text-primary neon-text mb-1">
+                  <div className="text-2xl font-bold text-primary text-glow mb-1">
                     {stat.number}
                   </div>
                   <div className="text-sm text-muted-foreground">
@@ -127,7 +133,7 @@ export function AboutSection({ className }: AboutSectionProps) {
                 viewport={{ once: true }}
                 className="group"
               >
-                <Card className="glass-effect border-primary/20 hover:border-primary/40 transition-all duration-300 h-full backdrop-blur-xl group-hover:neon-glow">
+                <Card className="glass-effect-strong neon-border hover:electric-pulse transition-all duration-300 h-full backdrop-blur-xl group-hover:text-glow">
                   <CardHeader>
                     <div className="flex items-center justify-between mb-2">
                       <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
@@ -154,7 +160,7 @@ export function AboutSection({ className }: AboutSectionProps) {
 
         {/* CTA Section */}
         <motion.div
-          className="text-center glass-effect rounded-2xl p-12 border border-primary/20 backdrop-blur-xl"
+          className="text-center glass-effect-strong rounded-2xl p-12 neon-border electric-pulse backdrop-blur-xl"
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.6 }}
@@ -164,7 +170,7 @@ export function AboutSection({ className }: AboutSectionProps) {
             Join the AI Revolution
           </h3>
           <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Be part of the community building the future of intelligent applications. 
+            Be part of the community building the future of intelligent applications.
             Contribute to our open-source projects or start building your own AI solutions.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
@@ -172,10 +178,10 @@ export function AboutSection({ className }: AboutSectionProps) {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 asChild
-                className="bg-primary text-primary-foreground hover:bg-primary/90 neon-glow pulse-glow"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 glass-effect-strong electric-pulse"
               >
                 <Link href="/docs">
                   <BookOpen className="w-4 h-4 mr-2" />
@@ -187,13 +193,13 @@ export function AboutSection({ className }: AboutSectionProps) {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Button 
-                variant="outline" 
-                size="lg" 
+              <Button
+                variant="outline"
+                size="lg"
                 asChild
-                className="glass-effect border-primary/30 hover:border-primary/60"
+                className="glass-effect-strong lightning-trail neon-border hover:electric-pulse"
               >
-                <Link href="https://github.com/your-repo/deanmachines-rsc" target="_blank">
+                <Link href="https://github.com/ssdeanx/deanmachines-rsc" target="_blank">
                   <Github className="w-4 h-4 mr-2" />
                   View on GitHub
                   <ExternalLink className="w-4 h-4 ml-2" />

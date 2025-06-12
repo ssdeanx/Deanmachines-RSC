@@ -11,7 +11,7 @@ interface FeaturesSectionProps {
 
 /**
  * FeaturesSection component with cutting-edge 2025 animations
- * 
+ *
  * Showcases key features with neon glow effects and 3D transforms
  * Dark theme with yellow neon accents
  */
@@ -50,8 +50,13 @@ export function FeaturesSection({ className }: FeaturesSectionProps) {
   ];
 
   return (
-    <section className={`py-24 bg-gradient-to-b from-background to-background/50 ${className || ''}`}>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section className={`py-24 gradient-mesh cyber-grid relative overflow-hidden ${className || ''}`}>
+      {/* Enhanced Background Effects */}
+      <div className="absolute inset-0 holographic opacity-20" />
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse delay-1000" />
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
@@ -60,7 +65,7 @@ export function FeaturesSection({ className }: FeaturesSectionProps) {
           viewport={{ once: true }}
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Cutting-Edge <span className="text-primary neon-text">Features</span>
+            Cutting-Edge <span className="text-primary text-glow">Features</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Harness the power of next-generation AI technology with features designed for modern applications.
@@ -78,11 +83,11 @@ export function FeaturesSection({ className }: FeaturesSectionProps) {
               viewport={{ once: true }}
               className="group"
             >
-              <Card className="glass-effect border-primary/20 hover:border-primary/40 transition-all duration-300 h-full backdrop-blur-xl group-hover:neon-glow">
+              <Card className="glass-effect-strong neon-border hover:electric-pulse transition-all duration-300 h-full backdrop-blur-xl group-hover:text-glow">
                 <CardHeader className="text-center">
-                  <motion.div 
-                    className="mx-auto mb-4 p-3 rounded-full bg-primary/10 w-fit"
-                    whileHover={{ rotate: 360 }}
+                  <motion.div
+                    className="mx-auto mb-4 p-3 rounded-full bg-primary/20 w-fit neon-glow-subtle"
+                    whileHover={{ rotate: 360, scale: 1.1 }}
                     transition={{ duration: 0.6 }}
                   >
                     <feature.icon className="w-8 h-8 text-primary" />

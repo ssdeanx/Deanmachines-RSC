@@ -9,25 +9,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Eye, 
-  EyeOff, 
-  Github, 
-  Mail, 
-  Lock, 
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  Eye,
+  EyeOff,
+  GitBranch,
+  Mail,
+  Lock,
   User,
   ArrowRight,
-  Shield
+  Shield,
+  AlertCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 /**
  * Sign In page with modern authentication options
- * 
+ *
  * Features social login and secure authentication
  * Dark theme with yellow neon accents for consistent branding
- * 
+ *
  * @returns {JSX.Element} The rendered sign in page
  */
 export default function SignInPage() {
@@ -35,19 +39,55 @@ export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/playground';
+
+  // Handle OAuth sign in
+  const handleOAuthSignIn = async (provider: 'github' | 'google') => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const result = await signIn(provider, {
+        callbackUrl,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError(`Failed to sign in with ${provider}. Please try again.`);
+      } else if (result?.ok) {
+        router.push(callbackUrl);
+      }
+    } catch (err) {
+      setError(`An error occurred during ${provider} sign in.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle email/password sign in (if you want to add credentials provider later)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setIsLoading(false);
+    setError(null);
+
+    try {
+      // For now, redirect to OAuth since credentials provider isn't configured
+      setError('Email/password sign in is not yet configured. Please use GitHub or Google.');
+    } catch (err) {
+      setError('An error occurred during sign in.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-background">
       <TopNavbar />
-      
+
       <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid lg:grid-cols-2 gap-12 items-center max-w-6xl mx-auto">
           {/* Left Side - Features & Branding */}
@@ -58,9 +98,9 @@ export default function SignInPage() {
             className="space-y-8"
           >
             <div>
-              <motion.h1 
+              <motion.h1
                 className="text-4xl sm:text-5xl font-extrabold text-foreground mb-6"
-                animate={{ 
+                animate={{
                   textShadow: [
                     "0 0 10px rgba(241, 196, 15, 0.3)",
                     "0 0 20px rgba(241, 196, 15, 0.5)",
@@ -71,7 +111,7 @@ export default function SignInPage() {
               >
                 Welcome back to <span className="text-primary neon-text">DeanMachines</span>
               </motion.h1>
-              <motion.p 
+              <motion.p
                 className="text-xl text-muted-foreground max-w-lg"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -81,7 +121,7 @@ export default function SignInPage() {
               </motion.p>
             </div>
 
-            <motion.div 
+            <motion.div
               className="space-y-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -130,6 +170,14 @@ export default function SignInPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                {/* Error Display */}
+                {error && (
+                  <Alert className="border-destructive/50 text-destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+
                 {/* Social Login Options */}
                 <div className="space-y-3">
                   <motion.div
@@ -140,8 +188,9 @@ export default function SignInPage() {
                       variant="outline"
                       className="w-full glass-effect border-primary/30 hover:border-primary/60"
                       disabled={isLoading}
+                      onClick={() => handleOAuthSignIn('github')}
                     >
-                      <Github className="w-5 h-5 mr-2" />
+                      <GitBranch className="w-5 h-5 mr-2" />
                       Continue with GitHub
                     </Button>
                   </motion.div>
@@ -153,6 +202,7 @@ export default function SignInPage() {
                       variant="outline"
                       className="w-full glass-effect border-primary/30 hover:border-primary/60"
                       disabled={isLoading}
+                      onClick={() => handleOAuthSignIn('google')}
                     >
                       <Mail className="w-5 h-5 mr-2" />
                       Continue with Google
@@ -228,15 +278,15 @@ export default function SignInPage() {
 
                   <div className="flex items-center justify-between text-sm">
                     <Label className="flex items-center space-x-2 cursor-pointer">
-                      <input 
-                        type="checkbox" 
+                      <input
+                        type="checkbox"
                         className="rounded border-primary/30 text-primary focus:ring-primary/20"
                         aria-label="Remember me for future sign-ins"
                       />
                       <span className="text-muted-foreground">Remember me</span>
                     </Label>
-                    <Link 
-                      href="/forgot-password" 
+                    <Link
+                      href="/forgot-password"
                       className="text-primary hover:text-primary/80 neon-text"
                     >
                       Forgot password?

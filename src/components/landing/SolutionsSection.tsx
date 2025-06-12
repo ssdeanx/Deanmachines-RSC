@@ -14,7 +14,7 @@ interface SolutionsSectionProps {
 
 /**
  * SolutionsSection component with cutting-edge 2025 animations
- * 
+ *
  * Showcases different solutions with interactive cards and neon effects
  * Dark theme with yellow neon accents
  */
@@ -44,8 +44,12 @@ export function SolutionsSection({ className }: SolutionsSectionProps) {
   ];
 
   return (
-    <section className={`py-24 bg-gradient-to-br from-background via-background/80 to-primary/5 ${className || ''}`}>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section className={`py-24 gradient-mesh cyber-grid relative overflow-hidden ${className || ''}`}>
+      {/* Enhanced Background Effects */}
+      <div className="absolute inset-0 holographic opacity-15" />
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-accent/5 via-transparent to-primary/5" />
+
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div
           className="text-center mb-16"
           initial={{ opacity: 0, y: 30 }}
@@ -54,7 +58,7 @@ export function SolutionsSection({ className }: SolutionsSectionProps) {
           viewport={{ once: true }}
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Powerful <span className="text-primary neon-text">Solutions</span>
+            Powerful <span className="text-primary text-glow">Solutions</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Transform your business with AI-powered solutions designed for maximum impact and efficiency.
@@ -72,7 +76,7 @@ export function SolutionsSection({ className }: SolutionsSectionProps) {
               viewport={{ once: true }}
               className="group"
             >
-              <Card className={`glass-effect border-primary/20 hover:border-primary/40 transition-all duration-300 h-full backdrop-blur-xl group-hover:neon-glow bg-gradient-to-br ${solution.gradient}`}>
+              <Card className={`glass-effect-strong neon-border hover:electric-pulse transition-all duration-300 h-full backdrop-blur-xl group-hover:text-glow bg-gradient-to-br ${solution.gradient}`}>
                 <CardHeader>
                   <div className="flex items-center justify-between mb-2">
                     <Badge variant="secondary" className="bg-primary/20 text-primary border-primary/30">
@@ -108,7 +112,7 @@ export function SolutionsSection({ className }: SolutionsSectionProps) {
                       </motion.li>
                     ))}
                   </ul>
-                  <Button variant="outline" className="w-full glass-effect border-primary/30 hover:border-primary/60">
+                  <Button variant="outline" className="w-full glass-effect-strong lightning-trail neon-border hover:electric-pulse">
                     Learn More
                   </Button>
                 </CardContent>
@@ -134,10 +138,10 @@ export function SolutionsSection({ className }: SolutionsSectionProps) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               asChild
-              className="bg-primary text-primary-foreground hover:bg-primary/90 neon-glow pulse-glow px-8 py-4"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 glass-effect-strong electric-pulse px-8 py-4"
             >
               <Link href="/contact">Start Your Journey</Link>
             </Button>

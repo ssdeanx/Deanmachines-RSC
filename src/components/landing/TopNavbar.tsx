@@ -4,9 +4,12 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
+import { ThemeSwitch } from '@/components/ui/theme-switch';
 import { useState } from 'react';
 import React from 'react';
 import { cn } from '@/lib/utils';
+import { useSession, signOut } from 'next-auth/react';
+import { LogOut, User } from 'lucide-react';
 
 interface TopNavbarProps {
   className?: string;
@@ -20,6 +23,7 @@ interface TopNavbarProps {
  */
 export function TopNavbar({ className }: TopNavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
+  const { data: session, status } = useSession();
 
   // Add scroll listener for navbar glow effect
   React.useEffect(() => {
@@ -27,6 +31,10 @@ export function TopNavbar({ className }: TopNavbarProps) {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: '/' });
+  };
 
   return (
     <motion.nav
@@ -88,33 +96,83 @@ export function TopNavbar({ className }: TopNavbarProps) {
             </motion.div>
           </div>
           <div className="flex items-center space-x-4">
+            {/* Theme Switch */}
             <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7 }}
             >
-              <Button
-                variant="outline"
-                size="sm"
-                asChild
-                className="hidden sm:flex glass-effect border-primary/30 hover:border-primary/60"
-              >
-                <Link href="/signin">Sign In</Link>
-              </Button>
+              <ThemeSwitch />
             </motion.div>
 
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button
-                variant="default"
-                size="sm"
-                asChild
-                className="hidden sm:flex bg-primary text-primary-foreground hover:bg-primary/90 neon-glow pulse-glow"
-              >
-                <Link href="/signup">Sign Up</Link>
-              </Button>
-            </motion.div>
+            {/* Authentication Buttons */}
+            {status === 'loading' ? (
+              <div className="hidden sm:flex items-center space-x-2">
+                <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : session ? (
+              // Authenticated state
+              <div className="hidden sm:flex items-center space-x-2">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="glass-effect border-primary/30 hover:border-primary/60"
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    {session.user?.name || session.user?.email || 'User'}
+                  </Button>
+                </motion.div>
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSignOut}
+                    className="glass-effect border-primary/30 hover:border-primary/60"
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </motion.div>
+              </div>
+            ) : (
+              // Unauthenticated state
+              <div className="hidden sm:flex items-center space-x-2">
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="glass-effect border-primary/30 hover:border-primary/60"
+                  >
+                    <Link href="/signin">Sign In</Link>
+                  </Button>
+                </motion.div>
+
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    variant="default"
+                    size="sm"
+                    asChild
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 neon-glow pulse-glow"
+                  >
+                    <Link href="/signup">Sign Up</Link>
+                  </Button>
+                </motion.div>
+              </div>
+            )}
 
             <div className="md:hidden ml-2">
               <Button variant="outline" size="icon" className="glass-effect border-primary/30">

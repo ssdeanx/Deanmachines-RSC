@@ -2,74 +2,46 @@
 @import "tailwindcss/utilities";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-}
-
 :root {
   --radius: 0.625rem;
-  /* Dark almost black theme with neon yellow accent */
-  --background: oklch(0.05 0 0); /* Almost black */
-  --foreground: oklch(0.98 0 0); /* Pure white */
-  --card: oklch(0.08 0 0); /* Slightly lighter than background */
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.08 0 0);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.95 0.35 100); /* Bright neon yellow */
-  --primary-foreground: oklch(0.05 0 0);
-  --secondary: oklch(0.98 0 0); /* White secondary */
-  --secondary-foreground: oklch(0.05 0 0);
-  --muted: oklch(0.15 0 0); /* Light grey */
-  --muted-foreground: oklch(0.7 0 0);
-  --accent: oklch(0.95 0.35 100); /* Neon yellow accent */
-  --accent-foreground: oklch(0.05 0 0);
-  --destructive: oklch(0.6 0.25 29); /* Red for errors */
-  --border: oklch(0.2 0 0);
-  --input: oklch(0.12 0 0);
-  --ring: oklch(0.95 0.35 100); /* Neon yellow ring */
-  --chart-1: oklch(0.95 0.35 100);
-  --chart-2: oklch(0.8 0.25 200);
-  --chart-3: oklch(0.7 0.2 300);
-  --chart-4: oklch(0.9 0.3 50);
-  --chart-5: oklch(0.85 0.28 150);
+  /* 2025 Cutting-edge Dark Theme with Electric Neon */
+  --background: oklch(0.02 0.01 270);
+  /* Deep space black with blue undertone */
+  --foreground: oklch(0.98 0.005 60);
+  /* Warm white */
+  --card: oklch(0.05 0.015 270);
+  /* Card with subtle blue glow */
+  --card-foreground: oklch(0.98 0.005 60);
+  --popover: oklch(0.07 0.02 270);
+  --popover-foreground: oklch(0.98 0.005 60);
+  --primary: oklch(0.9 0.4 105);
+  /* Electric neon yellow */
+  --primary-foreground: oklch(0.02 0.01 270);
+  --secondary: oklch(0.12 0.03 270);
+  /* Dark blue-grey */
+  --secondary-foreground: oklch(0.85 0.02 60);
+  --muted: oklch(0.1 0.02 270);
+  --muted-foreground: oklch(0.6 0.015 270);
+  --accent: oklch(0.7 0.35 180);
+  /* Electric cyan accent */
+  --accent-foreground: oklch(0.02 0.01 270);
+  --destructive: oklch(0.65 0.3 15);
+  /* Neon red */
+  --border: oklch(0.15 0.03 270);
+  --input: oklch(0.06 0.02 270);
+  --ring: oklch(0.9 0.4 105);
+  /* Electric yellow ring */
+  /* Enhanced Chart Colors - Electric Palette */
+  --chart-1: oklch(0.9 0.4 105);
+  /* Electric yellow */
+  --chart-2: oklch(0.7 0.35 180);
+  /* Electric cyan */
+  --chart-3: oklch(0.75 0.3 300);
+  /* Electric purple */
+  --chart-4: oklch(0.8 0.25 30);
+  /* Electric orange */
+  --chart-5: oklch(0.65 0.4 330);
+  /* Electric pink */
   --sidebar: oklch(0.05 0 0);
   --sidebar-foreground: oklch(0.98 0 0);
   --sidebar-primary: oklch(0.95 0.35 100);
@@ -119,6 +91,7 @@
     border-color: var(--border);
     outline-color: rgba(var(--ring), 0.5);
   }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
@@ -130,36 +103,166 @@
   .neon-glow {
     box-shadow: 0 0 5px var(--primary), 0 0 10px var(--primary), 0 0 15px var(--primary);
   }
-  
+
+  .neon-glow-subtle {
+    box-shadow: 0 0 3px var(--primary), 0 0 6px var(--primary), 0 0 9px var(--primary);
+  }
+
   .neon-text {
     text-shadow: 0 0 5px var(--primary), 0 0 10px var(--primary), 0 0 15px var(--primary);
   }
-  
+
   .glass-effect {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
-  
+
+  .glass-effect-strong {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(20px) saturate(200%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.2),
+      0 0 20px rgba(var(--primary), 0.1);
+  }
+
   .floating {
     animation: floating 3s ease-in-out infinite;
   }
-  
+
   .pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .gradient-mesh {
+    background:
+      radial-gradient(circle at 20% 80%, oklch(0.9 0.4 105 / 0.15) 0%, transparent 60%),
+      radial-gradient(circle at 80% 20%, oklch(0.7 0.35 180 / 0.12) 0%, transparent 60%),
+      radial-gradient(circle at 40% 40%, oklch(0.75 0.3 300 / 0.1) 0%, transparent 60%),
+      radial-gradient(circle at 60% 70%, oklch(0.8 0.25 30 / 0.08) 0%, transparent 60%);
+  }
+
+  .cyber-grid {
+    background-image:
+      linear-gradient(rgba(var(--primary), 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(var(--primary), 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .holographic {
+    background: linear-gradient(45deg,
+        oklch(0.9 0.4 105 / 0.1),
+        oklch(0.7 0.35 180 / 0.1),
+        oklch(0.75 0.3 300 / 0.1),
+        oklch(0.8 0.25 30 / 0.1));
+    background-size: 400% 400%;
+    animation: holographic-shift 8s ease-in-out infinite;
+  }
+
+  .lightning-trail {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .lightning-trail::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--primary), transparent);
+    animation: lightning-sweep 3s infinite;
+    opacity: 0.6;
+  }
+
+  .electric-pulse {
+    animation: electric-pulse 3s ease-in-out infinite;
+  }
+
+  .neon-border {
+    border: 1px solid var(--primary);
+    box-shadow:
+      0 0 5px var(--primary),
+      inset 0 0 5px rgba(var(--primary), 0.1);
+  }
+
+  .text-glow {
+    text-shadow:
+      0 0 10px var(--primary),
+      0 0 20px var(--primary),
+      0 0 30px var(--primary);
   }
 }
 
 @keyframes floating {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes pulse-glow {
-  0%, 100% { 
+
+  0%,
+  100% {
     box-shadow: 0 0 5px var(--primary), 0 0 10px var(--primary), 0 0 15px var(--primary);
   }
-  50% { 
+
+  50% {
     box-shadow: 0 0 10px var(--primary), 0 0 20px var(--primary), 0 0 30px var(--primary);
+  }
+}
+
+@keyframes lightning-sweep {
+  0% {
+    left: -100%;
+  }
+
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes holographic-shift {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes electric-pulse {
+
+  0%,
+  100% {
+    box-shadow:
+      0 0 5px var(--primary),
+      0 0 10px var(--primary),
+      0 0 15px var(--primary),
+      inset 0 0 5px rgba(var(--primary), 0.1);
+  }
+
+  50% {
+    box-shadow:
+      0 0 10px var(--primary),
+      0 0 20px var(--primary),
+      0 0 30px var(--primary),
+      0 0 40px var(--primary),
+      inset 0 0 10px rgba(var(--primary), 0.2);
   }
 }
