@@ -25,6 +25,7 @@ This document provides guidelines for using AG-UI in the Dean Machines RSC proje
 -
 
 ## 2. URLs
+- https://mastra.ai/en/docs/frameworks/agentic-uis/copilotkit
 - [AG-UI Documentation](https://docs.ag-ui.com/introduction)
 - [AG-UI GitHub Repository](https://github.com/ag-ui-protocol/ag-ui)
 - [AG-UI Mastra Documentation](https://mastra.ai/en/docs/frameworks/agentic-uis/copilotkit)

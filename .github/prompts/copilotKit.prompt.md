@@ -15,6 +15,7 @@ This document provides guidelines for using CopilotKit in the Dean Machines RSC 
 
 ## 2. URLs
 
+https://mastra.ai/en/docs/frameworks/agentic-uis/copilotkit
 https://docs.copilotkit.ai/mastra/concepts/mastra
 
 - UI Components
