@@ -1,3 +1,5 @@
+"use client";
+
 import { ResearchCanvas } from "@/components/researchCanvas/ResearchCanvas";
 import { useModelSelectorContext } from "@/lib/model-selector-provider";
 import { AgentState } from "@/lib/types";
@@ -45,7 +47,7 @@ export default function Main() {
               "--copilot-kit-primary-color": "#FFFFFF",
               "--copilot-kit-contrast-color": "#000000",
               "--copilot-kit-secondary-contrast-color": "#000",
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } as any
           }
         >

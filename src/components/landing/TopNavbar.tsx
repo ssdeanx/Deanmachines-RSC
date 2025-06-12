@@ -8,7 +8,7 @@ import { ThemeSwitch } from '@/components/ui/theme-switch';
 import { useState } from 'react';
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { useSession, signOut } from 'next-auth/react';
+// import { useSession, signOut } from 'next-auth/react';
 import { LogOut, User } from 'lucide-react';
 
 interface TopNavbarProps {
@@ -23,7 +23,9 @@ interface TopNavbarProps {
  */
 export function TopNavbar({ className }: TopNavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
-  const { data: session, status } = useSession();
+  // Auth is completely disabled for now
+  const session = null;
+  const status = 'unauthenticated';
 
   // Add scroll listener for navbar glow effect
   React.useEffect(() => {
@@ -33,7 +35,7 @@ export function TopNavbar({ className }: TopNavbarProps) {
   }, []);
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: '/' });
+    console.log('Sign out disabled');
   };
 
   return (

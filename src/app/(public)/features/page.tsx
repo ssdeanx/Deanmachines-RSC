@@ -10,45 +10,45 @@ import { Brain, Zap, Shield, Cpu, Globe, Rocket, CheckCircle } from 'lucide-reac
 const features = [
   {
     icon: Brain,
-    title: "Autonomous AI Agents",
-    description: "Create intelligent agents that can understand context, make decisions, and execute complex tasks without human intervention.",
-    category: "AI Core",
-    highlights: ["Natural Language Understanding", "Context Awareness", "Decision Making", "Task Execution"]
-  },
-  {
-    icon: Zap,
-    title: "Lightning Performance",
-    description: "Optimized for speed with sub-100ms response times, efficient memory management, and scalable architecture.",
-    category: "Performance",
-    highlights: ["Sub-100ms Response", "Memory Optimization", "Scalable Architecture", "Edge Computing"]
-  },
-  {
-    icon: Shield,
-    title: "Enterprise Security",
-    description: "Built-in security measures including input validation, prompt injection protection, and secure data handling.",
-    category: "Security",
-    highlights: ["Input Validation", "Prompt Protection", "Secure Storage", "Access Control"]
+    title: "22 Specialized AI Agents",
+    description: "Complete agent ecosystem including Master, Code, Git, Graph, Data, Research, Documentation, Design, and more - each with specialized capabilities and tools.",
+    category: "Mastra AI",
+    highlights: ["Master Agent Orchestration", "Code Analysis & Generation", "Git Repository Management", "Graph Generation & Analysis"]
   },
   {
     icon: Cpu,
-    title: "Advanced Memory System",
-    description: "Sophisticated memory management with vector storage, semantic search, and intelligent context retention.",
+    title: "Advanced Code Graph Generation",
+    description: "Intelligent repository analysis with multi-format graph generation (SVG, HTML, JSON) using MCP tools and agent coordination for comprehensive code visualization.",
+    category: "Code Analysis",
+    highlights: ["GitHub Repository Analysis", "Multi-Format Graphs", "Dependency Mapping", "Interactive Visualizations"]
+  },
+  {
+    icon: Zap,
+    title: "CopilotKit Integration",
+    description: "Full CopilotKit integration with 22 agent endpoints, real-time chat interfaces, and multi-agent collaboration through modern UI components.",
+    category: "User Interface",
+    highlights: ["Real-time Agent Chat", "Multi-Agent Coordination", "Research Canvas", "Interactive Playgrounds"]
+  },
+  {
+    icon: Shield,
+    title: "LibSQL Vector Memory",
+    description: "Advanced memory system using LibSQL/Turso with vector storage, semantic search, and intelligent context retention across all agents.",
     category: "Memory",
-    highlights: ["Vector Storage", "Semantic Search", "Context Retention", "Smart Retrieval"]
+    highlights: ["Vector Storage", "Semantic Search", "Persistent Memory", "Cross-Agent Context"]
   },
   {
     icon: Globe,
-    title: "Seamless Integration",
-    description: "Easy integration with existing systems, APIs, and workflows through our comprehensive SDK.",
+    title: "Model Context Protocol (MCP)",
+    description: "Full MCP integration for advanced AI-driven code understanding, tool interoperability, and seamless agent communication.",
     category: "Integration",
-    highlights: ["REST APIs", "SDK Support", "Webhook Events", "Plugin System"]
+    highlights: ["MCP Tools", "Agent Interoperability", "Code Understanding", "Tool Coordination"]
   },
   {
     icon: Rocket,
-    title: "Production Ready",
-    description: "Battle-tested architecture with comprehensive observability, monitoring, and debugging tools.",
-    category: "DevOps",
-    highlights: ["Observability", "Monitoring", "Debugging", "Analytics"]
+    title: "LangSmith Observability",
+    description: "Complete observability with LangSmith tracing, OpenTelemetry integration, and comprehensive monitoring for all agent interactions.",
+    category: "Observability",
+    highlights: ["LangSmith Tracing", "Performance Monitoring", "Agent Analytics", "Debug Insights"]
   }
 ];
 
@@ -56,7 +56,7 @@ export default function FeaturesPage() {
   return (
     <div className="min-h-screen bg-background">
       <TopNavbar />
-      
+
       <main className="pt-20">
         {/* Hero Section */}
         <section className="py-24 bg-gradient-to-br from-background via-background/95 to-primary/5">
@@ -71,7 +71,7 @@ export default function FeaturesPage() {
                 Powerful <span className="text-primary neon-text">Features</span>
               </h1>
               <p className="text-lg text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                Discover the cutting-edge capabilities that make DeanMachines RSC the most advanced AI platform for building intelligent applications.
+                Explore the real capabilities of DeanMachines RSC - a production-ready multi-agent platform with 22 specialized AI agents, advanced code analysis, and comprehensive GitHub repository visualization.
               </p>
             </motion.div>
           </div>
@@ -150,16 +150,16 @@ export default function FeaturesPage() {
                 Technical <span className="text-primary neon-text">Specifications</span>
               </h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Built on modern technology stack for maximum performance and reliability.
+                Built with Next.js 15, TypeScript, Mastra AI Framework, and Google Gemini 2.5 Flash for production-grade AI applications.
               </p>
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
-                { label: "Response Time", value: "<100ms", icon: Zap },
-                { label: "Uptime", value: "99.9%", icon: Shield },
-                { label: "Concurrent Users", value: "10k+", icon: Globe },
-                { label: "API Calls/sec", value: "1M+", icon: Cpu }
+                { label: "AI Agents", value: "22", icon: Brain },
+                { label: "CopilotKit Endpoints", value: "22", icon: Zap },
+                { label: "Workflow Types", value: "3", icon: Cpu },
+                { label: "MCP Tools", value: "5+", icon: Globe }
               ].map((spec, index) => (
                 <motion.div
                   key={spec.label}

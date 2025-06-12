@@ -1,12 +1,12 @@
-import { WindowProps, useChatContext, CopilotSidebar } from "@copilotkit/react-ui";
-import { CopilotKit } from "@copilotkit/react-core";
+"use client";
+
+import { WindowProps, useChatContext } from "@copilotkit/react-ui";
 import "@copilotkit/react-ui/styles.css";
 
-function Window({ children }: WindowProps) {
+export function Window({ children }: WindowProps) {
   const { open, setOpen } = useChatContext();
 
   if (!open) return null;
-
 
   return (
     <div
@@ -23,8 +23,4 @@ function Window({ children }: WindowProps) {
       </div>
     </div>
   );
-};
-
-<CopilotKit>
-  <CopilotSidebar Window={Window} />
-</CopilotKit>
+}
