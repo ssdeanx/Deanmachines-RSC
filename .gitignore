@@ -48,3 +48,6 @@ readme-ai.md
 .cursor
 .cursor/
 .cursor/**/*.mdc
+ag-ui-llm.txt
+copilotkit-llm.txt
+mastra.md
