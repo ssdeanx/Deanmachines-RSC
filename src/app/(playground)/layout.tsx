@@ -11,14 +11,14 @@ const AgentContext = createContext<{
   currentEndpoint: string;
   setCurrentEndpoint: (endpoint: string) => void;
 }>({
-  currentEndpoint: `${MASTRA_URL}/copilotkit/master`,
+  currentEndpoint: `${MASTRA_URL}/copilotkit`,
   setCurrentEndpoint: () => {},
 });
 
 export const useAgent = () => useContext(AgentContext);
 
 export default function PlaygroundLayout({ children }: {children: React.ReactNode}) {
-    const [currentEndpoint, setCurrentEndpoint] = useState(`${MASTRA_URL}/copilotkit/master`);
+    const [currentEndpoint, setCurrentEndpoint] = useState(`${MASTRA_URL}/copilotkit`);
 
     return (
         <html lang="en">
