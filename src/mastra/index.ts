@@ -8,6 +8,7 @@ import { registerCopilotKit } from "@mastra/agui";
 
 import { langsmithConfig, createTelemetryConfig, EnhancedAISDKExporter } from './config';
 import { Client } from 'langsmith';
+import { MasterAgentRuntimeContext } from './agents/master-agent';
 
 // Generated on [Current Date Time]
 /**
@@ -17,15 +18,19 @@ import { Client } from 'langsmith';
 interface WeatherRuntimeContext {
   /** The unique identifier for the user. */
   "user-id": string;
+
+  /** The unique identifier for the session. */
+  "session-id": string;
+
   /** The temperature scale preference ("celsius" or "fahrenheit"). */
   "temperature-scale": "celsius" | "fahrenheit";
 }
 
 export const mastra = new Mastra({
-    workflows: { 
+    workflows: {
         weatherWorkflow,
         codeGraphMakerWorkflow,
-        advancedCodeGraphMakerWorkflow 
+        advancedCodeGraphMakerWorkflow
     },
     agents: agentRegistry,
     logger: new PinoLogger({
@@ -85,14 +90,219 @@ export const mastra = new Mastra({
             }
         },
         apiRoutes: [
-            registerCopilotKit<WeatherRuntimeContext>({
-                path: "/copilotkit",
-                resourceId: "weatherAgent",
+            // CORE AGENTS
+            // Master Agent - Primary problem solver
+            registerCopilotKit<MasterAgentRuntimeContext>({
+                path: "/copilotkit/master",
+                resourceId: "master",
                 setContext: (c, runtimeContext) => {
-          // TypeScript will enforce the correct types here
-          runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
-          runtimeContext.set("temperature-scale", "celsius"); // Only "celsius" | "fahrenheit" allowed
-        }
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                    runtimeContext.set("project-context", c.req.header("X-Project-Context") || "");
+                    runtimeContext.set("debug-mode", c.req.header("X-Debug-Mode") === "true");
+                }
+            }),
+            // Strategizer Agent - Strategic planning
+            registerCopilotKit({
+                path: "/copilotkit/strategizer",
+                resourceId: "strategizer",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+            // Analyzer Agent - Data analysis
+            registerCopilotKit({
+                path: "/copilotkit/analyzer",
+                resourceId: "analyzer",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+            // Evolve Agent - Agent improvement
+            registerCopilotKit({
+                path: "/copilotkit/evolve",
+                resourceId: "evolve",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+            // Supervisor Agent - Agent coordination
+            registerCopilotKit({
+                path: "/copilotkit/supervisor",
+                resourceId: "supervisor",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+
+            // DEVELOPMENT AGENTS
+            // Code Agent - Code analysis and generation
+            registerCopilotKit({
+                path: "/copilotkit/code",
+                resourceId: "code",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+            // Git Agent - Version control
+            registerCopilotKit({
+                path: "/copilotkit/git",
+                resourceId: "git",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+            // Docker Agent - Containerization
+            registerCopilotKit({
+                path: "/copilotkit/docker",
+                resourceId: "docker",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+            // Debug Agent - Debugging and troubleshooting
+            registerCopilotKit({
+                path: "/copilotkit/debug",
+                resourceId: "debug",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+
+            // DATA AGENTS
+            // Data Agent - Data analysis
+            registerCopilotKit({
+                path: "/copilotkit/data",
+                resourceId: "data",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+            // Graph Agent - Knowledge graph analysis
+            registerCopilotKit({
+                path: "/copilotkit/graph",
+                resourceId: "graph",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+            // Processing Agent - Data processing
+            registerCopilotKit({
+                path: "/copilotkit/processing",
+                resourceId: "processing",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+            // Research Agent - Research and analysis
+            registerCopilotKit({
+                path: "/copilotkit/research",
+                resourceId: "research",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+            // Weather Agent - Weather information
+            registerCopilotKit<WeatherRuntimeContext>({
+                path: "/copilotkit/weather",
+                resourceId: "weather",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                    runtimeContext.set("temperature-scale", "celsius");
+                }
+            }),
+
+            // MANAGEMENT AGENTS
+            // Manager Agent - Project management
+            registerCopilotKit({
+                path: "/copilotkit/manager",
+                resourceId: "manager",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+            // Marketing Agent - Marketing and content
+            registerCopilotKit({
+                path: "/copilotkit/marketing",
+                resourceId: "marketing",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+
+            // OPERATIONS AGENTS
+            // Sysadmin Agent - System administration
+            registerCopilotKit({
+                path: "/copilotkit/sysadmin",
+                resourceId: "sysadmin",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+            // Browser Agent - Web automation
+            registerCopilotKit({
+                path: "/copilotkit/browser",
+                resourceId: "browser",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+            // Utility Agent - General utilities
+            registerCopilotKit({
+                path: "/copilotkit/utility",
+                resourceId: "utility",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+
+            // CREATIVE AGENTS
+            // Design Agent - UI/UX design
+            registerCopilotKit({
+                path: "/copilotkit/design",
+                resourceId: "design",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+            // Documentation Agent - Technical writing
+            registerCopilotKit({
+                path: "/copilotkit/documentation",
+                resourceId: "documentation",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
+            }),
+
+            // SPECIALIZED AGENTS
+            // Special Agent - Multi-domain expert
+            registerCopilotKit({
+                path: "/copilotkit/special",
+                resourceId: "special",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                }
             })
         ]
     })

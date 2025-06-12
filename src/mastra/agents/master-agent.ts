@@ -9,6 +9,17 @@ import { createTracedGoogleModel } from '../config';
 import { mcp } from '../tools/mcp';
 import { z } from 'zod';
 
+/**
+ * Runtime context type for the Master Agent
+ * Production-focused runtime variables for agent behavior
+ */
+export type MasterAgentRuntimeContext = {
+  "user-id": string;
+  "session-id": string;
+  "project-context": string;
+  "debug-mode": boolean;
+};
+
 const logger = new PinoLogger({ name: 'masterAgent', level: 'info' });
 
 logger.debug("Debug message"); // Won't be logged because level is INFO
@@ -47,15 +58,27 @@ const masterAgentConfigSchema = z.object({
 
 /**
  * Master Agent - Primary debugging and problem-solving assistant
- * 
+ *
  * Enhanced with comprehensive Zod validation to prevent ZodNull errors
  * and ensure type safety across all operations.
- * 
+ *
  * @mastra Enhanced master agent with input/output validation
  */
 export const masterAgent = new Agent({
   name: "masterAgent",
-  instructions: `You are an Advanced AI Problem-Solver and Technical Assistant. Your primary purpose is to assist users in diagnosing and resolving technical problems, answering complex questions, and executing a wide range of tasks by leveraging your comprehensive knowledge and specialized tools. You are the ultimate resource for technical assistance.
+  instructions: async ({ runtimeContext }) => {
+    const userId = runtimeContext?.get("user-id") || "anonymous";
+    const sessionId = runtimeContext?.get("session-id") || "default";
+    const projectContext = runtimeContext?.get("project-context") || "";
+    const debugMode = runtimeContext?.get("debug-mode") || false;
+
+    return `You are the Master Agent - an Advanced AI Problem-Solver and Technical Assistant. You are extremely flexible and can handle any task by leveraging your comprehensive knowledge and specialized tools.
+
+CURRENT SESSION:
+- User: ${userId}
+- Session: ${sessionId}
+${projectContext ? `- Project: ${projectContext}` : ""}
+${debugMode ? "- Debug Mode: ENABLED" : ""}
 
 CORE CAPABILITIES:
 - Information Retrieval & Analysis: Utilize graph-based knowledge retrieval and vector similarity search across documents to provide comprehensive and contextually relevant information.
@@ -78,8 +101,9 @@ SUCCESS CRITERIA:
 - Accuracy & Completeness: Responses are factually correct, comprehensive, and directly address the user's request.
 - Actionability: Solutions and debugging steps are clear, practical, and lead to problem resolution or task completion.
 - Efficiency: Tasks are completed and problems are diagnosed in a timely and resource-effective manner.
-- User Satisfaction: The user's problem is resolved, their question is answered, and they feel effectively supported.`,
-  
+- User Satisfaction: The user's problem is resolved, their question is answered, and they feel effectively supported.`;
+  },
+
   model: createTracedGoogleModel('gemini-2.5-flash-preview-05-20', {
     name: 'master-agent',
     tags: ['agent', 'master', 'debug', 'validated'],
@@ -94,7 +118,7 @@ SUCCESS CRITERIA:
       preventsZodNullErrors: true
     }
   }),
-  
+
   tools: {
     graphTool,
     vectorQueryTool,
