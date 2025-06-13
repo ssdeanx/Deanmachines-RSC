@@ -16,9 +16,19 @@ const envSchema = z.object({
   LANGSMITH_API_KEY: z.string().min(1, "LangSmith API key is required"),
   LANGSMITH_ENDPOINT: z.string().default("https://api.smith.langchain.com"),
   LANGSMITH_PROJECT: z.string().default("pr-warmhearted-jewellery-74"),
-  // Database configuration for LibSQL/Turso (optional - defaults to local SQLite)
+  
+  // Database configuration for LibSQL/Turso (for Mastra agents and AI memory)
   DATABASE_URL: z.string().min(1, "Database URL is required"),
   DATABASE_AUTH_TOKEN: z.string().min(1, "Database Auth is required"),
+  
+  // Supabase configuration for user authentication and data
+  NEXT_PUBLIC_SUPABASE_URL: z.string().min(1, "Supabase URL is required"),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1, "Supabase anon key is required"),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+  AUTH_DATABASE_URL: z.string().optional(),
+  NEXTAUTH_URL: z.string().optional(),
+  AUTH_SECRET: z.string().optional(),
+  
   GITHUB_TOKEN: z.string().min(1, "GitHub API key is required"),
 });
 // Validate environment variables

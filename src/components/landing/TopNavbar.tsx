@@ -22,10 +22,7 @@ interface TopNavbarProps {
  * Dark theme with yellow neon accents
  */
 export function TopNavbar({ className }: TopNavbarProps) {
-  const [isScrolled, setIsScrolled] = useState(false);
-  // Auth is completely disabled for now
-  const session = null;
-  const status = 'unauthenticated';
+  const [isScrolled, setIsScrolled] = useState(false);  // Auth is completely disabled for now
 
   // Add scroll listener for navbar glow effect
   React.useEffect(() => {
@@ -105,15 +102,14 @@ export function TopNavbar({ className }: TopNavbarProps) {
               transition={{ delay: 0.7 }}
             >
               <ThemeSwitch />
-            </motion.div>
-
-            {/* Authentication Buttons */}
-            {status === 'loading' ? (
+            </motion.div>            {/* Authentication Buttons */}
+            {false ? (
+              // Loading state (disabled)
               <div className="hidden sm:flex items-center space-x-2">
                 <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
               </div>
-            ) : session ? (
-              // Authenticated state
+            ) : false ? (
+              // Authenticated state (disabled)
               <div className="hidden sm:flex items-center space-x-2">
                 <motion.div
                   whileHover={{ scale: 1.05 }}
@@ -125,7 +121,7 @@ export function TopNavbar({ className }: TopNavbarProps) {
                     className="glass-effect border-primary/30 hover:border-primary/60"
                   >
                     <User className="w-4 h-4 mr-2" />
-                    {session.user?.name || session.user?.email || 'User'}
+                    User
                   </Button>
                 </motion.div>
                 <motion.div
@@ -145,8 +141,7 @@ export function TopNavbar({ className }: TopNavbarProps) {
               </div>
             ) : (
               // Unauthenticated state
-              <div className="hidden sm:flex items-center space-x-2">
-                <motion.div
+              <div className="hidden sm:flex items-center space-x-2"><motion.div
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
@@ -156,7 +151,7 @@ export function TopNavbar({ className }: TopNavbarProps) {
                     asChild
                     className="glass-effect border-primary/30 hover:border-primary/60"
                   >
-                    <Link href="/signin">Sign In</Link>
+                    <Link href="/login">Sign In</Link>
                   </Button>
                 </motion.div>
 
@@ -170,7 +165,7 @@ export function TopNavbar({ className }: TopNavbarProps) {
                     asChild
                     className="bg-primary text-primary-foreground hover:bg-primary/90 neon-glow pulse-glow"
                   >
-                    <Link href="/signup">Sign Up</Link>
+                    <Link href="/login">Sign Up</Link>
                   </Button>
                 </motion.div>
               </div>
