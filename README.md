@@ -1,14 +1,14 @@
 <div align="left" style="position: relative;">
-![Deanmachines](image.png =100x)
-<h1>DEANMACHINES-RSC</h1>
-<p align="left">
-	<em><code>❯ Advanced AI-Powered Multi-Agent Platform for Intelligent Code Analysis & Automation</code></em>
-</p>
-<p align="left">
-	<!-- Shields.io badges disabled, using skill icons. --></p>
-<p align="left">Built with the tools and technologies:</p>
-<p align="left">
-	<a href="https://skillicons.dev">
+	<img src="https://i.ibb.co/4RjhLdXK/avatar.png" alt="avatar" border="0">
+	<h1>DEANMACHINES-RSC</h1>
+	<p align="left">
+		<em><code>❯ Advanced AI-Powered Multi-Agent Platform for Intelligent Code Analysis & Automation</code></em>
+	</p>
+	<p align="left">
+		<!-- Shields.io badges disabled, using skill icons. --></p>
+	<p align="left">Built with the tools and technologies:</p>
+	<p align="left">
+		<a href="https://skillicons.dev">
 		<img src="https://skillicons.dev/icons?i=vercel,ts,threejs,npm,vitest,css,ai,md,react,nextjs,d3,gcp,git,github&perline=8" alt="Skill Icons">
 	</a></p>
 </div>
