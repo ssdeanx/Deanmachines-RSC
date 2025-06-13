@@ -1,0 +1,265 @@
+---
+description: "The definitive guide for creating secure CopilotKit backend actions that can generate dynamic React UI. Covers the server-side action lifecycle, the special 'render' function for streaming UI, data fetching patterns, Mastra agent integration, and the strict separation from client-side concerns."
+globs: ["src/lib/**/*.ts", "src/app/api/copilotkit/**/*.ts", "src/mastra/**/*.ts"]
+alwaysApply: false
+---
+
+# CopilotKit: Backend Actions & Generative UI
+
+This rule governs the creation of **backend actions**. These are the AI's primary tools for performing secure, data-intensive, or privileged operations that **MUST** run on the server. Their most powerful feature is the ability to generate and stream React components back to the user as part of their execution.
+
+## Core Purpose & Architecture
+
+Backend actions are the AI's "secure toolkit." They are executed within a Node.js environment on the server, completely isolated from the user's browser.
+
+**When to Use a Backend Action:**
+- Fetching data from a database (e.g., using Prisma, Drizzle).
+- Calling external APIs that require secret keys.
+- Performing complex business logic or orchestrating multiple services.
+- Any operation that requires access to the server's file system or environment variables.
+
+**The Execution Flow:**
+1.  The user prompts the AI.
+2.  The AI determines that a backend tool is needed and sends a request.
+3.  Your Next.js API route (`/api/copilotkit/`) receives the request.
+4.  The `CopilotRuntime` executes the appropriate action `handler`.
+5.  **Crucially, the `handler` can call a special `render` function to stream UI back to the client.**
+
+## The `render` Function: AI-Powered UI Generation
+
+The `render` function is the bridge that allows your server-side logic to create client-side UI. It is **not** standard React rendering; it is a special function provided by the `CopilotRuntime` to your action's handler.
+
+### Handler Signature
+
+Notice the second argument to the `handler` function is an object containing `render`.
+
+```typescript
+// signature of a backend action handler
+handler: async (args: YourArgsType, { render }: { render: any }) => {
+  // ... your logic
+
+  // Stream UI back to the client
+  render(<YourReactComponent data={result} />);
+
+  return "Action completed successfully";
+}
+```
+
+## Dean Machines RSC Integration
+
+### Mastra Agent Integration
+Backend actions in Dean Machines RSC integrate with our 22+ specialized Mastra agents:
+
+```typescript
+import { masterAgent } from '@/mastra/agents/master-agent';
+import { codeAgent } from '@/mastra/agents/code-agent';
+import { gitAgent } from '@/mastra/agents/git-agent';
+
+handler: async ({ agentName, task }, { render }) => {
+  const agent = getAgentByName(agentName);
+  const result = await agent.execute(task);
+
+  render(<AgentResultComponent agent={agentName} result={result} />);
+  return `Task completed by ${agentName} agent`;
+}
+```
+
+### MCP Tool Integration
+Use the 67 available MCP tools for real data operations:
+
+```typescript
+import { executeTracedMCPTool } from '@/mastra/tools/mcp';
+
+handler: async ({ repositoryUrl }, { render }) => {
+  try {
+    // Real GitHub analysis
+    const repoData = await executeTracedMCPTool('github', 'search_repositories', {
+      query: repositoryUrl.split('/').pop()
+    });
+
+    const fileStructure = await executeTracedMCPTool('filesystem', 'directory_tree', {
+      path: './src'
+    });
+
+    render(<RepositoryAnalysisUI repo={repoData} structure={fileStructure} />);
+    return `Analysis complete for ${repositoryUrl}`;
+  } catch (error) {
+    render(<ErrorComponent error={error.message} />);
+    return `Analysis failed: ${error.message}`;
+  }
+}
+```
+
+### Database Operations
+Integrate with LibSQL/Turso and Knowledge Graph:
+
+```typescript
+import { db } from '@/lib/db';
+import { createEntity, searchNodes } from '@/lib/knowledge-graph';
+
+handler: async ({ entityData }, { render }) => {
+  // Create database record
+  const record = await db.insert(entities).values(entityData);
+
+  // Update knowledge graph
+  const graphEntity = await createEntity({
+    name: entityData.name,
+    type: entityData.type,
+    properties: entityData
+  });
+
+  render(<EntityCreatedUI entity={record} graphNode={graphEntity} />);
+  return `Entity ${entityData.name} created successfully`;
+}
+```
+
+## UI Generation Patterns
+
+### Real-time Data Visualization
+```typescript
+handler: async ({ query }, { render }) => {
+  const searchResults = await executeTracedMCPTool('ddgsearch', 'search', {
+    query,
+    max_results: 10
+  });
+
+  render(
+    <div className="glass-effect border-primary/20 p-6 rounded-lg">
+      <h3 className="text-xl font-bold mb-4 neon-glow">Search Results</h3>
+      {searchResults.map((result, index) => (
+        <div key={index} className="border-b border-primary/10 py-3">
+          <h4 className="font-semibold text-primary">{result.title}</h4>
+          <p className="text-sm text-muted-foreground">{result.snippet}</p>
+          <a href={result.url} className="text-xs text-blue-400 hover:underline">
+            {result.url}
+          </a>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+### Interactive Code Analysis
+```typescript
+handler: async ({ projectPath }, { render }) => {
+  const gitStatus = await executeTracedMCPTool('git', 'git_status', {});
+  const fileTree = await executeTracedMCPTool('filesystem', 'directory_tree', {
+    path: projectPath
+  });
+
+  render(
+    <div className="grid grid-cols-2 gap-4">
+      <div className="glass-effect p-4 rounded-lg">
+        <h3 className="font-bold mb-2 flex items-center gap-2">
+          <GitBranch className="w-4 h-4" />
+          Git Status
+        </h3>
+        <pre className="text-xs bg-black/20 p-2 rounded">
+          {JSON.stringify(gitStatus, null, 2)}
+        </pre>
+      </div>
+      <div className="glass-effect p-4 rounded-lg">
+        <h3 className="font-bold mb-2 flex items-center gap-2">
+          <Folder className="w-4 h-4" />
+          Project Structure
+        </h3>
+        <pre className="text-xs bg-black/20 p-2 rounded">
+          {JSON.stringify(fileTree, null, 2)}
+        </pre>
+      </div>
+    </div>
+  );
+}
+```
+
+## Security & Best Practices
+
+### Environment Variables
+```typescript
+// Always validate environment variables
+const requiredEnvVars = {
+  GOOGLE_GENERATIVE_AI_API_KEY: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+  DATABASE_URL: process.env.DATABASE_URL,
+  GITHUB_TOKEN: process.env.GITHUB_TOKEN
+};
+
+for (const [key, value] of Object.entries(requiredEnvVars)) {
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${key}`);
+  }
+}
+```
+
+### Error Handling
+```typescript
+handler: async (args, { render }) => {
+  try {
+    const result = await performOperation(args);
+    render(<SuccessComponent result={result} />);
+    return "Operation completed successfully";
+  } catch (error) {
+    console.error('Backend action failed:', error);
+    render(
+      <div className="border border-red-500/20 bg-red-500/10 p-4 rounded-lg">
+        <h3 className="font-bold text-red-400 mb-2">Operation Failed</h3>
+        <p className="text-sm text-red-300">
+          {error instanceof Error ? error.message : 'Unknown error occurred'}
+        </p>
+      </div>
+    );
+    return `Operation failed: ${error instanceof Error ? error.message : 'Unknown error'}`;
+  }
+}
+```
+
+### TypeScript Integration
+```typescript
+interface ActionArgs {
+  query: string;
+  options?: {
+    maxResults?: number;
+    includeMetadata?: boolean;
+  };
+}
+
+interface ActionResult {
+  success: boolean;
+  data?: any;
+  error?: string;
+  timestamp: string;
+}
+
+handler: async (args: ActionArgs, { render }): Promise<string> => {
+  // Type-safe implementation
+}
+```
+
+## Runtime Context Patterns
+
+### Agent Runtime Variables
+```typescript
+import { RuntimeContext } from '@mastra/core/di';
+
+// In agent files, define runtime context
+const runtimeContext = new RuntimeContext();
+runtimeContext.set("user-id", userId);
+runtimeContext.set("session-id", sessionId);
+runtimeContext.set("agent-name", "master");
+```
+
+### CopilotKit Runtime Registration
+```typescript
+import { registerCopilotKit } from '@mastra/agui';
+
+registerCopilotKit<RuntimeContextType>({
+  path: "/copilotkit/agent-name",
+  resourceId: "agent-name",
+  setContext: (c, runtimeContext) => {
+    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+  }
+});
+```
+
+Remember: Backend actions are the secure foundation of the Dean Machines RSC platform. They must be reliable, secure, and provide meaningful UI feedback to users through the render function.

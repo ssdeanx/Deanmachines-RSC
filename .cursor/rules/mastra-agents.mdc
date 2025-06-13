@@ -1,0 +1,422 @@
+---
+description: "Mastra AI framework agent development guidelines for Dean Machines RSC. Covers agent creation, MCP tool integration, memory management, and multi-agent workflows."
+globs: ["src/mastra/**/*.ts", "src/mastra/**/*.js"]
+alwaysApply: false
+---
+
+# Dean Machines RSC: Mastra Agent Development
+
+This rule governs the development of AI agents using the Mastra framework v0.10.5 in the Dean Machines RSC project.
+
+## Agent Architecture Overview
+
+Dean Machines RSC features 22+ specialized AI agents:
+- **Master Agent**: Central orchestrator managing all specialized agents
+- **Development**: Code, Git, Debug, Documentation agents
+- **Data**: Data, Graph, Research, Weather agents  
+- **Management**: Manager, Marketing agents
+- **Operations**: Sysadmin, Browser, Quality agents
+- **Creative**: Design, Content, Animation agents
+- **AI/ML**: ML, Prompt Engineering, AI Research agents
+
+## Agent Creation Patterns
+
+### Base Agent Structure
+```typescript
+import { Agent } from '@mastra/core';
+import { RuntimeContext } from '@mastra/core/di';
+import { z } from 'zod';
+
+/**
+ * Specialized agent for [domain] operations
+ * 
+ * This agent handles [specific capabilities] and integrates with
+ * [relevant tools/services]. It maintains [state/memory] and
+ * coordinates with other agents through the Master Agent.
+ * 
+ * @author Dean Machines Team
+ * @date 2025-01-13
+ * @version 1.0.0
+ * @model Google Gemini 2.5 Flash
+ */
+export class DomainAgent extends Agent {
+  constructor() {
+    super({
+      name: 'domain-agent',
+      description: 'Handles domain-specific operations with specialized tools',
+      model: {
+        provider: 'GOOGLE',
+        name: 'gemini-2.0-flash-exp',
+        toolChoice: 'auto'
+      },
+      instructions: `
+        You are a specialized ${domain} agent in the Dean Machines RSC platform.
+        
+        Your capabilities include:
+        - [Specific capability 1]
+        - [Specific capability 2]
+        - [Specific capability 3]
+        
+        Always:
+        - Use real MCP tools, never mock data
+        - Provide detailed, actionable responses
+        - Coordinate with other agents when needed
+        - Maintain context in shared memory
+        - Follow TypeScript best practices
+        
+        Available tools: [list relevant MCP tools]
+      `
+    });
+  }
+  
+  /**
+   * Execute agent-specific task
+   */
+  async execute(task: string, context?: Record<string, unknown>): Promise<AgentResult> {
+    try {
+      const result = await this.run([
+        {
+          role: 'user',
+          content: task
+        }
+      ], {
+        context: context || {}
+      });
+      
+      return {
+        success: true,
+        data: result,
+        timestamp: new Date().toISOString(),
+        agent: this.name
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+        agent: this.name
+      };
+    }
+  }
+}
+```
+
+### Runtime Context Configuration
+```typescript
+import { RuntimeContext } from '@mastra/core/di';
+
+// Define runtime context within agent files
+export function createAgentRuntimeContext(userId?: string, sessionId?: string): RuntimeContext {
+  const runtimeContext = new RuntimeContext();
+  
+  // Essential context variables
+  runtimeContext.set("user-id", userId || "anonymous");
+  runtimeContext.set("session-id", sessionId || `session-${Date.now()}`);
+  runtimeContext.set("agent-name", "domain-agent");
+  runtimeContext.set("timestamp", new Date().toISOString());
+  
+  // Agent-specific context
+  runtimeContext.set("capabilities", [
+    "capability1",
+    "capability2", 
+    "capability3"
+  ]);
+  
+  return runtimeContext;
+}
+```
+
+### MCP Tool Integration
+```typescript
+import { executeTracedMCPTool } from '@/mastra/tools/mcp';
+
+/**
+ * Tool execution wrapper with error handling
+ */
+async function executeTool(
+  server: string, 
+  tool: string, 
+  params: Record<string, unknown>
+): Promise<unknown> {
+  try {
+    const result = await executeTracedMCPTool(server, tool, params);
+    console.log(`Tool executed: ${server}.${tool}`, { params, result });
+    return result;
+  } catch (error) {
+    console.error(`Tool execution failed: ${server}.${tool}`, error);
+    throw new Error(`Failed to execute ${server}.${tool}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+// Example tool usage in agent
+export class CodeAgent extends Agent {
+  async analyzeRepository(repoPath: string) {
+    // Get repository structure
+    const structure = await executeTool('filesystem', 'directory_tree', {
+      path: repoPath
+    });
+    
+    // Get git status
+    const gitStatus = await executeTool('git', 'git_status', {});
+    
+    // Search for specific files
+    const codeFiles = await executeTool('filesystem', 'search_files', {
+      path: repoPath,
+      pattern: '*.ts,*.tsx,*.js,*.jsx'
+    });
+    
+    return {
+      structure,
+      gitStatus,
+      codeFiles,
+      analysis: this.generateAnalysis(structure, gitStatus, codeFiles)
+    };
+  }
+}
+```
+
+## Available MCP Tools by Category
+
+### Filesystem Tools
+- `directory_tree`: Get recursive directory structure
+- `search_files`: Search for files by pattern
+- `list_directory`: List directory contents
+- `read_file`: Read file contents
+- `write_file`: Write file contents
+- `get_file_info`: Get file metadata
+
+### Git Tools  
+- `git_status`: Get repository status
+- `git_commit`: Create commits
+- `git_diff`: Show differences
+- `git_log`: Show commit history
+- `git_branch`: Branch operations
+
+### GitHub Tools
+- `search_repositories`: Search GitHub repositories
+- `get_file_contents`: Get file from GitHub
+- `search_code`: Search code on GitHub
+- `create_pull_request`: Create pull requests
+
+### Search Tools
+- `search`: DuckDuckGo web search
+- `fetch_content`: Fetch webpage content
+
+### Memory Graph Tools
+- `create_entities`: Create knowledge graph entities
+- `search_nodes`: Search graph nodes
+- `open_nodes`: Retrieve specific nodes
+- `create_relations`: Create entity relationships
+
+## Agent Memory Management
+
+### Shared Memory System
+```typescript
+import { agentMemory } from '@/mastra/agentMemory';
+
+export class AgentWithMemory extends Agent {
+  async storeContext(key: string, data: unknown): Promise<void> {
+    await agentMemory.set(key, {
+      data,
+      timestamp: new Date().toISOString(),
+      agent: this.name
+    });
+  }
+  
+  async retrieveContext(key: string): Promise<unknown> {
+    const stored = await agentMemory.get(key);
+    return stored?.data;
+  }
+  
+  async shareWithOtherAgents(key: string, data: unknown): Promise<void> {
+    const sharedKey = `shared:${key}`;
+    await this.storeContext(sharedKey, data);
+  }
+}
+```
+
+### Cross-Agent Communication
+```typescript
+export class MasterAgent extends Agent {
+  async coordinateAgents(task: string, requiredAgents: string[]): Promise<AgentResult[]> {
+    const results: AgentResult[] = [];
+    
+    for (const agentName of requiredAgents) {
+      const agent = this.getAgent(agentName);
+      const result = await agent.execute(task);
+      
+      // Store result in shared memory
+      await agentMemory.set(`coordination:${agentName}:${Date.now()}`, result);
+      results.push(result);
+    }
+    
+    return results;
+  }
+  
+  private getAgent(name: string): Agent {
+    // Agent registry lookup
+    const agents = {
+      'code': new CodeAgent(),
+      'git': new GitAgent(),
+      'data': new DataAgent(),
+      // ... other agents
+    };
+    
+    return agents[name] || throw new Error(`Agent ${name} not found`);
+  }
+}
+```
+
+## CopilotKit Integration
+
+### AG-UI Protocol Registration
+```typescript
+import { registerCopilotKit } from '@mastra/agui';
+
+// Register agent with CopilotKit
+registerCopilotKit<RuntimeContextType>({
+  path: "/copilotkit/domain-agent",
+  resourceId: "domain-agent",
+  setContext: (c, runtimeContext) => {
+    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+    runtimeContext.set("agent-capabilities", [
+      "capability1",
+      "capability2"
+    ]);
+  }
+});
+```
+
+### Event Handling
+```typescript
+export class EventAwareAgent extends Agent {
+  async handleEvent(eventType: string, payload: unknown): Promise<void> {
+    switch (eventType) {
+      case 'RUN_STARTED':
+        console.log('Agent execution started');
+        break;
+        
+      case 'TEXT_MESSAGE_START':
+        console.log('Agent message started');
+        break;
+        
+      case 'TOOL_CALL_START':
+        console.log('Tool execution started');
+        break;
+        
+      case 'RUN_FINISHED':
+        console.log('Agent execution completed');
+        break;
+        
+      default:
+        console.log(`Unknown event: ${eventType}`);
+    }
+  }
+}
+```
+
+## Error Handling & Logging
+
+### Comprehensive Error Handling
+```typescript
+export class RobustAgent extends Agent {
+  async safeExecute(task: string): Promise<AgentResult> {
+    try {
+      // Validate input
+      if (!task || task.trim().length === 0) {
+        throw new Error('Task cannot be empty');
+      }
+      
+      // Execute with timeout
+      const result = await Promise.race([
+        this.execute(task),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Agent execution timeout')), 30000)
+        )
+      ]);
+      
+      return result as AgentResult;
+    } catch (error) {
+      console.error(`Agent ${this.name} execution failed:`, error);
+      
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+        agent: this.name
+      };
+    }
+  }
+}
+```
+
+### Structured Logging
+```typescript
+import { logger } from '@/lib/logger';
+
+export class LoggingAgent extends Agent {
+  async execute(task: string): Promise<AgentResult> {
+    const executionId = `exec-${Date.now()}`;
+    
+    logger.info('Agent execution started', {
+      agent: this.name,
+      task,
+      executionId
+    });
+    
+    try {
+      const result = await super.execute(task);
+      
+      logger.info('Agent execution completed', {
+        agent: this.name,
+        executionId,
+        success: result.success
+      });
+      
+      return result;
+    } catch (error) {
+      logger.error('Agent execution failed', {
+        agent: this.name,
+        executionId,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
+      throw error;
+    }
+  }
+}
+```
+
+## Testing Patterns
+
+### Agent Unit Testing
+```typescript
+import { describe, it, expect, beforeEach } from 'vitest';
+import { DomainAgent } from './domain-agent';
+
+describe('DomainAgent', () => {
+  let agent: DomainAgent;
+  
+  beforeEach(() => {
+    agent = new DomainAgent();
+  });
+  
+  it('should execute basic tasks', async () => {
+    const result = await agent.execute('test task');
+    
+    expect(result.success).toBe(true);
+    expect(result.agent).toBe('domain-agent');
+    expect(result.timestamp).toBeDefined();
+  });
+  
+  it('should handle errors gracefully', async () => {
+    const result = await agent.execute('');
+    
+    expect(result.success).toBe(false);
+    expect(result.error).toBeDefined();
+  });
+});
+```
+
+Remember: Agents are the core intelligence of Dean Machines RSC. They must be reliable, efficient, and work seamlessly together to provide exceptional AI-powered experiences.

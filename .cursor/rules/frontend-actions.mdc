@@ -1,0 +1,163 @@
+---
+description: "Frontend CopilotKit Actions development guidelines for Dean Machines RSC project. Covers React 19, Next.js 15, TypeScript, Tailwind v4, and CopilotKit integration patterns."
+globs: ["src/components/copilotkit/**/*.tsx", "src/app/(playground)/**/*.tsx", "src/hooks/**/*.ts", "src/lib/**/*.ts"]
+alwaysApply: false
+---
+
+# Dean Machines RSC: Frontend CopilotKit Actions
+
+This rule governs the creation of **frontend CopilotKit Actions** for the Dean Machines RSC project. These are client-side components that integrate with CopilotKit's conversational AI interface, providing rich interactive experiences with our 22+ specialized Mastra agents.
+
+## Project Context & Architecture
+
+**Dean Machines RSC** is a cutting-edge AI platform built with:
+- **Frontend**: Next.js 15 with App Router, React 19, TypeScript 5.8
+- **Styling**: Tailwind CSS v4 with electric neon theme (`oklch(0.9 0.4 105)`)
+- **AI Framework**: Mastra Core v0.10.5 with Google Gemini 2.5 Flash
+- **UI Integration**: CopilotKit v1.8.14 for conversational AI interfaces
+- **Database**: LibSQL/Turso with Knowledge Graph capabilities
+- **Authentication**: Supabase Auth with GitHub OAuth
+- **MCP Tools**: 67 available tools across filesystem, git, github, puppeteer, memoryGraph
+
+## Core Principles
+
+### 1. Electric Neon Theme Integration
+- Use primary yellow: `oklch(0.9 0.4 105)` with cyan accents
+- Apply `glass-effect` and `glass-effect-strong` classes for glassmorphism
+- Include `neon-glow` class for interactive elements
+- Use `text-shadow` and `border-primary/20` for electric aesthetics
+
+### 2. CopilotKit Action Patterns
+```typescript
+// Standard action structure
+useCopilotAction({
+  name: "actionName",
+  description: "Clear, specific description of what this action does",
+  parameters: [
+    {
+      name: "paramName",
+      type: "string" | "number" | "boolean" | "object",
+      description: "Parameter purpose and expected format",
+      required: true,
+      enum?: ["option1", "option2"] // For constrained values
+    }
+  ],
+  handler: async ({ paramName }) => {
+    try {
+      // Use real MCP tools, never mock data
+      const { executeTracedMCPTool } = await import('@/mastra/tools/mcp');
+      const result = await executeTracedMCPTool('toolServer', 'toolName', params);
+      return `Success: ${JSON.stringify(result, null, 2)}`;
+    } catch (error) {
+      return `Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    }
+  }
+});
+```
+
+### 3. Real MCP Tool Integration
+**CRITICAL**: Always use real MCP tools, never mock data or simulations.
+
+Available MCP tool servers:
+- `filesystem`: `directory_tree`, `search_files`, `list_directory`, `read_file`
+- `git`: `git_status`, `git_commit`, `git_diff`, `git_log`
+- `github`: `search_repositories`, `get_file_contents`, `search_code`
+- `ddgsearch`: `search`, `fetch_content`
+- `memoryGraph`: `create_entities`, `search_nodes`, `open_nodes`
+
+### 4. Component Structure
+```typescript
+'use client';
+
+import React, { useState, useCallback } from 'react';
+import { useCopilotAction, useCopilotReadable } from "@copilotkit/react-core";
+import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+// Import ALL icons used - never remove imports
+import { Icon1, Icon2, Icon3 } from 'lucide-react';
+
+export function ComponentName() {
+  // State management
+  const [state, setState] = useState();
+
+  // Make state readable to agents
+  useCopilotReadable({
+    description: "Component state description",
+    value: { state, timestamp: new Date().toISOString() }
+  });
+
+  // Register actions
+  useCopilotAction({
+    // Action definition
+  });
+
+  return (
+    <Card className="glass-effect border-primary/20">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 neon-glow">
+          <Icon1 className="w-5 h-5 text-primary" />
+          Title
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <AnimatePresence>
+          {/* Content with animations */}
+        </AnimatePresence>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## Specific Guidelines
+
+### Agent Integration
+- Support all 22 Mastra agents: master, code, git, graph, data, research, weather, manager, design, documentation, etc.
+- Use `setCurrentAgent()` for agent switching
+- Provide agent-specific action parameters and descriptions
+
+### Error Handling
+- Always wrap MCP tool calls in try/catch blocks
+- Return meaningful error messages with context
+- Log errors for debugging: `console.error('Action failed:', error)`
+- Never throw unhandled exceptions
+
+### TypeScript Standards
+- Use strict typing - avoid `any` type
+- Define interfaces for all data structures
+- Use proper generic constraints
+- Implement TSDoc comments for all public functions
+
+### UI/UX Standards
+- Use Shadcn/ui components as base layer
+- Apply consistent spacing with Tailwind utilities
+- Implement loading states with `RefreshCw` spinner
+- Show progress indicators for long-running operations
+- Use `Badge` components for status indicators
+
+### Performance Optimization
+- Implement `useCallback` for event handlers
+- Use `useMemo` for expensive computations
+- Apply proper dependency arrays for `useEffect`
+- Lazy load heavy components with `React.lazy()`
+
+### Accessibility
+- Include proper ARIA labels and roles
+- Ensure keyboard navigation support
+- Maintain color contrast ratios
+- Provide screen reader friendly descriptions
+
+## File Organization
+- Place CopilotKit components in `src/components/copilotkit/`
+- Use PascalCase for component names
+- Export both named and default exports
+- Include comprehensive TSDoc documentation
+
+## Testing Integration
+- Write unit tests for all action handlers
+- Test error scenarios and edge cases
+- Mock MCP tools only in test environments
+- Ensure 100% TypeScript coverage
+
+Remember: This is a production system. Code quality, real functionality, and user experience are paramount. Never compromise on these standards.

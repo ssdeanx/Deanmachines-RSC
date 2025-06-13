@@ -1,0 +1,543 @@
+---
+description: "Comprehensive testing, quality assurance, and code review guidelines for Dean Machines RSC. Covers unit testing, integration testing, performance testing, and quality gates."
+globs: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "vitest.config.ts", "jest.config.js"]
+alwaysApply: false
+---
+
+# Dean Machines RSC: Testing & Quality Assurance
+
+This rule defines comprehensive testing strategies and quality assurance practices for the Dean Machines RSC project.
+
+## Testing Framework & Setup
+
+### Vitest Configuration
+```typescript
+// vitest.config.ts
+import { defineConfig } from 'vitest/config';
+import path from 'path';
+
+export default defineConfig({
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      exclude: [
+        'node_modules/',
+        'src/test/',
+        '**/*.d.ts',
+        '**/*.config.*'
+      ],
+      thresholds: {
+        global: {
+          branches: 80,
+          functions: 80,
+          lines: 80,
+          statements: 80
+        }
+      }
+    }
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src')
+    }
+  }
+});
+```
+
+### Test Setup
+```typescript
+// src/test/setup.ts
+import '@testing-library/jest-dom';
+import { vi } from 'vitest';
+
+// Mock environment variables
+vi.mock('process', () => ({
+  env: {
+    GOOGLE_GENERATIVE_AI_API_KEY: 'test-key',
+    DATABASE_URL: 'test-db-url',
+    NEXT_PUBLIC_COPILOTKIT_RUNTIME_URL: 'http://localhost:4111/copilotkit'
+  }
+}));
+
+// Mock MCP tools
+vi.mock('@/mastra/tools/mcp', () => ({
+  executeTracedMCPTool: vi.fn().mockResolvedValue({ success: true, data: 'mock-data' })
+}));
+
+// Mock CopilotKit
+vi.mock('@copilotkit/react-core', () => ({
+  useCopilotAction: vi.fn(),
+  useCopilotReadable: vi.fn(),
+  useCopilotChat: vi.fn(() => ({
+    messages: [],
+    isLoading: false,
+    appendMessage: vi.fn(),
+    setMessages: vi.fn()
+  }))
+}));
+```
+
+## Unit Testing Patterns
+
+### Component Testing
+```typescript
+// src/components/copilotkit/Actions.test.tsx
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { Actions } from './Actions';
+
+describe('Actions Component', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should render action categories correctly', () => {
+    render(<Actions />);
+    
+    expect(screen.getByText('Development')).toBeInTheDocument();
+    expect(screen.getByText('Data')).toBeInTheDocument();
+    expect(screen.getByText('Management')).toBeInTheDocument();
+  });
+
+  it('should execute actions with real MCP tools', async () => {
+    const mockExecute = vi.mocked(executeTracedMCPTool);
+    mockExecute.mockResolvedValue({ files: ['test.ts', 'test.tsx'] });
+
+    render(<Actions />);
+    
+    const searchButton = screen.getByText('Search Files');
+    fireEvent.click(searchButton);
+
+    await waitFor(() => {
+      expect(mockExecute).toHaveBeenCalledWith('filesystem', 'search_files', {
+        path: expect.any(String),
+        pattern: expect.any(String)
+      });
+    });
+  });
+
+  it('should handle errors gracefully', async () => {
+    const mockExecute = vi.mocked(executeTracedMCPTool);
+    mockExecute.mockRejectedValue(new Error('Tool execution failed'));
+
+    render(<Actions />);
+    
+    const searchButton = screen.getByText('Search Files');
+    fireEvent.click(searchButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Error:/)).toBeInTheDocument();
+    });
+  });
+});
+```
+
+### Agent Testing
+```typescript
+// src/mastra/agents/code-agent.test.ts
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { CodeAgent } from './code-agent';
+import { executeTracedMCPTool } from '@/mastra/tools/mcp';
+
+vi.mock('@/mastra/tools/mcp');
+
+describe('CodeAgent', () => {
+  let agent: CodeAgent;
+
+  beforeEach(() => {
+    agent = new CodeAgent();
+    vi.clearAllMocks();
+  });
+
+  it('should analyze repository structure', async () => {
+    const mockStructure = {
+      name: 'src',
+      type: 'directory',
+      children: [
+        { name: 'components', type: 'directory' },
+        { name: 'pages', type: 'directory' }
+      ]
+    };
+
+    vi.mocked(executeTracedMCPTool).mockResolvedValue(mockStructure);
+
+    const result = await agent.analyzeRepository('./src');
+
+    expect(result.success).toBe(true);
+    expect(result.data).toEqual(mockStructure);
+    expect(executeTracedMCPTool).toHaveBeenCalledWith('filesystem', 'directory_tree', {
+      path: './src'
+    });
+  });
+
+  it('should handle tool execution failures', async () => {
+    vi.mocked(executeTracedMCPTool).mockRejectedValue(new Error('Network error'));
+
+    const result = await agent.analyzeRepository('./src');
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('Network error');
+  });
+});
+```
+
+### Hook Testing
+```typescript
+// src/hooks/useAgentState.test.ts
+import { describe, it, expect } from 'vitest';
+import { renderHook, act } from '@testing-library/react';
+import { useAgentState } from './useAgentState';
+
+describe('useAgentState', () => {
+  it('should manage agent state correctly', async () => {
+    const { result } = renderHook(() => useAgentState('code'));
+
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.error).toBe(null);
+    expect(result.current.state).toBe(null);
+
+    await act(async () => {
+      await result.current.execute({ task: 'analyze code' });
+    });
+
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.state).toBeDefined();
+  });
+});
+```
+
+## Integration Testing
+
+### API Route Testing
+```typescript
+// src/app/api/copilotkit/master-agent/route.test.ts
+import { describe, it, expect } from 'vitest';
+import { POST } from './route';
+
+describe('/api/copilotkit/master-agent', () => {
+  it('should handle agent requests correctly', async () => {
+    const request = new Request('http://localhost:3000/api/copilotkit/master-agent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: 'Analyze repository' }]
+      })
+    });
+
+    const response = await POST(request);
+    
+    expect(response.status).toBe(200);
+    
+    const data = await response.json();
+    expect(data).toHaveProperty('messages');
+  });
+});
+```
+
+### Database Integration Testing
+```typescript
+// src/lib/db.test.ts
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { db } from './db';
+import { entities } from './schema';
+
+describe('Database Integration', () => {
+  beforeEach(async () => {
+    // Setup test database
+    await db.delete(entities);
+  });
+
+  afterEach(async () => {
+    // Cleanup test database
+    await db.delete(entities);
+  });
+
+  it('should create and retrieve entities', async () => {
+    const testEntity = {
+      name: 'Test Entity',
+      type: 'test',
+      properties: { key: 'value' }
+    };
+
+    const [created] = await db.insert(entities).values(testEntity).returning();
+    expect(created).toMatchObject(testEntity);
+
+    const retrieved = await db.select().from(entities).where(eq(entities.id, created.id));
+    expect(retrieved[0]).toMatchObject(testEntity);
+  });
+});
+```
+
+## Performance Testing
+
+### Component Performance
+```typescript
+// src/components/performance.test.tsx
+import { describe, it, expect } from 'vitest';
+import { render } from '@testing-library/react';
+import { performance } from 'perf_hooks';
+import { Actions } from '@/components/copilotkit/Actions';
+
+describe('Performance Tests', () => {
+  it('should render Actions component within performance budget', () => {
+    const startTime = performance.now();
+    
+    render(<Actions />);
+    
+    const endTime = performance.now();
+    const renderTime = endTime - startTime;
+    
+    // Should render within 100ms
+    expect(renderTime).toBeLessThan(100);
+  });
+
+  it('should handle large datasets efficiently', async () => {
+    const largeDataset = Array.from({ length: 1000 }, (_, i) => ({
+      id: i,
+      name: `Item ${i}`,
+      data: `Data for item ${i}`
+    }));
+
+    const startTime = performance.now();
+    
+    render(<Actions data={largeDataset} />);
+    
+    const endTime = performance.now();
+    const renderTime = endTime - startTime;
+    
+    // Should handle large datasets within 500ms
+    expect(renderTime).toBeLessThan(500);
+  });
+});
+```
+
+### Memory Leak Testing
+```typescript
+// src/test/memory-leaks.test.ts
+import { describe, it, expect } from 'vitest';
+import { render, unmountComponentAtNode } from '@testing-library/react';
+
+describe('Memory Leak Tests', () => {
+  it('should not leak memory on component unmount', () => {
+    const initialMemory = process.memoryUsage().heapUsed;
+    
+    // Render and unmount component multiple times
+    for (let i = 0; i < 100; i++) {
+      const { unmount } = render(<Actions />);
+      unmount();
+    }
+    
+    // Force garbage collection if available
+    if (global.gc) {
+      global.gc();
+    }
+    
+    const finalMemory = process.memoryUsage().heapUsed;
+    const memoryIncrease = finalMemory - initialMemory;
+    
+    // Memory increase should be minimal (less than 10MB)
+    expect(memoryIncrease).toBeLessThan(10 * 1024 * 1024);
+  });
+});
+```
+
+## Security Testing
+
+### Input Validation Testing
+```typescript
+// src/lib/validation.test.ts
+import { describe, it, expect } from 'vitest';
+import { validateUserInput, sanitizeHtml } from './validation';
+
+describe('Security Validation', () => {
+  it('should reject malicious input', () => {
+    const maliciousInputs = [
+      '<script>alert("xss")</script>',
+      'javascript:alert("xss")',
+      '../../etc/passwd',
+      'DROP TABLE users;',
+      '${process.env.SECRET_KEY}'
+    ];
+
+    maliciousInputs.forEach(input => {
+      expect(() => validateUserInput(input)).toThrow();
+    });
+  });
+
+  it('should sanitize HTML content', () => {
+    const dirtyHtml = '<script>alert("xss")</script><p>Safe content</p>';
+    const cleanHtml = sanitizeHtml(dirtyHtml);
+    
+    expect(cleanHtml).not.toContain('<script>');
+    expect(cleanHtml).toContain('<p>Safe content</p>');
+  });
+});
+```
+
+### Authentication Testing
+```typescript
+// src/lib/auth.test.ts
+import { describe, it, expect } from 'vitest';
+import { verifySession, createSession } from './auth';
+
+describe('Authentication Security', () => {
+  it('should reject invalid sessions', async () => {
+    const invalidTokens = [
+      'invalid-token',
+      '',
+      null,
+      undefined,
+      'expired-token'
+    ];
+
+    for (const token of invalidTokens) {
+      const result = await verifySession(token);
+      expect(result.valid).toBe(false);
+    }
+  });
+
+  it('should create secure sessions', async () => {
+    const session = await createSession({ userId: 'test-user' });
+    
+    expect(session.token).toBeDefined();
+    expect(session.token.length).toBeGreaterThan(32);
+    expect(session.expiresAt).toBeInstanceOf(Date);
+  });
+});
+```
+
+## Quality Gates
+
+### Pre-commit Checks
+```typescript
+// scripts/pre-commit-checks.ts
+import { execSync } from 'child_process';
+
+const checks = [
+  {
+    name: 'TypeScript Type Check',
+    command: 'npm run type-check',
+    required: true
+  },
+  {
+    name: 'ESLint',
+    command: 'npm run lint',
+    required: true
+  },
+  {
+    name: 'Unit Tests',
+    command: 'npm run test:unit',
+    required: true
+  },
+  {
+    name: 'Test Coverage',
+    command: 'npm run test:coverage',
+    required: true
+  }
+];
+
+async function runChecks() {
+  for (const check of checks) {
+    console.log(`Running ${check.name}...`);
+    
+    try {
+      execSync(check.command, { stdio: 'inherit' });
+      console.log(`✅ ${check.name} passed`);
+    } catch (error) {
+      console.error(`❌ ${check.name} failed`);
+      if (check.required) {
+        process.exit(1);
+      }
+    }
+  }
+}
+
+runChecks();
+```
+
+### Coverage Requirements
+```json
+// package.json test scripts
+{
+  "scripts": {
+    "test": "vitest",
+    "test:unit": "vitest run --reporter=verbose",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:e2e": "playwright test",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui"
+  }
+}
+```
+
+## Continuous Integration
+
+### GitHub Actions Workflow
+```yaml
+# .github/workflows/test.yml
+name: Test Suite
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Type check
+        run: npm run type-check
+      
+      - name: Lint
+        run: npm run lint
+      
+      - name: Unit tests
+        run: npm run test:unit
+      
+      - name: Integration tests
+        run: npm run test:integration
+        
+      - name: Coverage check
+        run: npm run test:coverage
+        
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+```
+
+## Testing Best Practices
+
+### Test Organization
+- **Unit Tests**: Test individual components/functions in isolation
+- **Integration Tests**: Test component interactions and API endpoints
+- **E2E Tests**: Test complete user workflows
+- **Performance Tests**: Validate performance requirements
+- **Security Tests**: Verify security measures
+
+### Test Data Management
+- Use factories for test data generation
+- Mock external dependencies consistently
+- Clean up test data after each test
+- Use realistic but safe test data
+
+### Assertion Patterns
+- Be specific with assertions
+- Test both positive and negative cases
+- Verify error handling paths
+- Check edge cases and boundary conditions
+
+Remember: Quality is non-negotiable in Dean Machines RSC. Every feature must be thoroughly tested before deployment.

@@ -1,0 +1,395 @@
+---
+description: "TypeScript, React 19, and Next.js 15 development standards for Dean Machines RSC. Covers modern React patterns, TypeScript best practices, and Next.js App Router conventions."
+globs: ["src/**/*.tsx", "src/**/*.ts", "*.ts", "*.tsx"]
+alwaysApply: true
+---
+
+# Dean Machines RSC: TypeScript & React Standards
+
+This rule defines the coding standards and best practices for TypeScript and React development in the Dean Machines RSC project.
+
+## TypeScript Standards
+
+### Type Definitions
+```typescript
+// Use interfaces for object shapes
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  preferences?: UserPreferences;
+}
+
+// Use type aliases for unions and primitives
+type Theme = 'light' | 'dark' | 'electric-neon';
+type Status = 'loading' | 'success' | 'error';
+
+// Use generic constraints
+interface ApiResponse<T extends Record<string, unknown>> {
+  data: T;
+  status: number;
+  message: string;
+}
+```
+
+### Strict Typing Rules
+- **NEVER use `any`** - Use `unknown` for truly unknown types
+- Use `Record<string, unknown>` instead of `any` for objects
+- Prefer `const assertions` for immutable data
+- Use utility types: `Partial<T>`, `Pick<T, K>`, `Omit<T, K>`
+
+### TSDoc Documentation
+```typescript
+/**
+ * Executes a Mastra agent with the specified parameters
+ * 
+ * @param agentName - Name of the agent to execute
+ * @param params - Parameters to pass to the agent
+ * @returns Promise resolving to agent execution result
+ * @throws {AgentExecutionError} When agent execution fails
+ * 
+ * @example
+ * ```typescript
+ * const result = await executeAgent('code', { task: 'analyze repository' });
+ * ```
+ * 
+ * @author Dean Machines Team
+ * @date 2025-01-13
+ * @version 1.0.0
+ */
+async function executeAgent(agentName: string, params: AgentParams): Promise<AgentResult> {
+  // Implementation
+}
+```
+
+## React 19 Patterns
+
+### Component Structure
+```typescript
+'use client'; // Only when needed for client components
+
+import React, { useState, useCallback, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Zap, Settings } from 'lucide-react';
+
+interface ComponentProps {
+  title: string;
+  data: DataType[];
+  onAction?: (id: string) => void;
+  className?: string;
+}
+
+/**
+ * Component description with purpose and usage
+ */
+export function ComponentName({ 
+  title, 
+  data, 
+  onAction,
+  className = '' 
+}: ComponentProps) {
+  // State management
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // Memoized computations
+  const processedData = useMemo(() => {
+    return data.filter(item => item.isActive);
+  }, [data]);
+  
+  // Event handlers
+  const handleAction = useCallback((id: string) => {
+    setIsLoading(true);
+    onAction?.(id);
+    setIsLoading(false);
+  }, [onAction]);
+  
+  return (
+    <Card className={`glass-effect border-primary/20 ${className}`}>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 neon-glow">
+          <Zap className="w-5 h-5 text-primary" />
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        {processedData.map((item) => (
+          <motion.div
+            key={item.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-3 border border-border/50 rounded-lg"
+          >
+            {/* Content */}
+            <Button
+              onClick={() => handleAction(item.id)}
+              disabled={isLoading}
+              className="neon-glow"
+            >
+              <Settings className="w-4 h-4 mr-2" />
+              Action
+            </Button>
+          </motion.div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+}
+
+export default ComponentName;
+```
+
+### Hooks Patterns
+```typescript
+// Custom hook with proper typing
+function useAgentState<T>(agentName: string) {
+  const [state, setState] = useState<T | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  
+  const execute = useCallback(async (params: AgentParams) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const result = await executeAgent(agentName, params);
+      setState(result);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Unknown error'));
+    } finally {
+      setIsLoading(false);
+    }
+  }, [agentName]);
+  
+  return { state, isLoading, error, execute };
+}
+```
+
+## Next.js 15 App Router
+
+### File Organization
+```
+src/app/
+├── (playground)/          # Route groups for protected features
+│   ├── layout.tsx         # Group-specific layout
+│   ├── page.tsx           # Group root page
+│   └── settings/          # Nested routes
+├── (public)/              # Public marketing pages
+├── api/                   # API routes
+│   └── copilotkit/        # CopilotKit endpoints
+├── globals.css            # Global styles
+└── layout.tsx             # Root layout
+```
+
+### Server Components (Default)
+```typescript
+// Server component - no 'use client' directive
+import { Suspense } from 'react';
+import { AgentList } from '@/components/agent-list';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+
+interface PageProps {
+  params: { slug: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default async function AgentsPage({ params, searchParams }: PageProps) {
+  // Server-side data fetching
+  const agents = await fetchAgents();
+  
+  return (
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6 neon-glow">AI Agents</h1>
+      <Suspense fallback={<LoadingSpinner />}>
+        <AgentList agents={agents} />
+      </Suspense>
+    </div>
+  );
+}
+
+// Generate metadata
+export async function generateMetadata({ params }: PageProps) {
+  return {
+    title: 'AI Agents - Dean Machines RSC',
+    description: 'Explore our 22+ specialized AI agents'
+  };
+}
+```
+
+### Client Components
+```typescript
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useCopilotAction } from '@copilotkit/react-core';
+
+export function InteractiveComponent() {
+  const [data, setData] = useState(null);
+  
+  // Client-side effects
+  useEffect(() => {
+    // Client-side logic
+  }, []);
+  
+  // CopilotKit integration
+  useCopilotAction({
+    name: "updateData",
+    description: "Update component data",
+    parameters: [
+      {
+        name: "newData",
+        type: "object",
+        description: "New data to set"
+      }
+    ],
+    handler: async ({ newData }) => {
+      setData(newData);
+      return "Data updated successfully";
+    }
+  });
+  
+  return (
+    <div className="glass-effect p-6 rounded-lg">
+      {/* Interactive content */}
+    </div>
+  );
+}
+```
+
+## Error Handling
+
+### Error Boundaries
+```typescript
+'use client';
+
+import React from 'react';
+import { AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error?: Error;
+}
+
+export class ErrorBoundary extends React.Component<
+  React.PropsWithChildren<{}>,
+  ErrorBoundaryState
+> {
+  constructor(props: React.PropsWithChildren<{}>) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    return { hasError: true, error };
+  }
+  
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    console.error('Error caught by boundary:', error, errorInfo);
+  }
+  
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="glass-effect border-red-500/20 p-6 rounded-lg text-center">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h2 className="text-xl font-bold mb-2">Something went wrong</h2>
+          <p className="text-muted-foreground mb-4">
+            {this.state.error?.message || 'An unexpected error occurred'}
+          </p>
+          <Button
+            onClick={() => this.setState({ hasError: false })}
+            variant="outline"
+          >
+            Try Again
+          </Button>
+        </div>
+      );
+    }
+    
+    return this.props.children;
+  }
+}
+```
+
+## Performance Optimization
+
+### Code Splitting
+```typescript
+import { lazy, Suspense } from 'react';
+import { LoadingSpinner } from '@/components/ui/loading-spinner';
+
+// Lazy load heavy components
+const HeavyComponent = lazy(() => import('@/components/heavy-component'));
+
+export function OptimizedPage() {
+  return (
+    <div>
+      <Suspense fallback={<LoadingSpinner />}>
+        <HeavyComponent />
+      </Suspense>
+    </div>
+  );
+}
+```
+
+### Memoization
+```typescript
+import { memo, useMemo, useCallback } from 'react';
+
+// Memoize expensive components
+export const ExpensiveComponent = memo(function ExpensiveComponent({ 
+  data, 
+  onUpdate 
+}: Props) {
+  const processedData = useMemo(() => {
+    return data.map(item => expensiveTransformation(item));
+  }, [data]);
+  
+  const handleUpdate = useCallback((id: string) => {
+    onUpdate(id);
+  }, [onUpdate]);
+  
+  return (
+    <div>
+      {processedData.map(item => (
+        <div key={item.id} onClick={() => handleUpdate(item.id)}>
+          {item.name}
+        </div>
+      ))}
+    </div>
+  );
+});
+```
+
+## Import Organization
+
+### Import Order
+```typescript
+// 1. React and Next.js
+import React, { useState, useCallback } from 'react';
+import { NextPage } from 'next';
+import Link from 'next/link';
+
+// 2. External libraries
+import { motion, AnimatePresence } from 'framer-motion';
+import { useCopilotAction } from '@copilotkit/react-core';
+
+// 3. Internal UI components
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+
+// 4. Internal components
+import { AgentSelector } from '@/components/agent-selector';
+import { StatusIndicator } from '@/components/status-indicator';
+
+// 5. Utilities and types
+import { cn } from '@/lib/utils';
+import type { AgentType, ActionResult } from '@/types';
+
+// 6. Icons (always last)
+import { Zap, Settings, Code } from 'lucide-react';
+```
+
+Remember: Code quality, type safety, and performance are non-negotiable in the Dean Machines RSC project.

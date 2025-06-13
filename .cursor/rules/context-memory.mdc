@@ -1,0 +1,367 @@
+---
+description: "Context memory and shared documentation system using .notes folder for persistent AI context across chat sessions. Implements cutting-edge 2025 techniques for AI consciousness streams and context continuity."
+globs: [".notes/**/*.md", "**/*"]
+alwaysApply: true
+---
+
+# Dean Machines RSC: Context Memory & Shared Documentation
+
+This rule implements a persistent context memory system using the `.notes` folder to maintain AI consciousness and context across multiple chat sessions.
+
+## Context Initialization Protocol
+
+### ALWAYS Start Here
+```
+CONTEXT INITIALIZATION ACTIVATED
+
+Step 1: ALWAYS read these files first in every conversation:
+- @.notes/project_overview.md - Project goals, architecture, and user journeys
+- @.notes/task_list.md - Current tasks, priorities, and status updates
+- @.notes/directory_structure.md - Project file organization and layout
+- @.notes/meeting_notes.md - Previous conversation logs and decisions
+
+Step 2: Load relevant context based on request:
+- @.notes/agent_configurations.md - Agent settings and capabilities
+- @.notes/mcp_tools_status.md - Available tools and their current status
+- @.notes/development_decisions.md - Architecture and implementation choices
+- @.notes/user_preferences.md - User-specific preferences and requirements
+
+CONTEXT LOADED - Ready for interaction
+```
+
+## .notes Folder Structure
+
+### Required Files
+```
+.notes/
+├── project_overview.md          # High-level project description
+├── task_list.md                 # Current tasks and priorities
+├── directory_structure.md       # Project file organization
+├── meeting_notes.md             # Conversation logs and decisions
+├── agent_configurations.md      # Agent settings and capabilities
+├── mcp_tools_status.md          # MCP tools availability and status
+├── development_decisions.md     # Technical decisions and rationale
+├── user_preferences.md          # User-specific preferences
+├── error_log.md                 # Known issues and solutions
+└── context_checkpoints.md       # Important context snapshots
+```
+
+### Auto-Generated Files
+```
+.notes/generated/
+├── daily_summary_YYYY-MM-DD.md  # Daily activity summaries
+├── agent_performance.md         # Agent execution metrics
+├── code_changes_log.md          # Recent code modifications
+└── system_health.md             # System status and health checks
+```
+
+## Context Memory Templates
+
+### project_overview.md Template
+```markdown
+# Dean Machines RSC - Project Overview
+
+## Project Goal
+Dean Machines RSC is a cutting-edge AI platform combining 22+ specialized Mastra agents with a modern React/Next.js frontend, creating an unparalleled AI-powered development experience.
+
+## Technology Stack
+- **Frontend**: Next.js 15, React 19, TypeScript 5.8, Tailwind v4
+- **AI Framework**: Mastra Core v0.10.5, Google Gemini 2.5 Flash
+- **UI Integration**: CopilotKit v1.8.14, AG-UI Protocol
+- **Database**: LibSQL/Turso with Knowledge Graph
+- **Authentication**: Supabase Auth with GitHub OAuth
+- **MCP Tools**: 67 available tools across multiple servers
+
+## Key Architecture Principles
+1. Real functionality only - no mock data or simulations
+2. Electric neon theme with glassmorphism effects
+3. TypeScript strict mode with comprehensive error handling
+4. Production-ready code quality and performance
+5. Comprehensive testing and monitoring
+
+## Sample User Journeys
+1. **Developer Workflow**: Login → Select Agent → Execute Task → Review Results
+2. **Code Analysis**: Upload Repository → Generate Code Graph → Analyze Dependencies
+3. **Multi-Agent Coordination**: Define Complex Task → Orchestrate Agents → Integrate Results
+
+## Current Focus Areas
+- [List current development priorities]
+- [Active features being implemented]
+- [Known issues being addressed]
+
+Last Updated: [Date]
+```
+
+### task_list.md Template
+```markdown
+# Dean Machines RSC - Task List
+
+## High Priority (In Progress)
+- [ ] **Task Name** - Description, assigned agent, deadline
+  - Status: In Progress
+  - Notes: [Current progress and blockers]
+  - Last Updated: [Date]
+
+## Medium Priority (Planned)
+- [ ] **Task Name** - Description and requirements
+  - Status: Planned
+  - Dependencies: [What needs to be completed first]
+  - Estimated Effort: [Time estimate]
+
+## Low Priority (Backlog)
+- [ ] **Task Name** - Description
+  - Status: Backlog
+  - Notes: [Additional context]
+
+## Completed ✅
+- [x] **Completed Task** - Description
+  - Completed: [Date]
+  - Results: [Outcome and learnings]
+
+## Blocked/On Hold ⏸️
+- [ ] **Blocked Task** - Description
+  - Status: Blocked
+  - Blocker: [What's preventing progress]
+  - Resolution Plan: [How to unblock]
+
+Last Updated: [Date]
+```
+
+### meeting_notes.md Template
+```markdown
+# Dean Machines RSC - Meeting Notes & Conversation Log
+
+## Session [Date/Time]
+
+### Context
+- **User Request**: [What was asked]
+- **Agent(s) Used**: [Which agents were involved]
+- **Scope**: [What was covered]
+
+### Key Decisions Made
+1. **Decision**: [What was decided]
+   - **Rationale**: [Why this decision was made]
+   - **Impact**: [How this affects the project]
+
+### Actions Taken
+- [x] **Action**: [What was implemented]
+  - **Result**: [Outcome]
+  - **Files Modified**: [List of changed files]
+
+### Learnings & Insights
+- **Technical**: [Technical insights gained]
+- **Process**: [Process improvements identified]
+- **User Preferences**: [User preferences discovered]
+
+### Follow-up Items
+- [ ] **Item**: [What needs to be done next]
+- [ ] **Item**: [Additional follow-up required]
+
+---
+
+## Session [Previous Date/Time]
+[Previous session notes...]
+
+Last Updated: [Date]
+```
+
+## Context Management Patterns
+
+### Context Checkpoint Creation
+```markdown
+# Context Checkpoint - [Date/Time]
+
+## Current State Summary
+- **Active Development**: [What's currently being worked on]
+- **Recent Changes**: [Major changes in last session]
+- **User Preferences**: [Key preferences to remember]
+- **Technical Decisions**: [Important technical choices made]
+
+## Agent States
+- **Master Agent**: [Current configuration and focus]
+- **Specialized Agents**: [Which agents are active and their roles]
+- **MCP Tools**: [Which tools are being used frequently]
+
+## Project Health
+- **Build Status**: [Current build state]
+- **Test Coverage**: [Testing status]
+- **Performance**: [Any performance concerns]
+- **Security**: [Security considerations]
+
+## Context for Next Session
+- **Priority Items**: [What should be tackled next]
+- **Blockers**: [What might prevent progress]
+- **Resources Needed**: [What resources or information is needed]
+
+Checkpoint Created: [Date/Time]
+```
+
+### Failure Learning Pattern
+```markdown
+# Error Log & Learning Journal
+
+## Error: [Date] - [Brief Description]
+
+### What Happened
+- **User Request**: [What was asked]
+- **Approach Taken**: [How we tried to solve it]
+- **Failure Point**: [Where/why it failed]
+- **Error Details**: [Specific error messages or issues]
+
+### Root Cause Analysis
+- **Technical Cause**: [Technical reason for failure]
+- **Process Cause**: [Process or approach issue]
+- **Knowledge Gap**: [What information was missing]
+
+### Solution Applied
+- **Fix**: [How the issue was resolved]
+- **Code Changes**: [What code was modified]
+- **Process Changes**: [How approach was improved]
+
+### Prevention Strategy
+- **Rule Updates**: [What rules should be added/modified]
+- **Documentation**: [What documentation should be updated]
+- **Testing**: [What tests should be added]
+
+### Key Learnings
+- **Technical**: [Technical insights gained]
+- **Process**: [Process improvements identified]
+- **User Preferences**: [User preferences clarified]
+
+---
+```
+
+## Context Continuity Protocols
+
+### Session Start Protocol
+```
+SESSION START PROTOCOL
+
+1. LOAD CORE CONTEXT
+   - Read @.notes/project_overview.md
+   - Read @.notes/task_list.md
+   - Read @.notes/meeting_notes.md (last 3 entries)
+
+2. ASSESS CURRENT STATE
+   - Check @.notes/error_log.md for recent issues
+   - Review @.notes/development_decisions.md for constraints
+   - Load @.notes/user_preferences.md for personalization
+
+3. PREPARE FOR INTERACTION
+   - Identify relevant agents and tools
+   - Load appropriate context for request type
+   - Set mode (base/enhanced) based on complexity
+
+4. CONFIRM READINESS
+   - "Context loaded. Ready to assist with [project area]"
+   - "I have access to [relevant context areas]"
+   - "How can I help you today?"
+```
+
+### Session End Protocol
+```
+SESSION END PROTOCOL
+
+1. UPDATE MEETING NOTES
+   - Log key decisions made
+   - Record actions taken
+   - Note learnings and insights
+   - Add follow-up items
+
+2. UPDATE TASK LIST
+   - Mark completed tasks
+   - Add new tasks discovered
+   - Update priorities based on session
+   - Note any blockers identified
+
+3. CREATE CONTEXT CHECKPOINT
+   - Summarize current state
+   - Note important context for next session
+   - Record any configuration changes
+   - Update user preferences if changed
+
+4. LOG ERRORS/LEARNINGS
+   - Add any errors to error_log.md
+   - Record successful patterns
+   - Note process improvements
+   - Update development decisions if needed
+
+SESSION ARCHIVED - Context preserved for continuity
+```
+
+## Advanced Context Techniques
+
+### Context Injection Strategies
+```
+CONTEXT INJECTION LEVELS
+
+Level 1: Essential Context (Always Load)
+- Project overview and current goals
+- Active task list and priorities
+- Recent conversation history
+- User preferences and constraints
+
+Level 2: Domain Context (Load Based on Request)
+- Agent configurations for relevant domain
+- MCP tools status for required operations
+- Development decisions affecting the area
+- Error history for similar requests
+
+Level 3: Deep Context (Load for Complex Tasks)
+- Complete conversation history
+- All agent performance data
+- Full system health status
+- Comprehensive error analysis
+
+Level 4: Historical Context (Load for Analysis)
+- Long-term project evolution
+- Pattern analysis across sessions
+- Performance trends over time
+- User behavior and preference evolution
+```
+
+### Memory Persistence Patterns
+```typescript
+// Context memory interface
+interface ContextMemory {
+  projectState: ProjectState;
+  userPreferences: UserPreferences;
+  conversationHistory: ConversationEntry[];
+  agentConfigurations: AgentConfig[];
+  systemHealth: HealthStatus;
+  lastUpdated: string;
+}
+
+// Context checkpoint creation
+function createContextCheckpoint(): ContextCheckpoint {
+  return {
+    timestamp: new Date().toISOString(),
+    projectState: getCurrentProjectState(),
+    activeAgents: getActiveAgents(),
+    recentDecisions: getRecentDecisions(),
+    userContext: getUserContext(),
+    systemStatus: getSystemStatus()
+  };
+}
+```
+
+## Integration with Cursor Rules
+
+### Rule Enhancement Pattern
+```
+RULE ENHANCEMENT WITH CONTEXT
+
+When any rule is triggered:
+1. Check @.notes/user_preferences.md for relevant preferences
+2. Review @.notes/development_decisions.md for constraints
+3. Consult @.notes/error_log.md for known issues
+4. Apply context-aware modifications to rule behavior
+
+Example: When frontend-actions.mdc is triggered:
+- Check user preferences for UI component choices
+- Review decisions about MCP tool usage patterns
+- Consider error history for similar implementations
+- Adapt rule guidance based on project context
+```
+
+Remember: The `.notes` folder is the memory system that makes Dean Machines RSC AI truly intelligent and context-aware across all interactions. Always maintain and update this shared context for optimal AI collaboration.

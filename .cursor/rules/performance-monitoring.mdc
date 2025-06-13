@@ -1,0 +1,561 @@
+---
+description: "Performance optimization, monitoring, and observability guidelines for Dean Machines RSC. Covers Core Web Vitals, bundle optimization, database performance, and real-time monitoring."
+globs: ["src/**/*.ts", "src/**/*.tsx", "next.config.ts", "tailwind.config.ts"]
+alwaysApply: false
+---
+
+# Dean Machines RSC: Performance & Monitoring
+
+This rule defines performance optimization strategies and monitoring practices for the Dean Machines RSC project.
+
+## Core Web Vitals Optimization
+
+### Largest Contentful Paint (LCP)
+```typescript
+// src/lib/performance.ts
+export const optimizeLCP = {
+  // Preload critical resources
+  preloadCriticalAssets: () => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.href = '/fonts/inter-var.woff2';
+    link.as = 'font';
+    link.type = 'font/woff2';
+    link.crossOrigin = 'anonymous';
+    document.head.appendChild(link);
+  },
+
+  // Optimize images
+  useNextImage: true,
+  priority: true, // For above-the-fold images
+  
+  // Server-side rendering for critical content
+  generateStaticProps: async () => {
+    return {
+      props: {
+        criticalData: await fetchCriticalData()
+      },
+      revalidate: 3600 // 1 hour
+    };
+  }
+};
+```
+
+### First Input Delay (FID)
+```typescript
+// src/hooks/useOptimizedHandlers.ts
+import { useCallback, useMemo } from 'react';
+
+export function useOptimizedHandlers() {
+  // Memoize event handlers to prevent unnecessary re-renders
+  const handleClick = useCallback((id: string) => {
+    // Use requestIdleCallback for non-critical work
+    requestIdleCallback(() => {
+      performNonCriticalWork(id);
+    });
+  }, []);
+
+  // Debounce expensive operations
+  const debouncedSearch = useMemo(
+    () => debounce((query: string) => {
+      performSearch(query);
+    }, 300),
+    []
+  );
+
+  return { handleClick, debouncedSearch };
+}
+```
+
+### Cumulative Layout Shift (CLS)
+```typescript
+// src/components/ui/OptimizedLayout.tsx
+export function OptimizedLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen">
+      {/* Reserve space for dynamic content */}
+      <div className="h-16 bg-background border-b border-primary/20">
+        <Suspense fallback={<HeaderSkeleton />}>
+          <Header />
+        </Suspense>
+      </div>
+      
+      <main className="container mx-auto py-8">
+        <Suspense fallback={<ContentSkeleton />}>
+          {children}
+        </Suspense>
+      </main>
+      
+      {/* Fixed dimensions for footer */}
+      <footer className="h-20 bg-muted border-t border-primary/20">
+        <Footer />
+      </footer>
+    </div>
+  );
+}
+```
+
+## Bundle Optimization
+
+### Next.js Configuration
+```typescript
+// next.config.ts
+import { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
+  // Enable experimental features for performance
+  experimental: {
+    optimizeCss: true,
+    optimizePackageImports: [
+      '@copilotkit/react-core',
+      '@copilotkit/react-ui',
+      'lucide-react',
+      'framer-motion'
+    ]
+  },
+
+  // Bundle analyzer
+  webpack: (config, { dev, isServer }) => {
+    if (!dev && !isServer) {
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+          },
+          copilotkit: {
+            test: /[\\/]node_modules[\\/]@copilotkit[\\/]/,
+            name: 'copilotkit',
+            chunks: 'all',
+          },
+          mastra: {
+            test: /[\\/]src[\\/]mastra[\\/]/,
+            name: 'mastra',
+            chunks: 'all',
+          }
+        }
+      };
+    }
+    return config;
+  },
+
+  // Image optimization
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+  },
+
+  // Compression
+  compress: true,
+  poweredByHeader: false,
+
+  // Headers for performance
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'DENY'
+          }
+        ]
+      }
+    ];
+  }
+};
+
+export default nextConfig;
+```
+
+### Code Splitting Strategies
+```typescript
+// src/lib/lazy-imports.ts
+import { lazy } from 'react';
+
+// Lazy load heavy components
+export const CodeGraph = lazy(() => 
+  import('@/components/copilotkit/CodeGraph').then(module => ({
+    default: module.CodeGraph
+  }))
+);
+
+export const ResearchCanvas = lazy(() => 
+  import('@/components/research/ResearchCanvas')
+);
+
+export const MultiAgentWorkflow = lazy(() => 
+  import('@/components/agents/MultiAgentWorkflow')
+);
+
+// Dynamic imports for utilities
+export const loadChartLibrary = () => 
+  import('recharts').then(module => module);
+
+export const loadAnimationLibrary = () => 
+  import('lottie-react').then(module => module);
+```
+
+### Tree Shaking Optimization
+```typescript
+// src/lib/optimized-imports.ts
+// ✅ Good - Import only what you need
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Zap, Settings } from 'lucide-react';
+
+// ❌ Bad - Imports entire library
+import * as Icons from 'lucide-react';
+import * as UI from '@/components/ui';
+
+// ✅ Good - Specific CopilotKit imports
+import { useCopilotAction, useCopilotReadable } from '@copilotkit/react-core';
+
+// ❌ Bad - Imports everything
+import * as CopilotKit from '@copilotkit/react-core';
+```
+
+## Database Performance
+
+### Query Optimization
+```typescript
+// src/lib/db-performance.ts
+import { db } from './db';
+import { entities, relations } from './schema';
+
+export const optimizedQueries = {
+  // Use indexes for frequent queries
+  findEntitiesByType: async (type: string) => {
+    return await db
+      .select()
+      .from(entities)
+      .where(eq(entities.type, type))
+      .orderBy(desc(entities.createdAt))
+      .limit(100); // Always limit results
+  },
+
+  // Batch operations
+  createMultipleEntities: async (entityData: EntityInput[]) => {
+    return await db.transaction(async (tx) => {
+      const results = [];
+      for (const data of entityData) {
+        const [entity] = await tx.insert(entities).values(data).returning();
+        results.push(entity);
+      }
+      return results;
+    });
+  },
+
+  // Use prepared statements for repeated queries
+  findEntityById: db
+    .select()
+    .from(entities)
+    .where(eq(entities.id, placeholder('id')))
+    .prepare(),
+
+  // Optimize joins
+  getEntitiesWithRelations: async (limit = 50) => {
+    return await db
+      .select({
+        entity: entities,
+        relation: relations
+      })
+      .from(entities)
+      .leftJoin(relations, eq(entities.id, relations.fromEntityId))
+      .limit(limit);
+  }
+};
+```
+
+### Connection Pooling
+```typescript
+// src/lib/db-pool.ts
+import { drizzle } from 'drizzle-orm/libsql';
+import { createClient } from '@libsql/client';
+
+const client = createClient({
+  url: process.env.DATABASE_URL!,
+  authToken: process.env.DATABASE_AUTH_TOKEN!,
+  // Connection pooling configuration
+  syncUrl: process.env.DATABASE_SYNC_URL,
+  syncInterval: 60, // Sync every minute
+  encryptionKey: process.env.DATABASE_ENCRYPTION_KEY,
+});
+
+export const db = drizzle(client, {
+  logger: process.env.NODE_ENV === 'development'
+});
+
+// Connection health check
+export async function checkDatabaseHealth() {
+  try {
+    await db.select().from(entities).limit(1);
+    return { healthy: true, timestamp: new Date() };
+  } catch (error) {
+    return { 
+      healthy: false, 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      timestamp: new Date() 
+    };
+  }
+}
+```
+
+## Real-time Monitoring
+
+### Performance Metrics Collection
+```typescript
+// src/lib/metrics.ts
+import { logger } from './logger';
+
+interface PerformanceMetric {
+  name: string;
+  value: number;
+  timestamp: number;
+  tags?: Record<string, string>;
+}
+
+export class MetricsCollector {
+  private metrics: PerformanceMetric[] = [];
+
+  // Collect Core Web Vitals
+  collectWebVitals() {
+    if (typeof window !== 'undefined') {
+      import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
+        getCLS(this.sendMetric.bind(this));
+        getFID(this.sendMetric.bind(this));
+        getFCP(this.sendMetric.bind(this));
+        getLCP(this.sendMetric.bind(this));
+        getTTFB(this.sendMetric.bind(this));
+      });
+    }
+  }
+
+  // Collect custom metrics
+  collectCustomMetric(name: string, value: number, tags?: Record<string, string>) {
+    const metric: PerformanceMetric = {
+      name,
+      value,
+      timestamp: Date.now(),
+      tags
+    };
+    
+    this.metrics.push(metric);
+    this.sendMetric(metric);
+  }
+
+  // Send metrics to monitoring service
+  private sendMetric(metric: PerformanceMetric) {
+    logger.info('Performance metric', metric);
+    
+    // Send to external monitoring (e.g., DataDog, New Relic)
+    if (process.env.MONITORING_ENDPOINT) {
+      fetch(process.env.MONITORING_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(metric)
+      }).catch(error => {
+        logger.error('Failed to send metric', error);
+      });
+    }
+  }
+
+  // Agent performance tracking
+  trackAgentExecution(agentName: string, duration: number, success: boolean) {
+    this.collectCustomMetric('agent_execution_time', duration, {
+      agent: agentName,
+      success: success.toString()
+    });
+  }
+
+  // MCP tool performance tracking
+  trackMCPToolExecution(server: string, tool: string, duration: number) {
+    this.collectCustomMetric('mcp_tool_execution_time', duration, {
+      server,
+      tool
+    });
+  }
+}
+
+export const metrics = new MetricsCollector();
+```
+
+### Error Tracking
+```typescript
+// src/lib/error-tracking.ts
+import { logger } from './logger';
+
+interface ErrorContext {
+  userId?: string;
+  sessionId?: string;
+  component?: string;
+  action?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export class ErrorTracker {
+  // Track application errors
+  trackError(error: Error, context?: ErrorContext) {
+    const errorData = {
+      message: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString(),
+      context,
+      userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : undefined,
+      url: typeof window !== 'undefined' ? window.location.href : undefined
+    };
+
+    logger.error('Application error', errorData);
+
+    // Send to error tracking service
+    if (process.env.ERROR_TRACKING_ENDPOINT) {
+      fetch(process.env.ERROR_TRACKING_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(errorData)
+      }).catch(err => {
+        console.error('Failed to send error to tracking service', err);
+      });
+    }
+  }
+
+  // Track agent errors
+  trackAgentError(agentName: string, error: Error, task?: string) {
+    this.trackError(error, {
+      component: 'agent',
+      action: 'execution',
+      metadata: { agentName, task }
+    });
+  }
+
+  // Track MCP tool errors
+  trackMCPError(server: string, tool: string, error: Error) {
+    this.trackError(error, {
+      component: 'mcp-tool',
+      action: 'execution',
+      metadata: { server, tool }
+    });
+  }
+}
+
+export const errorTracker = new ErrorTracker();
+```
+
+### Health Checks
+```typescript
+// src/app/api/health/route.ts
+import { NextResponse } from 'next/server';
+import { checkDatabaseHealth } from '@/lib/db-pool';
+import { executeTracedMCPTool } from '@/mastra/tools/mcp';
+
+export async function GET() {
+  const healthChecks = {
+    timestamp: new Date().toISOString(),
+    status: 'healthy',
+    checks: {
+      database: { status: 'unknown' },
+      mcpTools: { status: 'unknown' },
+      agents: { status: 'unknown' }
+    }
+  };
+
+  try {
+    // Database health
+    const dbHealth = await checkDatabaseHealth();
+    healthChecks.checks.database = {
+      status: dbHealth.healthy ? 'healthy' : 'unhealthy',
+      lastCheck: dbHealth.timestamp.toISOString(),
+      error: dbHealth.error
+    };
+
+    // MCP tools health
+    try {
+      await executeTracedMCPTool('filesystem', 'list_directory', { path: '.' });
+      healthChecks.checks.mcpTools.status = 'healthy';
+    } catch (error) {
+      healthChecks.checks.mcpTools = {
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
+
+    // Agents health (basic check)
+    healthChecks.checks.agents.status = 'healthy';
+
+    // Overall status
+    const allHealthy = Object.values(healthChecks.checks).every(
+      check => check.status === 'healthy'
+    );
+    healthChecks.status = allHealthy ? 'healthy' : 'degraded';
+
+  } catch (error) {
+    healthChecks.status = 'unhealthy';
+    healthChecks.error = error instanceof Error ? error.message : 'Unknown error';
+  }
+
+  const status = healthChecks.status === 'healthy' ? 200 : 503;
+  return NextResponse.json(healthChecks, { status });
+}
+```
+
+## Performance Budgets
+
+### Bundle Size Limits
+```json
+// .bundlewatch.config.json
+{
+  "files": [
+    {
+      "path": ".next/static/chunks/pages/_app-*.js",
+      "maxSize": "250kb"
+    },
+    {
+      "path": ".next/static/chunks/pages/index-*.js", 
+      "maxSize": "150kb"
+    },
+    {
+      "path": ".next/static/chunks/copilotkit-*.js",
+      "maxSize": "300kb"
+    },
+    {
+      "path": ".next/static/chunks/mastra-*.js",
+      "maxSize": "200kb"
+    }
+  ],
+  "ci": {
+    "trackBranches": ["main", "develop"],
+    "repoBranchBase": "main"
+  }
+}
+```
+
+### Performance Thresholds
+```typescript
+// src/lib/performance-thresholds.ts
+export const PERFORMANCE_THRESHOLDS = {
+  // Core Web Vitals
+  LCP: 2500, // ms
+  FID: 100,  // ms
+  CLS: 0.1,  // score
+
+  // Custom metrics
+  AGENT_EXECUTION_TIME: 5000,    // ms
+  MCP_TOOL_EXECUTION_TIME: 2000, // ms
+  DATABASE_QUERY_TIME: 1000,     // ms
+  API_RESPONSE_TIME: 3000,       // ms
+
+  // Bundle sizes
+  MAIN_BUNDLE_SIZE: 250 * 1024,     // 250KB
+  VENDOR_BUNDLE_SIZE: 500 * 1024,   // 500KB
+  TOTAL_BUNDLE_SIZE: 1024 * 1024,   // 1MB
+} as const;
+```
+
+Remember: Performance is a feature, not an afterthought. Monitor continuously and optimize proactively to maintain the exceptional user experience that Dean Machines RSC demands.

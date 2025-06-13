@@ -1,0 +1,273 @@
+---
+description: "Complete overview of the Dean Machines RSC project architecture, technology stack, and development guidelines. Essential context for all development work."
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# Dean Machines RSC: Project Overview
+
+Dean Machines RSC is a cutting-edge AI platform that combines the power of 22+ specialized Mastra agents with a modern React/Next.js frontend, creating an unparalleled AI-powered development experience.
+
+## Technology Stack
+
+### Frontend Stack
+- **Framework**: Next.js 15 with App Router
+- **React**: React 19 with modern patterns
+- **TypeScript**: 5.8 with strict mode
+- **Styling**: Tailwind CSS v4 with electric neon theme
+- **UI Components**: Shadcn/ui with custom extensions
+- **Animations**: Framer Motion for smooth transitions
+- **Icons**: Lucide React (never use Heroicons)
+
+### AI & Backend Stack
+- **AI Framework**: Mastra Core v0.10.5
+- **LLM**: Google Gemini 2.5 Flash (primary model)
+- **UI Integration**: CopilotKit v1.8.14
+- **Protocol**: AG-UI for agent-frontend communication
+- **MCP Tools**: 67 available tools across multiple servers
+- **Observability**: LangSmith, PinoLogger, OpenTelemetry
+
+### Data & Infrastructure
+- **Database**: LibSQL/Turso with Knowledge Graph
+- **Authentication**: Supabase Auth with GitHub OAuth
+- **Package Manager**: npm (strict requirement - no yarn/pnpm)
+- **Environment**: Node.js with ES modules
+
+## Project Structure
+
+```
+deanmachines-rsc/
+├── .cursor/rules/              # Cursor AI rules (this file)
+├── .notes/                     # Shared context and documentation
+│   ├── project_overview.md     # Project goals and architecture
+│   ├── task_list.md           # Current tasks and priorities
+│   ├── meeting_notes.md       # Conversation logs and decisions
+│   ├── user_preferences.md    # User-specific preferences
+│   └── development_decisions.md # Technical decisions and rationale
+├── .github/                    # GitHub workflows and templates
+├── .mastra/                    # Mastra framework cache
+├── public/                     # Static assets
+├── src/
+│   ├── app/                    # Next.js 15 App Router
+│   │   ├── (playground)/       # Protected AI features
+│   │   │   ├── layout.tsx      # CopilotKit provider setup
+│   │   │   ├── page.tsx        # Main agent chat interface
+│   │   │   ├── multi-agent/    # Multi-agent coordination
+│   │   │   ├── codegraph/      # Code analysis tools
+│   │   │   ├── research/       # Research canvas
+│   │   │   └── settings/       # Configuration pages
+│   │   ├── (public)/           # Public marketing pages
+│   │   ├── api/copilotkit/     # CopilotKit runtime endpoints
+│   │   ├── auth/               # Authentication pages
+│   │   └── globals.css         # Global styles + Tailwind config
+│   ├── components/             # Reusable React components
+│   │   ├── copilotkit/         # CopilotKit custom components
+│   │   ├── ui/                 # Shadcn/ui base components
+│   │   └── landing/            # Landing page sections
+│   ├── mastra/                 # Mastra AI framework
+│   │   ├── agents/             # 22+ specialized AI agents
+│   │   ├── tools/              # MCP-compatible tools
+│   │   ├── workflows/          # Multi-agent workflows
+│   │   └── agentMemory.ts      # Shared memory system
+│   ├── hooks/                  # Custom React hooks
+│   ├── lib/                    # Utility libraries
+│   └── utility/supabase/       # Supabase client utilities
+├── package.json                # Dependencies (npm only)
+├── next.config.ts              # Next.js configuration
+├── tsconfig.json               # TypeScript configuration
+└── tailwind.config.ts          # Tailwind CSS configuration
+```
+
+## Core Agents (22+ Available)
+
+### Development Agents
+- **Master Agent**: Central orchestrator for all agents
+- **Code Agent**: Code analysis, generation, and optimization
+- **Git Agent**: Version control operations and repository management
+- **Debug Agent**: Error detection and debugging assistance
+- **Documentation Agent**: Technical documentation generation
+
+### Data & Analysis Agents
+- **Data Agent**: Data processing and analysis
+- **Graph Agent**: Knowledge graph operations and visualization
+- **Research Agent**: Information gathering and synthesis
+- **Weather Agent**: Weather data and forecasting
+
+### Management & Operations
+- **Manager Agent**: Project management and coordination
+- **Marketing Agent**: Content and marketing assistance
+- **Sysadmin Agent**: System administration and DevOps
+- **Browser Agent**: Web automation and testing
+- **Quality Agent**: Code quality and testing
+
+### Creative & AI/ML
+- **Design Agent**: UI/UX design and visual assets
+- **Content Agent**: Content creation and editing
+- **Animation Agent**: Motion graphics and animations
+- **ML Agent**: Machine learning and model operations
+- **Prompt Engineering Agent**: AI prompt optimization
+- **AI Research Agent**: AI/ML research and development
+
+## Electric Neon Theme
+
+### Color Palette
+- **Primary**: `oklch(0.9 0.4 105)` (Electric Yellow)
+- **Secondary**: Cyan accents (`oklch(0.8 0.3 180)`)
+- **Background**: Dark with subtle gradients
+- **Glass Effects**: `glass-effect` and `glass-effect-strong`
+- **Neon Glow**: `neon-glow` class for interactive elements
+
+### Design Principles
+- **Glassmorphism**: Translucent surfaces with blur effects
+- **Electric Accents**: Bright neon highlights on interactive elements
+- **Smooth Animations**: Framer Motion for all transitions
+- **Professional Accessibility**: WCAG 2.1 AA compliance
+- **Mobile-First**: Responsive design with breakpoint utilities
+
+## Development Workflows
+
+### Frontend Development
+```bash
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Type checking
+npm run type-check
+
+# Linting
+npm run lint
+```
+
+### Mastra Backend
+```bash
+# Start Mastra backend
+npm run dev:mastra
+
+# Build Mastra
+npm run build:mastra
+
+# Test agents
+npm run test:agents
+```
+
+### Authentication Flow
+1. **Supabase Auth**: GitHub OAuth integration
+2. **Protected Routes**: Middleware-based route protection
+3. **Session Management**: Server-side session handling
+4. **Error Handling**: Custom error pages for auth failures
+
+## MCP Tool Servers
+
+### Available Tools (67 total)
+- **filesystem**: File operations, directory traversal, search
+- **git**: Version control operations, repository management
+- **github**: GitHub API integration, repository analysis
+- **ddgsearch**: Web search and content fetching
+- **memoryGraph**: Knowledge graph operations
+- **puppeteer**: Browser automation and testing
+
+### Tool Usage Pattern
+```typescript
+import { executeTracedMCPTool } from '@/mastra/tools/mcp';
+
+// Always use real tools, never mock data
+const result = await executeTracedMCPTool('server', 'tool', params);
+```
+
+## CopilotKit Integration
+
+### Component Types
+- **Actions**: Interactive AI-powered components
+- **Messages**: Custom message rendering
+- **Suggestions**: Contextual AI suggestions
+- **Sidebar**: Persistent AI assistant interface
+
+### AG-UI Protocol
+- **Event-Driven**: Real-time communication between agents and UI
+- **State Sync**: Automatic frontend-backend state management
+- **Tool Integration**: Visual feedback for agent tool usage
+- **Streaming**: Real-time response streaming
+
+## Critical Development Rules
+
+### Code Quality
+- **Zero TypeScript Errors**: Strict type checking enforced
+- **No Mock Data**: Always use real MCP tools and APIs
+- **Import Usage**: All imports must be used (especially icons)
+- **Error Handling**: Comprehensive try/catch blocks
+- **Performance**: Optimize for production use
+
+### Component Standards
+- **Shadcn/ui Base**: Use as foundation, extend with custom styling
+- **Electric Theme**: Apply neon theme consistently
+- **Accessibility**: ARIA labels, keyboard navigation, screen readers
+- **Responsive**: Mobile-first design approach
+- **Animation**: Smooth transitions with Framer Motion
+
+### Agent Development
+- **Real Functionality**: No simulations or mock responses
+- **MCP Integration**: Use available tools for all operations
+- **Memory Management**: Shared context across agents
+- **Error Recovery**: Graceful failure handling
+- **Documentation**: Comprehensive TSDoc comments
+
+## Environment Configuration
+
+### Required Variables
+```bash
+# AI & LLM
+GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_key
+LANGSMITH_API_KEY=your_langsmith_key
+
+# Database
+DATABASE_URL=your_libsql_url
+DATABASE_AUTH_TOKEN=your_auth_token
+
+# Authentication
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_key
+
+# External APIs
+GITHUB_TOKEN=your_github_token
+SERPER_API_KEY=your_serper_key
+
+# Runtime
+NEXT_PUBLIC_COPILOTKIT_RUNTIME_URL=http://localhost:4111/copilotkit
+MASTRA_PORT=4111
+```
+
+## Performance & Monitoring
+
+### Observability Stack
+- **LangSmith**: AI model performance tracking
+- **PinoLogger**: Structured application logging
+- **OpenTelemetry**: Distributed tracing
+- **Error Boundaries**: React error handling
+- **Performance Monitoring**: Core Web Vitals tracking
+
+### Optimization Strategies
+- **Code Splitting**: Dynamic imports for heavy components
+- **Image Optimization**: Next.js Image component
+- **Bundle Analysis**: Regular bundle size monitoring
+- **Database Optimization**: Query performance tuning
+- **Caching**: Strategic caching at multiple layers
+
+## Security Considerations
+
+### Authentication Security
+- **OAuth Flow**: Secure GitHub OAuth implementation
+- **Session Management**: Secure cookie handling
+- **Route Protection**: Middleware-based access control
+- **API Security**: Rate limiting and input validation
+
+### Data Protection
+- **Environment Variables**: Secure secret management
+- **Input Validation**: Zod schema validation
+- **CORS Configuration**: Proper cross-origin settings
+- **Error Handling**: No sensitive data in error messages
+
+Remember: Dean Machines RSC is a production-grade AI platform. Every component, agent, and feature must meet the highest standards of quality, security, and performance.

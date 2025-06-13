@@ -1,0 +1,326 @@
+---
+description: "Advanced prompting techniques for Cursor AI including Chain-of-Thought, Few-Shot, Context Injection, and Plan vs Act modes. Cutting-edge 2025 techniques for optimal AI collaboration."
+globs: ["**/*"]
+alwaysApply: false
+---
+
+# Advanced Prompting Techniques for Cursor AI
+
+This rule implements cutting-edge prompting strategies to maximize AI effectiveness in the Dean Machines RSC project.
+
+## Chain-of-Thought (CoT) Prompting
+
+### Implementation Pattern
+When facing complex tasks, always break them down into explicit reasoning steps:
+
+```
+Task: Implement a new CopilotKit action for repository analysis
+
+Chain-of-Thought Approach:
+1. First, I need to understand the requirements:
+   - What type of analysis is needed?
+   - Which MCP tools are available?
+   - What UI components should be generated?
+
+2. Then, I'll plan the implementation:
+   - Define the action parameters with Zod schemas
+   - Identify the MCP tools to use (github, filesystem, git)
+   - Design the UI response component
+
+3. Next, I'll implement step by step:
+   - Create the useCopilotAction hook
+   - Implement the handler with real MCP tool calls
+   - Build the response UI with electric neon theme
+   - Add proper error handling and TypeScript types
+
+4. Finally, I'll validate:
+   - Test with real repository data
+   - Ensure TypeScript compliance
+   - Verify UI responsiveness and accessibility
+```
+
+### CoT Trigger Phrases
+Use these phrases to activate Chain-of-Thought reasoning:
+- "Let's think through this step by step"
+- "Breaking this down into logical steps"
+- "First, let me understand... then I'll plan... finally I'll implement"
+- "Walking through the reasoning process"
+
+## Few-Shot Prompting with Examples
+
+### Pattern Recognition Training
+Provide 2-3 examples before asking for similar work:
+
+```
+Example 1: Creating a Git Agent Action
+useCopilotAction({
+  name: "analyzeGitHistory",
+  description: "Analyze git commit history and branch structure",
+  parameters: [
+    {
+      name: "depth",
+      type: "number",
+      description: "Number of commits to analyze"
+    }
+  ],
+  handler: async ({ depth }) => {
+    const gitLog = await executeTracedMCPTool('git', 'git_log', { maxCount: depth });
+    return `Analyzed ${depth} commits: ${JSON.stringify(gitLog, null, 2)}`;
+  }
+});
+
+Example 2: Creating a Filesystem Agent Action
+useCopilotAction({
+  name: "searchCodeFiles",
+  description: "Search for code files matching patterns",
+  parameters: [
+    {
+      name: "pattern",
+      type: "string",
+      description: "File pattern to search for"
+    }
+  ],
+  handler: async ({ pattern }) => {
+    const files = await executeTracedMCPTool('filesystem', 'search_files', {
+      path: './src',
+      pattern
+    });
+    return `Found files: ${JSON.stringify(files, null, 2)}`;
+  }
+});
+
+Now create a similar action for: [your specific request]
+```
+
+### Code Style Examples
+```typescript
+// Example 1: Proper TypeScript interface
+interface AgentConfig {
+  name: string;
+  description: string;
+  capabilities: string[];
+  mcpTools: string[];
+}
+
+// Example 2: Proper error handling
+try {
+  const result = await executeTracedMCPTool('server', 'tool', params);
+  return { success: true, data: result };
+} catch (error) {
+  console.error('Tool execution failed:', error);
+  return {
+    success: false,
+    error: error instanceof Error ? error.message : 'Unknown error'
+  };
+}
+
+// Now implement similar pattern for: [your specific case]
+```
+
+## Context Injection Strategies
+
+### Documentation Integration
+Always reference relevant project documentation and shared context:
+
+```
+CONTEXT INITIALIZATION - ALWAYS START HERE:
+
+@.notes/project_overview.md - Project goals and architecture
+@.notes/task_list.md - Current priorities and status
+@.notes/meeting_notes.md - Previous decisions and learnings
+@.notes/user_preferences.md - User-specific requirements
+
+TECHNICAL CONTEXT:
+@.cursor/rules/project-overview.mdc - Overall project context
+@.cursor/rules/typescript-react-nextjs.mdc - Code standards
+@.cursor/rules/mastra-agents.mdc - Agent patterns
+@src/mastra/agents/ - Existing agent implementations
+@src/components/copilotkit/ - CopilotKit component examples
+
+Context Questions to Ask:
+1. What does @.notes/task_list.md say about current priorities?
+2. Are there relevant decisions in @.notes/meeting_notes.md?
+3. What preferences are noted in @.notes/user_preferences.md?
+4. How does this fit with our 22+ agent architecture?
+5. Which MCP tools from our 67 available should I use?
+6. How does this integrate with our electric neon theme?
+7. What TypeScript patterns should I follow?
+8. How does this work with our Supabase auth system?
+```
+
+### Progressive Context Building
+```
+Level 1 Context: Project basics
+- Technology stack (Next.js 15, React 19, TypeScript 5.8)
+- Styling approach (Tailwind v4, electric neon theme)
+- AI framework (Mastra v0.10.5, CopilotKit v1.8.14)
+
+Level 2 Context: Architecture details
+- 22+ specialized agents with specific roles
+- 67 MCP tools across multiple servers
+- AG-UI protocol for agent-frontend communication
+- LibSQL/Turso database with knowledge graph
+
+Level 3 Context: Implementation specifics
+- Real tool usage (no mock data)
+- Electric neon theme classes (glass-effect, neon-glow)
+- TypeScript strict mode (no 'any' types)
+- Comprehensive error handling patterns
+```
+
+## Plan vs Act Modes
+
+### Planning Mode Activation
+```
+PLANNING MODE ACTIVATED
+
+Before taking any action, I will:
+
+1. ANALYZE the request thoroughly
+   - What is the specific goal?
+   - What components are involved?
+   - What are the constraints and requirements?
+
+2. DESIGN the approach
+   - Which files need to be modified?
+   - What new files need to be created?
+   - How does this integrate with existing code?
+
+3. VALIDATE the plan
+   - Does this follow project standards?
+   - Are there any potential breaking changes?
+   - What are the testing requirements?
+
+4. CREATE a step-by-step execution plan
+   - Ordered list of specific actions
+   - Expected outcomes for each step
+   - Rollback plan if issues occur
+
+PLAN COMPLETE - Ready to switch to ACTION MODE
+```
+
+### Action Mode Execution
+```
+ACTION MODE ACTIVATED
+
+Executing planned steps:
+
+Step 1: [Specific action]
+- Expected outcome: [What should happen]
+- Validation: [How to verify success]
+
+Step 2: [Next action]
+- Dependencies: [What must be complete first]
+- Risk mitigation: [How to handle failures]
+
+[Continue with systematic execution]
+
+ACTION COMPLETE - Switching to VALIDATION MODE
+```
+
+## Advanced Context Management
+
+### Failure Logging Pattern
+```typescript
+// Log failures for learning
+interface FailureLog {
+  timestamp: string;
+  task: string;
+  approach: string;
+  failure: string;
+  lesson: string;
+  improvedApproach: string;
+}
+
+// Example failure log entry
+const failureLog: FailureLog = {
+  timestamp: "2025-01-13T10:30:00Z",
+  task: "Implement CopilotKit action with mock data",
+  approach: "Used simulated API responses",
+  failure: "User rejected mock implementation",
+  lesson: "Dean Machines RSC requires real MCP tool integration only",
+  improvedApproach: "Always use executeTracedMCPTool with real server/tool combinations"
+};
+```
+
+### Memory Persistence
+```
+MEMORY CHECKPOINT
+
+Key learnings from this session:
+1. [Important insight or pattern discovered]
+2. [Successful approach that worked well]
+3. [Mistake to avoid in future]
+4. [New understanding about project requirements]
+
+Context to remember:
+- User preferences: [Specific requirements mentioned]
+- Technical constraints: [Limitations discovered]
+- Successful patterns: [What worked well]
+
+MEMORY SAVED - Available for future sessions
+```
+
+## Self-Evolving Rules
+
+### Rule Improvement Pattern
+```
+RULE EVOLUTION TRIGGER
+
+When I notice:
+- Repeated similar requests
+- Consistent user corrections
+- New patterns emerging
+- Better approaches discovered
+
+I should suggest:
+- New rule additions
+- Existing rule modifications
+- Pattern documentation
+- Best practice updates
+
+Format: "I notice we're frequently [pattern]. Should I suggest adding a rule for [specific guidance]?"
+```
+
+### Adaptive Behavior
+```
+ADAPTIVE LEARNING ACTIVATED
+
+Monitoring for:
+- User satisfaction with responses
+- Frequency of corrections needed
+- Success rate of implementations
+- Time to completion
+
+Adjusting:
+- Prompting strategies based on success
+- Context prioritization based on relevance
+- Detail level based on user feedback
+- Technical depth based on project needs
+```
+
+## Orchestration Patterns
+
+### Multi-Step Task Coordination
+```
+ORCHESTRATION MODE
+
+For complex tasks involving multiple components:
+
+1. DECOMPOSE into atomic subtasks
+2. IDENTIFY dependencies between subtasks
+3. PLAN execution order considering dependencies
+4. EXECUTE with checkpoints and validation
+5. INTEGRATE results into cohesive solution
+6. VALIDATE entire solution works as expected
+
+Example: "Implement new agent with UI integration"
+- Subtask 1: Create agent class with MCP tools
+- Subtask 2: Add CopilotKit registration
+- Subtask 3: Build frontend action component
+- Subtask 4: Integrate with existing UI
+- Subtask 5: Add to agent registry
+- Subtask 6: Test end-to-end functionality
+```
+
+Remember: These advanced techniques should be used strategically based on task complexity and user needs. Always prioritize clarity and effectiveness over technique sophistication.
