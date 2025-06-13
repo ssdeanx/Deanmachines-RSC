@@ -7,10 +7,13 @@ function CustomInput({ inProgress, onSend, isVisible }: InputProps) {
     if (value.trim()) onSend(value);
   };
 
-  const wrapperStyle = "flex gap-2 p-4 border-t";
+  const wrapperStyle = `flex gap-2 p-4 border-t ${isVisible ? 'opacity-100' : 'opacity-50'}`;
   const inputStyle = "flex-1 p-2 rounded-md border border-gray-300 focus:outline-none focus:border-blue-500 disabled:bg-gray-100";
   const buttonStyle = "px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed";
 
+  if (!isVisible) {
+    return null;
+  }
 
   return (
     <div className={wrapperStyle}>

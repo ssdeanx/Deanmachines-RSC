@@ -6,23 +6,31 @@ import { useCopilotReadable, useCopilotAction } from "@copilotkit/react-core";
 import { CopilotChat } from "@copilotkit/react-ui";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PlaygroundNav } from '../components/playground-nav';
 import { useAgent } from '../layout';
-import { GitBranch, FileText, Code, Network } from 'lucide-react';
+import { GitBranch, FileText, Code, Network, MessageSquare } from 'lucide-react';
+import { InteractiveCodeGraph } from '@/components/copilotkit/InteractiveCodeGraph';
+import { CodeGraphChatModal } from '@/components/copilotkit/CodeGraphChatModal';
+
+interface CodeGraphNodeData {
+    label: string;
+    type: 'file' | 'folder' | 'function' | 'class' | 'module' | 'component';
+    path: string;
+    size: number;
+    dependencies: string[];
+    language: string;
+    metadata: Record<string, string | number | boolean>;
+}
 
 export default function CodeGraphPage() {
     const [repoUrl, setRepoUrl] = useState('');
     const [graphData, setGraphData] = useState<string>('');
     const [analysisResults, setAnalysisResults] = useState<string>('');
     const [workflowStatus, setWorkflowStatus] = useState<string>('');
+    const [isChatModalOpen, setIsChatModalOpen] = useState(false);
     const { setCurrentEndpoint } = useAgent();
 
     useCopilotReadable({
@@ -149,6 +157,56 @@ export default function CodeGraphPage() {
         },
     });
 
+    useCopilotAction({
+        name: "generateInteractiveGraph",
+        description: "Generate an interactive code graph from the current repository using advanced workflows",
+        parameters: [
+            {
+                name: "graphType",
+                type: "string",
+                description: "Type of graph to generate",
+                enum: ["dependency", "call-graph", "module-hierarchy", "all"],
+            },
+            {
+                name: "analysisDepth",
+                type: "string",
+                description: "Depth of analysis to perform",
+                enum: ["basic", "detailed", "comprehensive"],
+            }
+        ],
+        handler: async ({ graphType, analysisDepth }) => {
+            if (!repoUrl) {
+                return "Please set a repository URL first using the setRepositoryUrl action";
+            }
+
+            setWorkflowStatus(prev => prev ? `${prev}\n[${new Date().toISOString()}] Starting ${graphType} graph generation with ${analysisDepth} analysis...` : `[${new Date().toISOString()}] Starting ${graphType} graph generation with ${analysisDepth} analysis...`);
+
+            // This would integrate with your existing advancedCodeGraphMakerWorkflow
+            const graphResult = {
+                nodes: [
+                    { id: 'main', label: 'src/main.ts', type: 'file', path: 'src/main.ts', size: 150, language: 'typescript' },
+                    { id: 'utils', label: 'src/utils.ts', type: 'file', path: 'src/utils.ts', size: 80, language: 'typescript' },
+                    { id: 'components', label: 'src/components/', type: 'folder', path: 'src/components/', size: 500, language: 'typescript' }
+                ],
+                edges: [
+                    { source: 'main', target: 'utils', type: 'import' },
+                    { source: 'main', target: 'components', type: 'import' }
+                ],
+                metadata: {
+                    repository: repoUrl,
+                    graphType,
+                    analysisDepth,
+                    generated: new Date().toISOString()
+                }
+            };
+
+            setGraphData(JSON.stringify(graphResult, null, 2));
+            setWorkflowStatus(prev => prev ? `${prev}\n[${new Date().toISOString()}] Interactive ${graphType} graph generated successfully!` : `[${new Date().toISOString()}] Interactive ${graphType} graph generated successfully!`);
+
+            return `Generated interactive ${graphType} graph with ${analysisDepth} analysis for ${repoUrl}`;
+        },
+    });
+
     return (
         <div className="min-h-screen bg-background">
             <div className="border-b bg-card/50 backdrop-blur-sm">
@@ -243,23 +301,25 @@ export default function CodeGraphPage() {
                                     <CardHeader>
                                         <CardTitle className="flex items-center gap-2">
                                             <Network className="h-5 w-5" />
-                                            Graph Visualization Data
+                                            Interactive Code Graph
                                         </CardTitle>
                                         <CardDescription>
-                                            Graph data and visualization information
+                                            Interactive visualization of repository structure and dependencies
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent>
-                                        {graphData ? (
-                                            <pre className="bg-muted p-4 rounded-lg overflow-auto text-sm max-h-96 whitespace-pre-wrap">
-                                                {graphData}
-                                            </pre>
-                                        ) : (
-                                            <div className="text-center py-8 text-muted-foreground">
-                                                <Network className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                                                <p>No graph data yet. Ask the AI to generate graph visualizations.</p>
-                                            </div>
-                                        )}
+                                        <div className="h-[600px] border rounded-lg bg-muted/20">
+                                            <InteractiveCodeGraph
+                                                graphData={graphData}
+                                                repoUrl={repoUrl}
+                                                onNodeSelect={(nodeData: CodeGraphNodeData) => {
+                                                    setAnalysisResults(prev =>
+                                                        prev ? `${prev}\n\n[${new Date().toISOString()}] NODE SELECTED:\n${JSON.stringify(nodeData, null, 2)}`
+                                                            : `[${new Date().toISOString()}] NODE SELECTED:\n${JSON.stringify(nodeData, null, 2)}`
+                                                    );
+                                                }}
+                                            />
+                                        </div>
                                     </CardContent>
                                 </Card>
                             </TabsContent>
@@ -316,6 +376,59 @@ export default function CodeGraphPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Floating Chat Button */}
+            <motion.div
+                className="fixed bottom-6 right-6 z-40"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 1, type: "spring", stiffness: 260, damping: 20 }}
+            >
+                <Button
+                    onClick={() => setIsChatModalOpen(true)}
+                    size="lg"
+                    className="rounded-full w-14 h-14 bg-primary hover:bg-primary/90 neon-glow pulse-glow shadow-lg"
+                >
+                    <MessageSquare className="w-6 h-6" />
+                </Button>
+            </motion.div>
+
+            {/* Code Graph Chat Modal */}
+            <CodeGraphChatModal
+                isOpen={isChatModalOpen}
+                onOpenChange={setIsChatModalOpen}
+                currentRepo={repoUrl}
+                onGraphGenerate={(repoUrl, options) => {
+                    setWorkflowStatus(prev => prev ? `${prev}\n[${new Date().toISOString()}] Generating ${options.graphType} graph with ${options.analysisDepth} analysis...` : `[${new Date().toISOString()}] Generating ${options.graphType} graph with ${options.analysisDepth} analysis...`);
+
+                    // Simulate graph generation
+                    setTimeout(() => {
+                        const graphResult = {
+                            nodes: [
+                                { id: 'main', label: 'src/main.ts', type: 'file', path: 'src/main.ts', size: 150, language: 'typescript' },
+                                { id: 'utils', label: 'src/utils.ts', type: 'file', path: 'src/utils.ts', size: 80, language: 'typescript' },
+                                { id: 'components', label: 'src/components/', type: 'folder', path: 'src/components/', size: 500, language: 'typescript' }
+                            ],
+                            edges: [
+                                { source: 'main', target: 'utils', type: 'import' },
+                                { source: 'main', target: 'components', type: 'import' }
+                            ],
+                            metadata: {
+                                repository: repoUrl,
+                                ...options,
+                                generated: new Date().toISOString()
+                            }
+                        };
+
+                        setGraphData(JSON.stringify(graphResult, null, 2));
+                        setWorkflowStatus(prev => prev ? `${prev}\n[${new Date().toISOString()}] Graph generated successfully!` : `[${new Date().toISOString()}] Graph generated successfully!`);
+                    }, 2000);
+                }}
+                onAgentSwitch={(agentType) => {
+                    setCurrentEndpoint(`http://localhost:4111/copilotkit/${agentType}`);
+                    setWorkflowStatus(prev => prev ? `${prev}\n[${new Date().toISOString()}] Switched to ${agentType} agent` : `[${new Date().toISOString()}] Switched to ${agentType} agent`);
+                }}
+            />
         </div>
     );
 }

@@ -22,12 +22,12 @@ function transformSchemaForGoogleAI(schema: unknown): unknown {
   if (schemaObj._def) {
     const defObj = schemaObj._def as Record<string, unknown>;
     const typeName = defObj.typeName;
-    
+
     // Replace ZodNull with optional string
     if (typeName === 'ZodNull') {
       return z.string().optional().describe('Converted from null for Google AI compatibility');
     }
-    
+
     // Handle ZodUnion that might contain ZodNull
     if (typeName === 'ZodUnion' && defObj.options) {
       const options = defObj.options as unknown[];
@@ -37,7 +37,7 @@ function transformSchemaForGoogleAI(schema: unknown): unknown {
           const optionDef = optionObj._def as Record<string, unknown>;
           return optionDef?.typeName !== 'ZodNull';
         });
-      
+
       if (filteredOptions.length === 1) {
         return (filteredOptions[0] as z.ZodTypeAny).optional();
       } else if (filteredOptions.length > 1) {
@@ -46,12 +46,12 @@ function transformSchemaForGoogleAI(schema: unknown): unknown {
         return z.string().optional().describe('Converted from null union for Google AI compatibility');
       }
     }
-    
+
     // Handle ZodOptional
     if (typeName === 'ZodOptional') {
       return z.optional(transformSchemaForGoogleAI(defObj.innerType) as z.ZodTypeAny);
     }
-    
+
     // Handle ZodObject
     if (typeName === 'ZodObject' && defObj.shape) {
       const shapeFunc = defObj.shape as () => Record<string, unknown>;
@@ -62,12 +62,12 @@ function transformSchemaForGoogleAI(schema: unknown): unknown {
       }
       return z.object(transformedShape);
     }
-    
+
     // Handle ZodArray
     if (typeName === 'ZodArray') {
       return z.array(transformSchemaForGoogleAI(defObj.type) as z.ZodTypeAny);
     }
-    
+
     // Handle ZodRecord
     if (typeName === 'ZodRecord') {
       if (defObj.valueType) {
@@ -76,7 +76,7 @@ function transformSchemaForGoogleAI(schema: unknown): unknown {
       return schema;
     }
   }
-  
+
   // Handle plain objects that might contain schemas
   if (typeof schema === 'object' && !Array.isArray(schema)) {
     const transformed: Record<string, unknown> = {};
@@ -85,12 +85,12 @@ function transformSchemaForGoogleAI(schema: unknown): unknown {
     }
     return transformed;
   }
-  
+
   // Handle arrays
   if (Array.isArray(schema)) {
     return schema.map(item => transformSchemaForGoogleAI(item));
   }
-  
+
   return schema;
 }
 
@@ -101,32 +101,32 @@ function transformSchemaForGoogleAI(schema: unknown): unknown {
  */
 function transformMCPToolsForGoogleAI(tools: Record<string, unknown>): Record<string, unknown> {
   const transformedTools: Record<string, unknown> = {};
-  
+
   for (const [toolName, tool] of Object.entries(tools)) {
     if (tool && typeof tool === 'object') {
       const toolObj = tool as Record<string, unknown>;
       const transformedTool = { ...toolObj };
-      
+
       // Transform input schema if present
       if (transformedTool.inputSchema) {
         transformedTool.inputSchema = transformSchemaForGoogleAI(transformedTool.inputSchema);
       }
-      
+
       // Transform output schema if present
       if (transformedTool.outputSchema) {
         transformedTool.outputSchema = transformSchemaForGoogleAI(transformedTool.outputSchema);
       }
-      
+
       // Transform any other schema fields
       if (transformedTool.schema) {
         transformedTool.schema = transformSchemaForGoogleAI(transformedTool.schema);
       }
-      
+
       transformedTools[toolName] = transformedTool;
       logger.debug(`Transformed tool ${toolName} for Google AI compatibility`);
     }
   }
-  
+
   return transformedTools;
 }
 
@@ -143,7 +143,7 @@ export const mcpStdio = new MCPClient({
       args: [
         "-y",
         "@modelcontextprotocol/server-filesystem",
-        "C:\\Users\\dm\\Documents\\deanmachines-rsc\\.next\\var",
+        "C:\\Users\\dm\\Documents\\deanmachines-rsc\\data",
       ],
       timeout: 60000,
       enableServerLogs: true,
@@ -259,7 +259,7 @@ export const mcp = {  /**
    */
   async getTools(): Promise<Record<string, unknown>> {
     const allTools: Record<string, unknown> = {};
-    
+
     try {
       const stdioTools = await mcpStdio.getTools();
       // Filter out null/undefined tools and validate
@@ -273,7 +273,7 @@ export const mcp = {  /**
     } catch (error) {
       logger.error('Failed to get Stdio MCP tools', { error: error instanceof Error ? error.message : 'Unknown error' });
     }
-    
+
 //    if (mcpSmithery) {
 //      try {
 //        const smitheryTools = await mcpSmithery.getTools();
@@ -289,17 +289,17 @@ export const mcp = {  /**
 //        logger.error('Failed to get Smithery MCP tools', { error: error instanceof Error ? error.message : 'Unknown error' });
 //      }
 //    }
-    
+
     // Transform tools to ensure Google AI compatibility (remove ZodNull types)
     const transformedTools = transformMCPToolsForGoogleAI(allTools);
     logger.info(`Transformed ${Object.keys(transformedTools).length} MCP tools for Google AI compatibility`);
-    
+
     return transformedTools;
   },/**   * Get all tools as a flat array (for internal processing)
    */
   async getToolsArray(): Promise<unknown[]> {
     const tools: unknown[] = [];
-    
+
     try {
       const stdioTools = await mcpStdio.getTools();
       if (stdioTools && typeof stdioTools === 'object') {
@@ -310,7 +310,7 @@ export const mcp = {  /**
     } catch (error) {
       logger.error('Failed to get Stdio MCP tools', { error: error instanceof Error ? error.message : 'Unknown error' });
     }
-    
+
 //    if (mcpSmithery) {
 //      try {
 //        const smitheryTools = await mcpSmithery.getTools();
@@ -323,7 +323,7 @@ export const mcp = {  /**
 //        logger.error('Failed to get Smithery MCP tools', { error: error instanceof Error ? error.message : 'Unknown error' });
 //      }
 //    }
-    
+
     return tools;
   },
   /**
@@ -331,14 +331,14 @@ export const mcp = {  /**
    */
   async getToolsets() {
     const toolsets = {};
-    
+
     try {
       const stdioToolsets = await mcpStdio.getToolsets();
       Object.assign(toolsets, stdioToolsets);
     } catch (error) {
       logger.error('Failed to get Stdio MCP toolsets', { error: error instanceof Error ? error.message : 'Unknown error' });
     }
-    
+
 //    if (mcpSmithery) {
 //      try {
 //        const smitheryToolsets = await mcpSmithery.getToolsets();
@@ -347,7 +347,7 @@ export const mcp = {  /**
 //        logger.error('Failed to get Smithery MCP toolsets', { error: error instanceof Error ? error.message : 'Unknown error' });
 //      }
 //    }
-    
+
     return toolsets;
   },
 
@@ -359,13 +359,13 @@ export const mcp = {  /**
     if (!client) {
       throw new Error(`Server '${server}' not found in any MCP client`);
     }
-    
+
     const toolsets = await client.getToolsets();
     const serverToolset = toolsets[server];
     if (!serverToolset || !serverToolset[toolName]) {
       throw new Error(`Tool '${toolName}' not found on server '${server}'`);
     }
-    
+
     return await serverToolset[toolName](args);
   },
   /**
@@ -376,7 +376,7 @@ export const mcp = {  /**
     if (!client) {
       throw new Error(`Server '${server}' not found in any MCP client`);
     }
-    
+
     const tools = await client.getTools();
     return tools[server] || [];
   },
@@ -385,13 +385,13 @@ export const mcp = {  /**
    */
   async disconnect() {
     const promises = [];
-    
+
     try {
       promises.push(mcpStdio.disconnect());
     } catch (error) {
       logger.error('Error disconnecting Stdio MCP client', { error: error instanceof Error ? error.message : 'Unknown error' });
     }
-    
+
 //     if (mcpSmithery) {
 //      try {
 //        promises.push(mcpSmithery.disconnect());
@@ -399,7 +399,7 @@ export const mcp = {  /**
 //        logger.error('Error disconnecting Smithery MCP client', { error: error instanceof Error ? error.message : 'Unknown error' });
 //      }
 //    }
-    
+
     await Promise.allSettled(promises);
     logger.info('All MCP clients disconnected');
   },
@@ -409,8 +409,8 @@ export const mcp = {  /**
    */
   getClientForServer(server: string) {
     const stdioServers = ['filesystem', 'docker', 'git', 'time'];
-    
-    
+
+
     if (stdioServers.includes(server)) {
       return mcpStdio;
     }
@@ -423,14 +423,14 @@ export const mcp = {  /**
   resources: {
     async list() {
       const resources = {};
-      
+
       try {
         const stdioResources = await mcpStdio.resources.list();
         Object.assign(resources, stdioResources);
       } catch (error) {
         logger.error('Failed to list Stdio MCP resources', { error: error instanceof Error ? error.message : 'Unknown error' });
       }
-      
+
 //      if (mcpSmithery) {
 //        try {
 //          const smitheryResources = await mcpSmithery.resources.list();
@@ -439,20 +439,20 @@ export const mcp = {  /**
 //          logger.error('Failed to list Smithery MCP resources', { error: error instanceof Error ? error.message : 'Unknown error' });
 //        }
 //      }
-      
+
       return resources;
     },
 
     async templates() {
       const templates = {};
-      
+
       try {
         const stdioTemplates = await mcpStdio.resources.templates();
         Object.assign(templates, stdioTemplates);
       } catch (error) {
         logger.error('Failed to get Stdio MCP resource templates', { error: error instanceof Error ? error.message : 'Unknown error' });
       }
-      
+
 //      if (mcpSmithery) {
 //        try {
 //          const smitheryTemplates = await mcpSmithery.resources.templates();
@@ -461,7 +461,7 @@ export const mcp = {  /**
 //          logger.error('Failed to get Smithery MCP resource templates', { error: error instanceof Error ? error.message : 'Unknown error' });
 //        }
 //      }
-      
+
       return templates;
     },
 
@@ -491,7 +491,7 @@ export const mcp = {  /**
 
     getClientForServer(server: string) {
       const stdioServers = ['filesystem', 'docker'];
-      
+
       if (stdioServers.includes(server)) {
         return mcpStdio;
 //      } else if (smitheryServers.includes(server) && mcpSmithery) {
@@ -565,7 +565,7 @@ export class MCPTracker {
     };
 
     this.operations.push(record);
-    
+
     // Keep only last 1000 operations to prevent memory issues
     if (this.operations.length > 1000) {
       this.operations.shift();
@@ -601,7 +601,7 @@ export class MCPTracker {
   } {
     const operations = this.operations;
     const totalOps = operations.length;
-    
+
     if (totalOps === 0) {
       return {
         totalOperations: 0,
@@ -615,7 +615,7 @@ export class MCPTracker {
 
     const successfulOps = operations.filter(op => op.status === 'success');
     const avgDuration = operations.reduce((sum, op) => sum + op.duration, 0) / totalOps;
-    
+
     const serverBreakdown = operations.reduce((acc, op) => {
       acc[op.server] = (acc[op.server] || 0) + 1;
       return acc;
@@ -645,7 +645,7 @@ export class MCPTracker {
 }
 
 /**
- * Enhanced MCP operation wrapper with comprehensive tracing * 
+ * Enhanced MCP operation wrapper with comprehensive tracing *
  * @param server - MCP server name
  * @param operation - Operation type (e.g., 'listTools', 'callTool', 'listResources')
  * @param fn - Function to execute
@@ -659,7 +659,7 @@ export const traceMCPOperation = async <T>(
   resource?: string
 ): Promise<T> => {
   const startTime = Date.now();
-  
+
   try {
     //observabilityLogger.debug(`Starting MCP operation: ${server}:${operation}`, {
    //   server,
@@ -670,9 +670,9 @@ export const traceMCPOperation = async <T>(
 
     const result = await fn();
     const duration = Date.now() - startTime;
-    
+
     MCPTracker.recordOperation(server, operation, duration, 'success', tool, resource);
-    
+
     //observabilityLogger.debug(`MCP operation completed: ${server}:${operation}`, {
    //   server,
    //   operation,
@@ -681,16 +681,16 @@ export const traceMCPOperation = async <T>(
    //   duration: `${duration}ms`,
    //   status: 'success'
     //});
-    
+
     return result;
   } catch (error) {
     const duration = Date.now() - startTime;
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    
+
     MCPTracker.recordOperation(server, operation, duration, 'error', tool, resource, {
       error: errorMessage
     });
-    
+
     //ErrorTracker.recordError(`MCP:${server}:${operation}`, errorMessage, {
    //   server,
    //   operation,
@@ -698,7 +698,7 @@ export const traceMCPOperation = async <T>(
    //   resource,
    //   duration: `${duration}ms`
    // });
-    
+
     //observabilityLogger.error(`MCP operation failed: ${server}:${operation}`, {
    //   server,
    //   operation,
@@ -708,14 +708,14 @@ export const traceMCPOperation = async <T>(
    //   status: 'error',
    //   error: errorMessage
    // });
-    
+
     throw error;
   }
 };
 
 /**
  * Traced MCP tool execution
- * 
+ *
  * @param server - MCP server name
  * @param toolName - Tool to execute
  * @param args - Tool arguments
@@ -731,11 +731,11 @@ export const executeTracedMCPTool = async (
     'callTool',
     async () => {      const tools = await mcp.listTools(server);
       const tool = tools.find((t: { name: string }) => t.name === toolName);
-      
+
       if (!tool) {
         throw new Error(`Tool '${toolName}' not found on server '${server}'`);
       }
-      
+
       return await mcp.callTool(server, toolName, args);
     },
     toolName
@@ -743,7 +743,7 @@ export const executeTracedMCPTool = async (
 };
 /**
  * Traced MCP resource access
- * 
+ *
  * @param server - MCP server name
  * @param resourceUri - Resource URI to access
  * @returns Resource content with tracing
@@ -764,7 +764,7 @@ export const getTracedMCPResource = async (
 };
 /**
  * Traced MCP server tools listing
- * 
+ *
  * @param server - MCP server name
  * @returns Available tools with tracing
  */
@@ -779,7 +779,7 @@ export const listTracedMCPTools = async (server: string): Promise<{ name: string
 };
 /**
  * Traced MCP server resources listing
- * 
+ *
  * @param server - MCP server name
  * @returns Available resources with tracing
  */
@@ -794,7 +794,7 @@ export const listTracedMCPResources = async (server: string): Promise<{ name: st
 };
 /**
  * Traced MCP toolsets retrieval for dynamic usage
- * 
+ *
  * @returns All toolsets from all servers with tracing
  */
 export const getTracedMCPToolsets = async (): Promise<Record<string, unknown>> => {
@@ -808,7 +808,7 @@ export const getTracedMCPToolsets = async (): Promise<Record<string, unknown>> =
 };
 /**
  * Traced MCP tools retrieval for static usage
- * 
+ *
  * @returns All tools from all servers with tracing
  */
 export const getTracedMCPTools = async (): Promise<{ name: string; description?: string }[]> => {
@@ -837,7 +837,7 @@ export const getTracedMCPTools = async (): Promise<{ name: string; description?:
 };
 /**
  * Traced MCP resource listing across all servers
- * 
+ *
  * @returns Resources grouped by server with tracing
  */
 export const listAllTracedMCPResources = async (): Promise<Record<string, { name: string; description?: string }[]>> => {
@@ -851,7 +851,7 @@ export const listAllTracedMCPResources = async (): Promise<Record<string, { name
 };
 /**
  * Traced MCP resource templates listing
- * 
+ *
  * @returns Resource templates grouped by server with tracing
  */
 export const getTracedMCPResourceTemplates = async (): Promise<Record<string, { name: string; description?: string }[]>> => {
@@ -865,7 +865,7 @@ export const getTracedMCPResourceTemplates = async (): Promise<Record<string, { 
 };
 /**
  * Traced MCP resource subscription
- * 
+ *
  * @param server - MCP server name
  * @param resourceUri - Resource URI to subscribe to
  * @returns Subscription result with tracing
@@ -886,7 +886,7 @@ export const subscribeToTracedMCPResource = async (
 };
 /**
  * Traced MCP resource unsubscription
- * 
+ *
  * @param server - MCP server name
  * @param resourceUri - Resource URI to unsubscribe from
  * @returns Unsubscription result with tracing
@@ -907,7 +907,7 @@ export const unsubscribeFromTracedMCPResource = async (
 };
 /**
  * Enhanced MCP resource reading with caching and performance tracking
- * 
+ *
  * @param server - MCP server name
  * @param resourceUri - Resource URI to read
  * @param useCache - Whether to use cached result if available
@@ -923,20 +923,20 @@ export const getEnhancedTracedMCPResource = async (
     'enhancedReadResource',
     async () => {
       const startTime = Date.now();
-      
+
       // Simple in-memory cache (could be enhanced with Redis/etc.)
       const cacheKey = `${server}:${resourceUri}`;
       if (useCache && resourceCache.has(cacheKey)) {
         const cached = resourceCache.get(cacheKey)!;
         const age = Date.now() - cached.timestamp;
-        
+
         if (age < 300000) { // 5 minutes cache
           //observabilityLogger.debug('MCP resource cache hit', {
           //  server,
           //  resourceUri,
           //  cacheAge: `${age}ms`
           //});
-          
+
           return {
             content: cached.content,
             metadata: {
@@ -947,10 +947,10 @@ export const getEnhancedTracedMCPResource = async (
           };
         }
       }
-      
+
       const result = await mcp.resources.read(server, resourceUri);
       const readDuration = Date.now() - startTime;
-      
+
       const metadata = {
         server,
         resourceUri,
@@ -959,7 +959,7 @@ export const getEnhancedTracedMCPResource = async (
         cached: false,
         contentSize: JSON.stringify(result).length
       };
-      
+
       // Cache the result
       if (useCache) {
         resourceCache.set(cacheKey, {
@@ -968,7 +968,7 @@ export const getEnhancedTracedMCPResource = async (
           timestamp: Date.now()
         });
       }
-      
+
       return {
         content: result,
         metadata
@@ -979,10 +979,10 @@ export const getEnhancedTracedMCPResource = async (
   );
 };
 // Simple in-memory cache for resources
-const resourceCache = new Map<string, { 
-  content: unknown; 
-  metadata: Record<string, string | number | boolean>; 
-  timestamp: number 
+const resourceCache = new Map<string, {
+  content: unknown;
+  metadata: Record<string, string | number | boolean>;
+  timestamp: number
 }>();
 
 /**
@@ -994,7 +994,7 @@ export function clearMCPResourceCache() {
 
 /**
  * Get MCP analytics and performance metrics
- * 
+ *
  * @returns Comprehensive MCP analytics
  */
 export function getMCPAnalytics() {
@@ -1017,7 +1017,7 @@ export function getMCPAnalytics() {
 
 /**
  * Get MCP analytics for a specific server
- * 
+ *
  * @param server - Server name
  * @returns Server-specific analytics
  */
@@ -1038,7 +1038,7 @@ export function clearMCPAnalytics() {
 
 /**
  * Health check for all MCP servers
- * 
+ *
  * @returns Health status of all servers
  */
 //export const checkMCPServersHealth = createTraceableAgent(

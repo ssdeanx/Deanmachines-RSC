@@ -1,7 +1,7 @@
 import { AssistantMessageProps } from "@copilotkit/react-ui";
 import { useChatContext } from "@copilotkit/react-ui";
 import { Markdown } from "@copilotkit/react-ui";
-import { SparklesIcon } from "@heroicons/react/24/outline";
+import { Sparkles } from "lucide-react";
 
 import { CopilotKit } from "@copilotkit/react-core";
 import { CopilotSidebar } from "@copilotkit/react-ui";
@@ -14,7 +14,7 @@ const CustomAssistantMessage = (props: AssistantMessageProps) => {
   const avatarStyles = "bg-zinc-400 border-zinc-500 shadow-lg min-h-10 min-w-10 rounded-full text-white flex items-center justify-center";
   const messageStyles = "px-4 rounded-xl pt-2";
 
-  const avatar = <div className={avatarStyles}><SparklesIcon className="h-6 w-6" /></div>
+  const avatar = <div className={avatarStyles}><Sparkles className="h-6 w-6" /></div>
 
 
   return (
@@ -31,6 +31,12 @@ const CustomAssistantMessage = (props: AssistantMessageProps) => {
   );
 };
 
-<CopilotKit>
-  <CopilotSidebar AssistantMessage={CustomAssistantMessage} />
-</CopilotKit>
+export function AssistantMessage() {
+  return (
+    <CopilotKit>
+      <CopilotSidebar AssistantMessage={CustomAssistantMessage} />
+    </CopilotKit>
+  );
+}
+
+export default AssistantMessage;
