@@ -1,4 +1,9 @@
 ---
+description: 
+globs: 
+alwaysApply: false
+---
+---
 description: "Advanced prompting techniques for Cursor AI including Chain-of-Thought, Few-Shot, Context Injection, and Plan vs Act modes. Cutting-edge 2025 techniques for optimal AI collaboration."
 globs: ["**/*"]
 alwaysApply: false
