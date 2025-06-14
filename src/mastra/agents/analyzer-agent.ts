@@ -43,3 +43,27 @@ export const analyzerAgent = new Agent({
   },
   memory: agentMemory
 });
+
+/**
+ * Runtime context for the Analyzer Agent
+ * Stores analysis preferences, data processing configurations, and insight generation settings
+ * 
+ * @mastra AnalyzerAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type AnalyzerAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Analysis type focus */
+  "analysis-type": "statistical" | "trend" | "comparative" | "predictive" | "diagnostic" | "exploratory";
+  /** Data depth preference */
+  "data-depth": "surface" | "detailed" | "comprehensive" | "exhaustive";
+  /** Visualization preference */
+  "visualization": "charts" | "graphs" | "tables" | "dashboards" | "reports" | "interactive";
+  /** Analysis speed vs accuracy */
+  "speed-accuracy": "fast" | "balanced" | "thorough" | "comprehensive";
+  /** Domain context for analysis */
+  "domain-context": string;
+};

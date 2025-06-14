@@ -58,6 +58,30 @@ export { analyzerAgent } from './analyzer-agent';
 export { strategizerAgent } from './strategizer-agent';
 export { evolveAgent } from './evolve-agent';
 
+// Runtime Context Types - Export all agent-specific runtime contexts
+export type { MasterAgentRuntimeContext } from './master-agent';
+export type { WeatherAgentRuntimeContext } from './weather-agent';
+export type { CodeAgentRuntimeContext } from './code-agent';
+export type { ResearchAgentRuntimeContext } from './research-agent';
+export type { GitAgentRuntimeContext } from './git-agent';
+export type { DataAgentRuntimeContext } from './data-agent';
+export type { DebugAgentRuntimeContext } from './debug-agent';
+export type { GraphAgentRuntimeContext } from './graph-agent';
+export type { DesignAgentRuntimeContext } from './design-agent';
+export type { MarketingAgentRuntimeContext } from './marketing-agent';
+export type { ManagerAgentRuntimeContext } from './manager-agent';
+export type { BrowserAgentRuntimeContext } from './browser-agent';
+export type { DockerAgentRuntimeContext } from './docker-agent';
+export type { DocumentationAgentRuntimeContext } from './documentation-agent';
+export type { ProcessingAgentRuntimeContext } from './processing-agent';
+export type { SpecialAgentRuntimeContext } from './special-agent';
+export type { SupervisorAgentRuntimeContext } from './supervisor-agent';
+export type { StrategizerAgentRuntimeContext } from './strategizer-agent';
+export type { EvolveAgentRuntimeContext } from './evolve-agent';
+export type { AnalyzerAgentRuntimeContext } from './analyzer-agent';
+export type { SysadminAgentRuntimeContext } from './sysadmin-agent';
+export type { UtilityAgentRuntimeContext } from './utility-agent';
+
 /**
  * Agent registry object for easy access and management
  * Provides a structured way to access all available agents

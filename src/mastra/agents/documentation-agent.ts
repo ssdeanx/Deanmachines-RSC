@@ -54,3 +54,27 @@ export const documentationAgent = new Agent({
   },
   memory: agentMemory
 });
+
+/**
+ * Runtime context for the Documentation Agent
+ * Stores documentation preferences, target audience, and content formatting settings
+ * 
+ * @mastra DocumentationAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type DocumentationAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Documentation type being created */
+  "doc-type": "api" | "user-guide" | "technical" | "tutorial" | "reference" | "readme";
+  /** Target audience level */
+  "audience-level": "beginner" | "intermediate" | "advanced" | "expert";
+  /** Documentation format preference */
+  "format": "markdown" | "html" | "pdf" | "wiki" | "docx";
+  /** Code documentation standard */
+  "code-style": "jsdoc" | "tsdoc" | "sphinx" | "javadoc" | "rustdoc";
+  /** Project or product being documented */
+  "project-name": string;
+};

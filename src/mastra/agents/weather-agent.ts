@@ -4,6 +4,30 @@ import { weatherTool } from '../tools/weather-tool';
 import { agentMemory } from '../agentMemory';
 import { mcp } from '../tools/mcp';
 
+/**
+ * Runtime context type for the Weather Agent
+ * Stores weather-specific preferences and location context
+ * 
+ * @mastra WeatherAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type WeatherAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Temperature unit preference */
+  "temperature-unit": "celsius" | "fahrenheit";
+  /** Default location for weather queries */
+  "default-location": string;
+  /** Include extended forecast */
+  "extended-forecast": boolean;
+  /** Include weather alerts */
+  "include-alerts": boolean;
+  /** Timezone preference */
+  "timezone": string;
+};
+
 export const weatherAgent = new Agent({
   name: 'Weather Agent',
   instructions: `

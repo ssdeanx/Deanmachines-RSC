@@ -60,3 +60,4 @@ mastra.md
 .cursor/rules/mastra-agents.mdc
 .cursorignore
 .cursorindexingignore
+.specstory/ai_rules_backups/*

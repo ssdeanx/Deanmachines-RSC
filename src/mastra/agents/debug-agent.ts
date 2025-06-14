@@ -54,3 +54,29 @@ export const debugAgent = new Agent({
   },
   memory: agentMemory
 });
+
+/**
+ * Runtime context type for the Debug Agent
+ * Stores debugging preferences and error context
+ * 
+ * @mastra DebugAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type DebugAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Debug verbosity level */
+  "debug-level": "minimal" | "standard" | "verbose" | "trace";
+  /** Error severity filter */
+  "error-severity": "all" | "critical" | "high" | "medium";
+  /** Include stack traces */
+  "include-stack": boolean;
+  /** Environment context */
+  "environment": "development" | "staging" | "production";
+  /** Application type */
+  "app-type": "web" | "mobile" | "desktop" | "api" | "service";
+  /** Performance monitoring */
+  "monitor-performance": boolean;
+};

@@ -37,50 +37,93 @@
 
 Deanmachines-RSC is an advanced AI-powered application and research platform built with Next.js 15, TypeScript, and the Mastra AI framework. It features a modular, agent-based backend architecture that leverages autonomous agents, robust memory management, and Model Context Protocol (MCP) integration for intelligent code analysis, automation, and workflow orchestration. The system is designed for extensibility, observability (LangSmith, OpenTelemetry), and seamless integration with Google AI (Gemini) via the Vercel AI SDK. Key capabilities include multi-agent collaboration, dynamic tool execution, and advanced code graph generation for software repositories.
 
-## 🏗️ Architecture Diagram
+## 🏗️ Advanced Multi-Agent Architecture
 
 ```mermaid
-graph TD
-
-    8675["User<br>External Actor"]
-    subgraph 8661["External Systems"]
-        8672["Supabase BaaS<br>Auth, Database, Storage"]
-        8673["Google AI APIs<br>Gemini, Vertex AI, etc."]
-        8674["Langsmith<br>AI Observability"]
+graph TB
+    User["👤 User<br>Next.js 15 Frontend"] -->|interacts with| Frontend["🎨 Frontend Layer<br>React 19, CopilotKit, Tailwind CSS"]
+    
+    Frontend -->|communicates with| Network["🕸️ AgentNetwork<br>LLM-based Dynamic Routing"]
+    
+    Network -->|coordinates| AgentLayer["🤖 Agent Layer (22+ Specialists)"]
+    
+    subgraph AgentLayer ["🤖 Specialized Agent Ecosystem"]
+        subgraph DevAgents ["💻 Development Agents"]
+            Master["👑 Master Agent<br>Central Orchestrator"]
+            Code["⚡ Code Agent<br>Analysis & Generation"]
+            Git["📚 Git Agent<br>Version Control"]
+            Debug["🐛 Debug Agent<br>Error Detection"]
+            Docs["📖 Documentation Agent<br>Technical Writing"]
+        end
+        
+        subgraph DataAgents ["📊 Data & Analysis"]
+            Data["📈 Data Agent<br>Processing & Analysis"]
+            Graph["🕸️ Graph Agent<br>Knowledge Graphs"]
+            Research["🔍 Research Agent<br>Information Gathering"]
+            Weather["🌤️ Weather Agent<br>Forecasting"]
+            Analyzer["🎯 Analyzer Agent<br>Pattern Recognition"]
+        end
+        
+        subgraph OpsAgents ["⚙️ Operations & Management"]
+            Manager["👔 Manager Agent<br>Project Coordination"]
+            Marketing["📢 Marketing Agent<br>Content Creation"]
+            Sysadmin["🔧 Sysadmin Agent<br>System Operations"]
+            Browser["🌐 Browser Agent<br>Web Automation"]
+            Docker["🐳 Docker Agent<br>Containerization"]
+        end
+        
+        subgraph CreativeAgents ["🎨 Creative & Specialized"]
+            Design["🎨 Design Agent<br>UI/UX Creation"]
+            Special["⭐ Special Agent<br>Multi-domain Expert"]
+            Strategizer["📋 Strategizer Agent<br>Planning & Strategy"]
+            Supervisor["👁️ Supervisor Agent<br>Quality Assurance"]
+            Evolve["🚀 Evolve Agent<br>Continuous Improvement"]
+        end
     end
-    subgraph 8662["Web Application<br>Next.js, React"]
-        8663["Application Entry<br>Next.js Layout &amp; Root Page"]
-        8664["Main Feature Sections<br>Next.js Pages, React"]
-        8665["CopilotKit Backend<br>Next.js API Route"]
-        8666["Authentication Handling<br>Next.js Middleware, Supabase"]
-        8667["Base UI Component Library<br>React, shadcn/ui"]
-        8668["App Core Logic &amp; UI<br>React, TypeScript"]
-        8669["CopilotKit Frontend<br>React Components"]
-        8670["Mastra AI Engine<br>TypeScript, AI Agents"]
-        8671["Supabase Client Access<br>Supabase SDK"]
-        %% Edges at this level (grouped by source)
-        8666["Authentication Handling<br>Next.js Middleware, Supabase"] -->|manages sessions for| 8663["Application Entry<br>Next.js Layout &amp; Root Page"]
-        8666["Authentication Handling<br>Next.js Middleware, Supabase"] -->|manages sessions for| 8664["Main Feature Sections<br>Next.js Pages, React"]
-        8663["Application Entry<br>Next.js Layout &amp; Root Page"] -->|routes to| 8664["Main Feature Sections<br>Next.js Pages, React"]
-        8663["Application Entry<br>Next.js Layout &amp; Root Page"] -->|handles auth flows via| 8666["Authentication Handling<br>Next.js Middleware, Supabase"]
-        8663["Application Entry<br>Next.js Layout &amp; Root Page"] -->|uses| 8667["Base UI Component Library<br>React, shadcn/ui"]
-        8663["Application Entry<br>Next.js Layout &amp; Root Page"] -->|uses| 8668["App Core Logic &amp; UI<br>React, TypeScript"]
-        8669["CopilotKit Frontend<br>React Components"] -->|interacts with| 8665["CopilotKit Backend<br>Next.js API Route"]
-        8664["Main Feature Sections<br>Next.js Pages, React"] -->|protected by| 8666["Authentication Handling<br>Next.js Middleware, Supabase"]
-        8664["Main Feature Sections<br>Next.js Pages, React"] -->|uses| 8667["Base UI Component Library<br>React, shadcn/ui"]
-        8664["Main Feature Sections<br>Next.js Pages, React"] -->|uses| 8668["App Core Logic &amp; UI<br>React, TypeScript"]
-        8664["Main Feature Sections<br>Next.js Pages, React"] -->|uses| 8669["CopilotKit Frontend<br>React Components"]
-        8664["Main Feature Sections<br>Next.js Pages, React"] -->|triggers AI actions via| 8670["Mastra AI Engine<br>TypeScript, AI Agents"]
-        8664["Main Feature Sections<br>Next.js Pages, React"] -->|fetches data via| 8671["Supabase Client Access<br>Supabase SDK"]
-        8665["CopilotKit Backend<br>Next.js API Route"] -->|delegates to| 8670["Mastra AI Engine<br>TypeScript, AI Agents"]
+    
+    AgentLayer -->|uses| Tools["🛠️ MCP Tools (67 Available)<br>Real Implementation, No Mocks"]
+    AgentLayer -->|stores in| Memory["💾 Agent Memory<br>LibSQL/Turso + Vector Storage"]
+    
+    Tools -->|integrates with| External["🌐 External Services"]
+    
+    subgraph External ["🌐 External Integrations"]
+        GitHub["📚 GitHub<br>Repository Management"]
+        Google["🧠 Google AI<br>Gemini Models"]
+        Supabase["🔐 Supabase<br>Auth & Database"]
+        LangSmith["📊 LangSmith<br>AI Observability"]
     end
-    %% Edges at this level (grouped by source)
-    8666["Authentication Handling<br>Next.js Middleware, Supabase"] -->|authenticates users with| 8672["Supabase BaaS<br>Auth, Database, Storage"]
-    8675["User<br>External Actor"] -->|accesses| 8663["Application Entry<br>Next.js Layout &amp; Root Page"]
-    8670["Mastra AI Engine<br>TypeScript, AI Agents"] -->|persists/retrieves agent data with| 8672["Supabase BaaS<br>Auth, Database, Storage"]
-    8670["Mastra AI Engine<br>TypeScript, AI Agents"] -->|calls| 8673["Google AI APIs<br>Gemini, Vertex AI, etc."]
-    8670["Mastra AI Engine<br>TypeScript, AI Agents"] -->|sends traces to| 8674["Langsmith<br>AI Observability"]
+    
+    Memory -->|traces to| LangSmith
+    AgentLayer -->|powered by| Google
+    Frontend -->|authenticates via| Supabase
+    Tools -->|accesses| GitHub
+    
+    classDef userNode fill:#4ade80,stroke:#16a34a,color:#000
+    classDef frontendNode fill:#06b6d4,stroke:#0891b2,color:#fff
+    classDef networkNode fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    classDef agentNode fill:#f59e0b,stroke:#d97706,color:#000
+    classDef toolNode fill:#ef4444,stroke:#dc2626,color:#fff
+    classDef memoryNode fill:#ec4899,stroke:#db2777,color:#fff
+    classDef externalNode fill:#6b7280,stroke:#4b5563,color:#fff
+    
+    class User userNode
+    class Frontend frontendNode
+    class Network networkNode
+    class Master,Code,Git,Debug,Docs,Data,Graph,Research,Weather,Analyzer,Manager,Marketing,Sysadmin,Browser,Docker,Design,Special,Strategizer,Supervisor,Evolve agentNode
+    class Tools toolNode
+    class Memory memoryNode
+    class GitHub,Google,Supabase,LangSmith externalNode
 ```
+
+### 🎯 Architecture Highlights
+
+- **🤖 22+ Specialized Agents**: Each with runtime context types for enhanced capabilities
+- **🕸️ Dynamic Agent Routing**: LLM-based coordination through AgentNetwork
+- **⚡ Real MCP Integration**: 67 available tools with no mock implementations
+- **🎨 Modern Frontend**: Next.js 15, React 19, CopilotKit for seamless AI interaction
+- **💾 Persistent Memory**: LibSQL/Turso with vector storage for agent context
+- **📊 Full Observability**: LangSmith tracing and OpenTelemetry monitoring
+- **🔐 Secure Authentication**: Supabase Auth with GitHub OAuth integration
 
 ---
 

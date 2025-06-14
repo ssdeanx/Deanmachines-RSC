@@ -54,3 +54,27 @@ export const processingAgent = new Agent({
   },
   memory: agentMemory
 });
+
+/**
+ * Runtime context for the Processing Agent
+ * Stores data processing preferences, workflow configurations, and batch processing settings
+ * 
+ * @mastra ProcessingAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type ProcessingAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Data processing type */
+  "processing-type": "batch" | "stream" | "real-time" | "scheduled";
+  /** Data source format */
+  "data-format": "json" | "csv" | "xml" | "parquet" | "avro" | "binary";
+  /** Processing pipeline stage */
+  "pipeline-stage": "extract" | "transform" | "load" | "validate" | "analyze";
+  /** Performance priority */
+  "performance-mode": "speed" | "memory" | "accuracy" | "balanced";
+  /** Error handling strategy */
+  "error-handling": "strict" | "lenient" | "skip" | "retry";
+};

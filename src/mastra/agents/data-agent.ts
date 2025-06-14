@@ -55,3 +55,29 @@ export const dataAgent = new Agent({
   },
   memory: agentMemory
 });
+
+/**
+ * Runtime context type for the Data Agent
+ * Stores data processing preferences and analysis context
+ * 
+ * @mastra DataAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type DataAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Data format preference */
+  "data-format": "json" | "csv" | "xml" | "parquet" | "auto";
+  /** Analysis type */
+  "analysis-type": "descriptive" | "predictive" | "prescriptive" | "diagnostic";
+  /** Visualization preferences */
+  "viz-type": "charts" | "tables" | "graphs" | "mixed";
+  /** Data quality threshold */
+  "quality-threshold": number;
+  /** Include statistical tests */
+  "include-stats": boolean;
+  /** Data privacy level */
+  "privacy-level": "public" | "internal" | "confidential" | "restricted";
+};

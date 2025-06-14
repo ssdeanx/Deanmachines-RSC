@@ -5,6 +5,32 @@ import { PinoLogger } from "@mastra/loggers";
 import { createTracedGoogleModel } from '../config';
 import { mcp } from '../tools/mcp';
 
+/**
+ * Runtime context type for the Git Agent
+ * Stores version control preferences and repository context
+ * 
+ * @mastra GitAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type GitAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Current repository path */
+  "repo-path": string;
+  /** Git branching strategy */
+  "branching-strategy": "gitflow" | "github-flow" | "gitlab-flow" | "custom";
+  /** Default branch name */
+  "default-branch": string;
+  /** Commit message format */
+  "commit-format": "conventional" | "standard" | "custom";
+  /** Include git hooks */
+  "use-hooks": boolean;
+  /** Repository hosting service */
+  "hosting-service": "github" | "gitlab" | "bitbucket" | "other";
+};
+
 const logger = new PinoLogger({ name: 'gitAgent', level: 'info' });
 logger.info('Initializing gitAgent');
 

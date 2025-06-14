@@ -54,3 +54,29 @@ export const researchAgent = new Agent({
   },
   memory: agentMemory
 });
+
+/**
+ * Runtime context type for the Research Agent
+ * Stores research preferences and source filtering context
+ * 
+ * @mastra ResearchAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type ResearchAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Research depth level */
+  "research-depth": "surface" | "detailed" | "comprehensive";
+  /** Source types to include */
+  "source-types": string[];
+  /** Maximum sources to gather */
+  "max-sources": number;
+  /** Include academic sources */
+  "include-academic": boolean;
+  /** Language preferences for sources */
+  "language-filter": string[];
+  /** Research focus area */
+  "focus-area": string;
+};

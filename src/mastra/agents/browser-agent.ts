@@ -47,3 +47,27 @@ export const browserAgent = new Agent({
   },
   memory: agentMemory
 });
+
+/**
+ * Runtime context for the Browser Agent
+ * Stores web automation preferences, session data, and target website information
+ * 
+ * @mastra BrowserAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type BrowserAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Target website or domain for automation */
+  "target-website": string;
+  /** Browser automation type */
+  "automation-type": "scraping" | "testing" | "interaction" | "monitoring";
+  /** Browser headless mode preference */
+  "headless-mode": boolean;
+  /** Page load timeout in milliseconds */
+  "timeout": number;
+  /** User agent string preference */
+  "user-agent": string;
+};

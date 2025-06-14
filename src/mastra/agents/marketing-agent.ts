@@ -52,3 +52,27 @@ export const marketingAgent = new Agent({
   },
   memory: agentMemory
 });
+
+/**
+ * Runtime context for the Marketing Agent
+ * Stores marketing campaign data, brand preferences, and audience targeting information
+ * 
+ * @mastra MarketingAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type MarketingAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Brand or company name */
+  "brand-name": string;
+  /** Target audience demographic */
+  "target-audience": string;
+  /** Marketing campaign type */
+  "campaign-type": "social" | "email" | "content" | "seo" | "ppc" | "brand";
+  /** Content tone preference */
+  "content-tone": "professional" | "casual" | "friendly" | "authoritative" | "playful";
+  /** Marketing budget range */
+  "budget-range": "small" | "medium" | "large" | "enterprise";
+};

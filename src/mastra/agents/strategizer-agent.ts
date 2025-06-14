@@ -62,3 +62,27 @@ SUCCESS CRITERIA:
   },
   memory: agentMemory
 });
+
+/**
+ * Runtime context for the Strategizer Agent
+ * Stores strategic planning preferences, business context, and goal-setting configurations
+ * 
+ * @mastra StrategizerAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type StrategizerAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Strategic planning timeframe */
+  "planning-horizon": "short-term" | "medium-term" | "long-term" | "multi-year";
+  /** Business context or industry */
+  "business-context": string;
+  /** Strategic framework preference */
+  "strategy-framework": "swot" | "okr" | "balanced-scorecard" | "lean" | "agile" | "custom";
+  /** Risk tolerance level */
+  "risk-tolerance": "conservative" | "moderate" | "aggressive" | "innovative";
+  /** Success metrics focus */
+  "metrics-focus": "financial" | "operational" | "customer" | "innovation" | "balanced";
+};

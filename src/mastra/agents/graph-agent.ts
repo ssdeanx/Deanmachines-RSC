@@ -6,6 +6,32 @@ import { PinoLogger } from "@mastra/loggers";
 import { createTracedGoogleModel } from '../config';
 import { mcp } from '../tools/mcp';
 
+/**
+ * Runtime context type for the Graph Agent
+ * Stores graph analysis preferences and relationship context
+ * 
+ * @mastra GraphAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type GraphAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Graph database type */
+  "graph-db": "neo4j" | "memgraph" | "tigergraph" | "arangodb" | "other";
+  /** Analysis depth for relationships */
+  "max-depth": number;
+  /** Node types to include */
+  "node-types": string[];
+  /** Relationship types to analyze */
+  "relationship-types": string[];
+  /** Include graph metrics */
+  "include-metrics": boolean;
+  /** Visualization format */
+  "viz-format": "d3" | "cytoscape" | "graphviz" | "networkx";
+};
+
 const logger = new PinoLogger({ name: 'graphAgent', level: 'info' });
 logger.info('Initializing graphAgent');
 

@@ -54,3 +54,27 @@ export const supervisorAgent = new Agent({
   },
   memory: agentMemory
 });
+
+/**
+ * Runtime context for the Supervisor Agent
+ * Stores agent coordination preferences, delegation rules, and oversight configurations
+ * 
+ * @mastra SupervisorAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type SupervisorAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Number of agents under supervision */
+  "agent-count": number;
+  /** Coordination strategy */
+  "coordination-strategy": "centralized" | "distributed" | "hierarchical" | "collaborative";
+  /** Quality assurance level */
+  "qa-level": "basic" | "standard" | "rigorous" | "comprehensive";
+  /** Delegation authority level */
+  "delegation-level": "limited" | "moderate" | "extensive" | "full";
+  /** Escalation threshold */
+  "escalation-threshold": "low" | "medium" | "high" | "critical-only";
+};

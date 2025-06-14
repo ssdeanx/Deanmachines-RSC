@@ -52,3 +52,29 @@ export const designAgent = new Agent({
   },
   memory: agentMemory
 });
+
+/**
+ * Runtime context type for the Design Agent
+ * Stores design preferences and visual context
+ * 
+ * @mastra DesignAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type DesignAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Design system preference */
+  "design-system": "material" | "chakra" | "antd" | "tailwind" | "custom";
+  /** Color palette theme */
+  "color-theme": "light" | "dark" | "auto" | "custom";
+  /** Target device types */
+  "target-devices": string[];
+  /** Accessibility level */
+  "accessibility-level": "AA" | "AAA" | "standard";
+  /** Brand guidelines */
+  "brand-context": string;
+  /** Animation preferences */
+  "animation-style": "minimal" | "moderate" | "rich" | "none";
+};

@@ -6,6 +6,32 @@ import { PinoLogger } from "@mastra/loggers";
 import { createTracedGoogleModel } from '../config';
 import { mcp } from '../tools/mcp';
 
+/**
+ * Runtime context type for the Code Agent
+ * Stores development-specific context for code analysis and generation
+ * 
+ * @mastra CodeAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type CodeAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Programming language being worked with */
+  "language": string;
+  /** Project framework (React, Vue, etc.) */
+  "framework": string;
+  /** Code quality standard (strict, standard, relaxed) */
+  "quality-level": "strict" | "standard" | "relaxed";
+  /** Whether to include performance optimizations */
+  "optimize-performance": boolean;
+  /** Security scanning enabled */
+  "security-scan": boolean;
+  /** Current repository context */
+  "repo-context": string;
+};
+
 const logger = new PinoLogger({ name: 'codeAgent', level: 'info' });
 logger.info('Initializing codeAgent');
 
