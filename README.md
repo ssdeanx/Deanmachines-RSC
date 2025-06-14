@@ -33,128 +33,58 @@
 
 ---
 
-##  Overview
+## Overview
 
 Deanmachines-RSC is an advanced AI-powered application and research platform built with Next.js 15, TypeScript, and the Mastra AI framework. It features a modular, agent-based backend architecture that leverages autonomous agents, robust memory management, and Model Context Protocol (MCP) integration for intelligent code analysis, automation, and workflow orchestration. The system is designed for extensibility, observability (LangSmith, OpenTelemetry), and seamless integration with Google AI (Gemini) via the Vercel AI SDK. Key capabilities include multi-agent collaboration, dynamic tool execution, and advanced code graph generation for software repositories.
 
 ## 🏗️ Architecture Diagram
 
 ```mermaid
-graph TB
-    %% Frontend Layer
-    subgraph "🎨 Frontend Layer"
-        UI[Next.js 15 + React 19]
-        AUTH[NextAuth v5]
-        THEME[Theme System]
-        COPILOT[CopilotKit UI]
+graph TD
+
+    8675["User<br>External Actor"]
+    subgraph 8661["External Systems"]
+        8672["Supabase BaaS<br>Auth, Database, Storage"]
+        8673["Google AI APIs<br>Gemini, Vertex AI, etc."]
+        8674["Langsmith<br>AI Observability"]
     end
-
-    %% API Layer
-    subgraph "🔌 API Layer"
-        API[Next.js API Routes]
-        COPILOT_API[CopilotKit Runtime]
-        AUTH_API[Auth Endpoints]
+    subgraph 8662["Web Application<br>Next.js, React"]
+        8663["Application Entry<br>Next.js Layout &amp; Root Page"]
+        8664["Main Feature Sections<br>Next.js Pages, React"]
+        8665["CopilotKit Backend<br>Next.js API Route"]
+        8666["Authentication Handling<br>Next.js Middleware, Supabase"]
+        8667["Base UI Component Library<br>React, shadcn/ui"]
+        8668["App Core Logic &amp; UI<br>React, TypeScript"]
+        8669["CopilotKit Frontend<br>React Components"]
+        8670["Mastra AI Engine<br>TypeScript, AI Agents"]
+        8671["Supabase Client Access<br>Supabase SDK"]
+        %% Edges at this level (grouped by source)
+        8666["Authentication Handling<br>Next.js Middleware, Supabase"] -->|manages sessions for| 8663["Application Entry<br>Next.js Layout &amp; Root Page"]
+        8666["Authentication Handling<br>Next.js Middleware, Supabase"] -->|manages sessions for| 8664["Main Feature Sections<br>Next.js Pages, React"]
+        8663["Application Entry<br>Next.js Layout &amp; Root Page"] -->|routes to| 8664["Main Feature Sections<br>Next.js Pages, React"]
+        8663["Application Entry<br>Next.js Layout &amp; Root Page"] -->|handles auth flows via| 8666["Authentication Handling<br>Next.js Middleware, Supabase"]
+        8663["Application Entry<br>Next.js Layout &amp; Root Page"] -->|uses| 8667["Base UI Component Library<br>React, shadcn/ui"]
+        8663["Application Entry<br>Next.js Layout &amp; Root Page"] -->|uses| 8668["App Core Logic &amp; UI<br>React, TypeScript"]
+        8669["CopilotKit Frontend<br>React Components"] -->|interacts with| 8665["CopilotKit Backend<br>Next.js API Route"]
+        8664["Main Feature Sections<br>Next.js Pages, React"] -->|protected by| 8666["Authentication Handling<br>Next.js Middleware, Supabase"]
+        8664["Main Feature Sections<br>Next.js Pages, React"] -->|uses| 8667["Base UI Component Library<br>React, shadcn/ui"]
+        8664["Main Feature Sections<br>Next.js Pages, React"] -->|uses| 8668["App Core Logic &amp; UI<br>React, TypeScript"]
+        8664["Main Feature Sections<br>Next.js Pages, React"] -->|uses| 8669["CopilotKit Frontend<br>React Components"]
+        8664["Main Feature Sections<br>Next.js Pages, React"] -->|triggers AI actions via| 8670["Mastra AI Engine<br>TypeScript, AI Agents"]
+        8664["Main Feature Sections<br>Next.js Pages, React"] -->|fetches data via| 8671["Supabase Client Access<br>Supabase SDK"]
+        8665["CopilotKit Backend<br>Next.js API Route"] -->|delegates to| 8670["Mastra AI Engine<br>TypeScript, AI Agents"]
     end
-
-    %% Mastra Core
-    subgraph "🧠 Mastra AI Framework"
-        CORE[Mastra Core Engine]
-        MEMORY[Agent Memory System]
-        WORKFLOWS[Workflow Engine]
-
-        subgraph "🤖 Agent Registry"
-            MASTER[Master Agent]
-            CODE[Code Agent]
-            GIT[Git Agent]
-            GRAPH[Graph Agent]
-            DATA[Data Agent]
-            RESEARCH[Research Agent]
-            WEATHER[Weather Agent]
-            SUPERVISOR[Supervisor Agent]
-        end
-
-        subgraph "🛠️ Tools & MCP"
-            STOCK[Stock Tools]
-            WEATHER_TOOL[Weather Tools]
-            GRAPH_RAG[GraphRAG Tools]
-            VECTOR[Vector Query Tools]
-            MCP[Model Context Protocol]
-        end
-    end
-
-    %% AI & External Services
-    subgraph "🌐 External Services"
-        GEMINI[Google AI - Gemini 2.5]
-        LANGSMITH[LangSmith Observability]
-        GITHUB[GitHub API]
-        WEATHER_API[Weather APIs]
-        STOCK_API[Stock APIs]
-    end
-
-    %% Data Layer
-    subgraph "💾 Data Layer"
-        LIBSQL[(LibSQL/Turso Database)]
-        VECTOR_DB[(Vector Storage)]
-        MEMORY_STORE[(Agent Memory)]
-    end
-
-    %% Connections
-    UI --> API
-    AUTH --> AUTH_API
-    COPILOT --> COPILOT_API
-
-    API --> CORE
-    COPILOT_API --> CORE
-
-    CORE --> MEMORY
-    CORE --> WORKFLOWS
-    CORE --> MASTER
-
-    MASTER --> CODE
-    MASTER --> GIT
-    MASTER --> GRAPH
-    MASTER --> DATA
-    MASTER --> RESEARCH
-    MASTER --> WEATHER
-    SUPERVISOR --> MASTER
-
-    CODE --> GRAPH_RAG
-    GIT --> MCP
-    WEATHER --> WEATHER_TOOL
-    DATA --> VECTOR
-
-    CORE --> GEMINI
-    CORE --> LANGSMITH
-
-    MEMORY --> LIBSQL
-    VECTOR --> VECTOR_DB
-    MEMORY_STORE --> LIBSQL
-
-    GIT --> GITHUB
-    WEATHER_TOOL --> WEATHER_API
-    STOCK --> STOCK_API
-
-    %% Styling
-    classDef frontend fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef api fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef mastra fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef agents fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef tools fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    classDef external fill:#f1f8e9,stroke:#33691e,stroke-width:2px
-    classDef data fill:#e0f2f1,stroke:#004d40,stroke-width:2px
-
-    class UI,AUTH,THEME,COPILOT frontend
-    class API,COPILOT_API,AUTH_API api
-    class CORE,MEMORY,WORKFLOWS mastra
-    class MASTER,CODE,GIT,GRAPH,DATA,RESEARCH,WEATHER,SUPERVISOR agents
-    class STOCK,WEATHER_TOOL,GRAPH_RAG,VECTOR,MCP tools
-    class GEMINI,LANGSMITH,GITHUB,WEATHER_API,STOCK_API external
-    class LIBSQL,VECTOR_DB,MEMORY_STORE data
+    %% Edges at this level (grouped by source)
+    8666["Authentication Handling<br>Next.js Middleware, Supabase"] -->|authenticates users with| 8672["Supabase BaaS<br>Auth, Database, Storage"]
+    8675["User<br>External Actor"] -->|accesses| 8663["Application Entry<br>Next.js Layout &amp; Root Page"]
+    8670["Mastra AI Engine<br>TypeScript, AI Agents"] -->|persists/retrieves agent data with| 8672["Supabase BaaS<br>Auth, Database, Storage"]
+    8670["Mastra AI Engine<br>TypeScript, AI Agents"] -->|calls| 8673["Google AI APIs<br>Gemini, Vertex AI, etc."]
+    8670["Mastra AI Engine<br>TypeScript, AI Agents"] -->|sends traces to| 8674["Langsmith<br>AI Observability"]
 ```
 
 ---
 
-##  Feature
+## Feature
 
 <code>
 ❯ **Mastra AI Framework**: Modular, type-safe agent and workflow system for orchestrating complex AI tasks and automations.
@@ -169,10 +99,9 @@ graph TB
 ❯ **Extensible Tooling**: Easily add new tools and agents following strict project patterns and validation standards.
 </code>
 
-
 ---
 
-##  Project Structure
+## Project Structure
 
 ```sh
 └── Deanmachines-RSC/
@@ -304,8 +233,8 @@ graph TB
     └── vitest.config.ts
 ```
 
+### Project Index
 
-###  Project Index
 <details open>
 	<summary><b><code>DEANMACHINES-RSC/</code></b></summary>
 	<details> <!-- __root__ Submodule -->
