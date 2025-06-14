@@ -4,6 +4,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCopilotAction, useCopilotReadable } from "@copilotkit/react-core";
+import { useAgent } from '@/app/(playground)/layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +16,9 @@ import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+const MASTRA_URL = process.env.NEXT_PUBLIC_COPILOTKIT_RUNTIME_URL || "http://localhost:4111";
+
 import {
     Play,
     Pause,
@@ -61,7 +65,7 @@ import {
  * @property {Date} endTime - When the action completed
  *
  * @author Dean Machines Team
- * @date 2025-01-13
+ * @date 2025-06-13
  */
 interface ActionStatus {
     id: string;
@@ -87,7 +91,7 @@ interface ActionStatus {
  * @property {string[]} enum - Enum values if applicable
  *
  * @author Dean Machines Team
- * @date 2025-01-13
+ * @date 2025-06-13
  */
 interface ActionParameter {
     name: string;
@@ -111,7 +115,7 @@ interface ActionParameter {
  * @property {function} render - Custom render function for action UI
  *
  * @author Dean Machines Team
- * @date 2025-01-13
+ * @date 2025-06-13
  */
 interface CustomActionDefinition {
     name: string;
@@ -135,7 +139,7 @@ interface CustomActionDefinition {
  * @property {boolean} allowCustomActions - Whether to allow creating custom actions
  *
  * @author Dean Machines Team
- * @date 2025-01-13
+ * @date 2025-06-13
  */
 interface ActionsProps {
     customActions?: CustomActionDefinition[];
@@ -179,7 +183,7 @@ interface ActionsProps {
  * ```
  *
  * @author Dean Machines Team
- * @date 2025-01-13
+ * @date 2025-06-13
  * @version 1.0.0
  * @model Claude Sonnet 4
  */
@@ -191,6 +195,9 @@ export function Actions({
     showExecutionHistory = true,
     allowCustomActions = false
 }: ActionsProps) {
+    // Get agent context for endpoint management
+    const { currentEndpoint, setCurrentEndpoint } = useAgent();
+    
     // State management
     const [actionStatuses, setActionStatuses] = useState<ActionStatus[]>([]);
     const [executionHistory, setExecutionHistory] = useState<ActionStatus[]>([]);
@@ -220,12 +227,12 @@ export function Actions({
                     required: true,
                     enum: ['master', 'code', 'git', 'graph', 'data', 'research', 'weather', 'manager', 'design', 'documentation']
                 }
-            ],
-            category: 'management',
+            ],            category: 'management',
             enabled: true,
             handler: async ({ agentName }) => {
                 setCurrentAgent(agentName);
-                return `Successfully switched to ${agentName} agent`;
+                setCurrentEndpoint(`${MASTRA_URL}/copilotkit/${agentName}`);
+                return `Successfully switched to ${agentName} agent. Endpoint: ${MASTRA_URL}/copilotkit/${agentName}`;
             }
         },
         {
@@ -546,15 +553,14 @@ export function Actions({
             case 'error': return XCircle;
             default: return Clock;
         }
-    };
-
-    // Make actions state readable to agents
+    };    // Make actions state readable to agents
     useCopilotReadable({
         description: "Current actions state and execution status",
         value: {
             actionStatuses,
             executionHistory: executionHistory.slice(0, 10), // Last 10 executions
             currentAgent,
+            currentEndpoint,
             selectedCategory,
             searchTerm,
             availableActions: allActions.map(a => ({ name: a.name, description: a.description, category: a.category })),
@@ -573,10 +579,10 @@ export function Actions({
                 description: "Name of the agent to switch to",
                 enum: ["master", "code", "git", "graph", "data", "research", "weather", "manager", "design", "documentation"]
             }
-        ],
-        handler: async ({ agentName }) => {
+        ],        handler: async ({ agentName }) => {
             setCurrentAgent(agentName);
-            return `Successfully switched to ${agentName} agent`;
+            setCurrentEndpoint(`${MASTRA_URL}/copilotkit/${agentName}`);
+            return `Successfully switched to ${agentName} agent. Endpoint: ${MASTRA_URL}/copilotkit/${agentName}`;
         }
     });
 

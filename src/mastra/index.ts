@@ -303,6 +303,38 @@ export const mastra = new Mastra({
                     runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
                     runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
                 }
+            }),
+
+            // WORKFLOW COPILOTKIT ENDPOINTS
+            // Code Graph Maker Workflow - Basic
+            registerCopilotKit({
+                path: "/copilotkit/codeGraphMakerWorkflow",
+                resourceId: "codeGraphMakerWorkflow",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                    runtimeContext.set("workflow-type", "code-graph-basic");
+                }
+            }),
+            // Advanced Code Graph Maker Workflow
+            registerCopilotKit({
+                path: "/copilotkit/advancedCodeGraphMakerWorkflow",
+                resourceId: "advancedCodeGraphMakerWorkflow",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                    runtimeContext.set("workflow-type", "code-graph-advanced");
+                }
+            }),
+            // Weather Workflow
+            registerCopilotKit({
+                path: "/copilotkit/weatherWorkflow",
+                resourceId: "weatherWorkflow",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                    runtimeContext.set("workflow-type", "weather");
+                }
             })
         ]
     })

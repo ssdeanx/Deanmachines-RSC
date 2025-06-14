@@ -1,9 +1,13 @@
 ---
 description: "Mastra AI framework agent development guidelines for Dean Machines RSC. Covers agent creation, MCP tool integration, memory management, and multi-agent workflows."
-globs: ["src/mastra/**/*.ts", "src/mastra/**/*.js"]
+globs: src/mastra/**/*.ts
 alwaysApply: false
 ---
-
+---
+description: "Mastra AI framework agent development guidelines for Dean Machines RSC. Covers agent creation, MCP tool integration, memory management, and multi-agent workflows."
+globs: ["src/mastra/**/*.ts"]
+alwaysApply: false
+---
 # Dean Machines RSC: Mastra Agent Development
 
 This rule governs the development of AI agents using the Mastra framework v0.10.5 in the Dean Machines RSC project.

@@ -3,6 +3,11 @@ description: "Performance optimization, monitoring, and observability guidelines
 globs: ["src/**/*.ts", "src/**/*.tsx", "next.config.ts", "tailwind.config.ts"]
 alwaysApply: false
 ---
+---
+description: "Performance optimization, monitoring, and observability guidelines for Dean Machines RSC. Covers Core Web Vitals, bundle optimization, database performance, and real-time monitoring."
+globs: ["src/**/*.ts", "src/**/*.tsx", "next.config.ts", "tailwind.config.ts"]
+alwaysApply: false
+---
 
 # Dean Machines RSC: Performance & Monitoring
 

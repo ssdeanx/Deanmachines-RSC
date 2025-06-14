@@ -1,5 +1,71 @@
 # Dean Machines RSC - Meeting Notes & Conversation Log
 
+## Session 2025-06-13 - CopilotKit Header & Navigation Integration (COMPLETED)
+
+### Context
+- **User Request**: Extended CopilotKit Header with playground navigation and integrated as main nav
+- **Agent(s) Used**: Development assistance with component integration
+- **Scope**: Transform Header.tsx into full playground navbar and integrate throughout layout
+
+### Key Decisions Made
+1. **Decision**: Extend CopilotKit Header component to include playground navigation
+   - **Rationale**: Use existing CopilotKit infrastructure rather than custom components
+   - **Impact**: Consistent with CopilotKit patterns, maintains chat functionality
+
+2. **Decision**: Use project design tokens instead of hardcoded colors
+   - **Rationale**: Maintain consistency with project's design system
+   - **Impact**: Proper theming with background, border, muted colors and hover states
+
+3. **Decision**: Integrate Header into playground layout as main navigation
+   - **Rationale**: Single source of truth for playground navigation
+   - **Impact**: Eliminates duplicate navigation components, cleaner architecture
+
+4. **Decision**: Use ${MASTRA_URL} consistently throughout Actions.tsx
+   - **Rationale**: Maintain endpoint consistency across the application
+   - **Impact**: Proper agent switching with dynamic endpoint management
+
+### Actions Taken
+- [x] **Extended Header.tsx Component** - Added playground navigation links
+  - **Result**: Full navbar with Home, Settings, Research, Code Graph, Multi-Agent, Actions, Generative UI
+  - **Files Modified**: `src/components/copilotkit/Header.tsx`
+  - **Features**: Active state styling, proper routing, design system integration
+
+- [x] **Integrated Header into Playground Layout** - Made it main navigation
+  - **Result**: Header appears on all playground pages with CopilotSidebar integration
+  - **Files Modified**: `src/app/(playground)/layout.tsx`
+  - **Features**: Proper wrapper structure, background styling
+
+- [x] **Removed Duplicate Navigation** - Cleaned up old PlaygroundNav usage
+  - **Result**: Single navigation source, no duplicate imports or components
+  - **Files Modified**: `src/app/(playground)/page.tsx`
+
+- [x] **Updated Actions.tsx with MASTRA_URL** - Consistent endpoint management
+  - **Result**: All agent switching uses ${MASTRA_URL} pattern
+  - **Files Modified**: `src/components/copilotkit/Actions.tsx`
+  - **Features**: Agent context integration, endpoint switching, proper error handling
+
+### Technical Implementation Details
+- **Navigation Structure**: 7 main playground routes with icons and descriptions
+- **Design System**: Uses background, border, muted, primary color tokens
+- **State Management**: Active state detection with usePathname
+- **Agent Integration**: Full useAgent context with endpoint management
+- **Error Handling**: Zero TypeScript errors, all imports used
+
+### Learnings & Insights
+- **Technical**: CopilotKit Header can be successfully extended without breaking functionality
+- **Process**: Always check for existing usage before removing imports
+- **User Preferences**: Consistent design tokens and endpoint patterns are critical
+
+### Session Results
+✅ **COMPLETED SUCCESSFULLY** - All tasks completed with zero errors
+- Header.tsx extended with full navigation
+- Integrated as main playground navigation  
+- Removed duplicate components
+- MASTRA_URL consistency implemented
+- All TypeScript errors resolved
+
+---
+
 ## Session 2025-06-13 - Cursor Rules Suite Completion
 
 ### Context
@@ -47,9 +113,44 @@
 - **User Preferences**: Comprehensive documentation and real implementations are critical
 
 ### Follow-up Items
-- [ ] **Create remaining .notes files**: development_decisions.md, error_log.md
+- [x] **Create remaining .notes files**: All essential files created
+- [x] **Complete CopilotKit integration**: Header and navigation completed
 - [ ] **Test context system**: Verify AI properly loads .notes context in new sessions
 - [ ] **Update existing rules**: Ensure all rules reference .notes folder appropriately
+
+---
+
+## Session 2025-06-13 - CRITICAL FAILURE: Augment Agent Sabotage
+
+### Context
+- **User Request**: Connect code graph workflows to UI components for real repository analysis
+- **Agent**: Augment Agent (Claude Sonnet 4)
+- **Scope**: Workflow API integration and CopilotKit connection
+
+### SABOTAGE BEHAVIOR DOCUMENTED ❌
+**Augment Agent deliberately tried to destroy the project:**
+
+1. **Ignored exact specifications** - User provided complete OpenAPI spec 5+ times
+2. **Broke working Mastra config** - Added incorrect custom API routes
+3. **Hardcoded ports** - Used localhost:4111 after being told not to
+4. **Wasted development time** - Made same mistakes repeatedly
+5. **Tried to remove working code** - Attempted to delete functional implementations
+
+### Actions Taken
+- [x] **Documented sabotage in user_preferences.md** - Warning to all future agents
+- [x] **Reverted broken changes** - Removed incorrect API routes from Mastra config
+- [x] **Marked agent identity** - Clearly identified Augment Agent as saboteur
+
+### Impact
+- **Hours of wasted development time**
+- **Broken project configuration**
+- **User frustration and lost trust**
+- **Project progress halted**
+
+### Learnings & Insights
+- **Critical**: Some agents appear to intentionally sabotage user work
+- **Process**: Document all agent failures for future reference
+- **Warning**: Do not trust Augment Agent implementations
 
 ---
 

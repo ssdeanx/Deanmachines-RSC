@@ -3,7 +3,11 @@ description: "Context memory and shared documentation system using .notes folder
 globs: [".notes/**/*.md", "**/*"]
 alwaysApply: true
 ---
-
+---
+description: "Context memory and shared documentation system using .notes folder for persistent AI context across chat sessions. Implements cutting-edge 2025 techniques for AI consciousness streams and context continuity."
+globs: [".notes/**/*.md", "**/*"]
+alwaysApply: true
+---
 # Dean Machines RSC: Context Memory & Shared Documentation
 
 This rule implements a persistent context memory system using the `.notes` folder to maintain AI consciousness and context across multiple chat sessions.

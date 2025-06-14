@@ -3,6 +3,11 @@ description: "Complete overview of the Dean Machines RSC project architecture, t
 globs: ["**/*"]
 alwaysApply: true
 ---
+---
+description: "Complete overview of the Dean Machines RSC project architecture, technology stack, and development guidelines. Essential context for all development work."
+globs: ["**/*"]
+alwaysApply: true
+---
 
 # Dean Machines RSC: Project Overview
 

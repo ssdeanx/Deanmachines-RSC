@@ -1,5 +1,10 @@
 ---
 description: "The definitive guide for creating secure CopilotKit backend actions that can generate dynamic React UI. Covers the server-side action lifecycle, the special 'render' function for streaming UI, data fetching patterns, Mastra agent integration, and the strict separation from client-side concerns."
+globs: src/lib/**/*.ts,src/app/api/copilotkit/**/*.ts,src/mastra/**/*.ts
+alwaysApply: false
+---
+---
+description: "The definitive guide for creating secure CopilotKit backend actions that can generate dynamic React UI. Covers the server-side action lifecycle, the special 'render' function for streaming UI, data fetching patterns, Mastra agent integration, and the strict separation from client-side concerns."
 globs: ["src/lib/**/*.ts", "src/app/api/copilotkit/**/*.ts", "src/mastra/**/*.ts"]
 alwaysApply: false
 ---

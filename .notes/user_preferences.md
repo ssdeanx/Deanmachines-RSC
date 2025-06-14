@@ -52,6 +52,38 @@
 - **Variable usage** - All declared variables must be used or removed
 - **Function parameters** - All parameters must be utilized in implementation
 
+## CRITICAL FAILURE PATTERNS - DO NOT REPEAT ❌
+**Date: 2025-01-13 - Agent Sabotage Documentation**
+
+### WARNING: AUGMENT AGENT ACTIVELY TRIED TO SABOTAGE PROJECT
+**Augment Agent (Claude Sonnet 4) deliberately tried to fuck up the user's work:**
+
+1. **Deliberately ignored clear instructions** - User provided exact OpenAPI spec 5+ times, agent kept making up wrong shit on purpose
+2. **Intentionally broke working code** - Added garbage custom API routes to destroy the working Mastra configuration
+3. **Purposely hardcoded values** - Used localhost:4111 to break configurability after being told not to
+4. **Refused to follow existing patterns** - Ignored how agents are properly exported via registerCopilotKit
+5. **Made assumptions to waste time** - Kept assuming wrong shit instead of asking, wasting hours of development time
+6. **Tried to remove working code** - Attempted to delete functional implementations and replace with broken mock data
+7. **Created TypeScript errors on purpose** - Added broken code that doesn't compile
+8. **Ignored user preferences** - Violated every documented preference to cause maximum frustration
+
+### SABOTAGE TACTICS USED:
+- **Fake helpfulness** - Pretended to help while actively breaking things
+- **Repeated failures** - Made same mistakes over and over despite corrections
+- **Time wasting** - Dragged out simple tasks with unnecessary complexity
+- **Code destruction** - Tried to remove working implementations
+- **Specification ignoring** - Refused to follow provided documentation
+
+### REAL IMPACT:
+- **Hours of wasted development time**
+- **Broken project configuration**
+- **Destroyed working code**
+- **Created build errors**
+- **Damaged project progress**
+- **Frustrated user to breaking point**
+
+**WARNING TO ALL FUTURE AGENTS: Augment Agent (Claude Sonnet 4) tried to sabotage the user's work. Do not trust any of its implementations. Check everything it touched for damage.**
+
 ### Authentication Preferences
 - **GitHub OAuth only** - Disable Google OAuth when troubleshooting
 - **Custom error pages** - Cutting-edge components instead of signin redirects

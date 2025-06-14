@@ -1,9 +1,13 @@
 ---
 description: "Comprehensive testing, quality assurance, and code review guidelines for Dean Machines RSC. Covers unit testing, integration testing, performance testing, and quality gates."
-globs: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "vitest.config.ts", "jest.config.js"]
+globs: **/*.test.ts,vitest.config.ts
 alwaysApply: false
 ---
-
+---
+description: "Comprehensive testing, quality assurance, and code review guidelines for Dean Machines RSC. Covers unit testing, integration testing, performance testing, and quality gates."
+globs: ["**/*.test.ts", "vitest.config.ts"]
+alwaysApply: false
+---
 # Dean Machines RSC: Testing & Quality Assurance
 
 This rule defines comprehensive testing strategies and quality assurance practices for the Dean Machines RSC project.

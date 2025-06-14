@@ -50,3 +50,13 @@ ag-ui-llm.txt
 copilotkit-llm.txt
 mastra.md
 .aitasks.json
+.specstory/*
+.specstory
+.cursor
+.cursor/*
+.cursor/rules/*
+.cursor/rules/backend-generative-ui.mdc
+.cursor/rules/context-memory.mdc
+.cursor/rules/mastra-agents.mdc
+.cursorignore
+.cursorindexingignore

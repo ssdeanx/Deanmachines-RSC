@@ -234,12 +234,122 @@ export function InteractiveCodeGraph({ graphData, repoUrl, onNodeSelect }: Inter
         setEdges(sampleEdges);
     }, [setNodes, setEdges]);
 
-    // Initialize with sample data
+    /**
+     * Convert raw JSON graph data (as produced by the Mastra workflows) to
+     * xyflow-compatible nodes and edges. Falls back gracefully if the data
+     * cannot be parsed.
+     */
+    const parseGraphData = useCallback((raw: string) => {
+        try {
+            const parsed = JSON.parse(raw);
+            if (!parsed || !Array.isArray(parsed.nodes) || !Array.isArray(parsed.edges)) {
+                console.warn('Invalid graph data format – falling back to sample graph.');
+                return false;
+            }
+
+            const total = parsed.nodes.length;
+
+            // Helper: assign a unique (x,y) position if absent
+            const getPosition = (index: number): { x: number; y: number } => {
+                // Simple radial layout – upgradeable later
+                const angle = (index / total) * Math.PI * 2;
+                const radius = 300;
+                return { x: radius * Math.cos(angle), y: radius * Math.sin(angle) };
+            };
+
+            const mapNodeColor = (type: string): { bg: string; border: string } => {
+                switch (type) {
+                    case 'file':
+                        return { bg: '#2563eb', border: '#3b82f6' }; // blue
+                    case 'folder':
+                        return { bg: '#7c3aed', border: '#8b5cf6' }; // purple
+                    case 'component':
+                        return { bg: '#dc2626', border: '#ef4444' }; // red
+                    case 'function':
+                        return { bg: '#059669', border: '#10b981' }; // green
+                    case 'class':
+                        return { bg: '#ca8a04', border: '#eab308' }; // yellow
+                    default:
+                        return { bg: '#334155', border: '#475569' }; // gray
+                }
+            };
+
+            interface RawGraphNode {
+                id?: string;
+                label?: string;
+                type?: string;
+                path?: string;
+                size?: number;
+                dependencies?: string[];
+                language?: string;
+                metadata?: Record<string, unknown>;
+                position?: { x: number; y: number };
+            }
+
+            interface RawGraphEdge {
+                id?: string;
+                source: string;
+                target: string;
+                type?: string;
+            }
+
+            const rawNodes: RawGraphNode[] = parsed.nodes;
+            const rawEdges: RawGraphEdge[] = parsed.edges;
+
+            const newNodes: CodeGraphNode[] = rawNodes.map((n, idx) => {
+                const { bg, border } = mapNodeColor(n.type ?? 'unknown');
+                const position = n.position ?? getPosition(idx);
+
+                return {
+                    id: n.id ?? `${idx}`,
+                    type: 'default',
+                    position,
+                    data: {
+                        label: n.label ?? n.path ?? n.id,
+                        type: n.type ?? 'unknown',
+                        path: n.path,
+                        size: n.size ?? 0,
+                        dependencies: n.dependencies ?? [],
+                        language: n.language ?? 'unknown',
+                        metadata: n.metadata ?? {}
+                    },
+                    style: {
+                        background: bg,
+                        color: 'white',
+                        border: `2px solid ${border}`,
+                        borderRadius: '8px'
+                    }
+                } as CodeGraphNode;
+            });
+
+            const newEdges: CodeGraphEdge[] = rawEdges.map((e, idx) => ({
+                id: e.id ?? `e-${idx}`,
+                source: e.source,
+                target: e.target,
+                type: 'smoothstep',
+                style: { stroke: '#6b7280' } // neutral edge color
+            }));
+
+            setNodes(newNodes);
+            setEdges(newEdges);
+            return true;
+        } catch (error) {
+            console.error('Failed to parse graph data:', error);
+            return false;
+        }
+    }, [setNodes, setEdges]);
+
+    // Initialize or update graph when graphData changes
     useEffect(() => {
-        if (!graphData || graphData.trim() === '') {
+        if (graphData && graphData.trim() !== '') {
+            const success = parseGraphData(graphData);
+            if (!success) {
+                generateSampleGraph();
+            }
+        } else {
             generateSampleGraph();
         }
-    }, [graphData, generateSampleGraph]);
+    }, [graphData, parseGraphData, generateSampleGraph]);
 
     // Handle node click
     const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {

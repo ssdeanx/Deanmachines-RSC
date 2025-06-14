@@ -15,7 +15,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { useAgent } from './layout';
-import { PlaygroundNav } from './components/playground-nav';
 
 export default function PlaygroundPage() {
     const [selectedAgent, setSelectedAgent] = useState('master');
@@ -180,13 +179,8 @@ export default function PlaygroundPage() {
                         </div>
                     </motion.div>
                 </div>
-            </div>
-
-            {/* Main Content */}
+            </div>            {/* Main Content */}
             <div className="container mx-auto px-4 py-6">
-                {/* Navigation */}
-                <PlaygroundNav />
-
                 {/* Agent Configuration */}
                 <div className="mb-6">
                     <Card>

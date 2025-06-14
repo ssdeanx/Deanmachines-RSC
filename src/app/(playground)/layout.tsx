@@ -2,6 +2,8 @@
 
 import { useState, createContext, useContext } from 'react';
 import { CopilotKit } from "@copilotkit/react-core";
+import { CopilotSidebar } from "@copilotkit/react-ui";
+import { Header } from "@/components/copilotkit/Header";
 import "@copilotkit/react-ui/styles.css";
 
 const MASTRA_URL = process.env.NEXT_PUBLIC_COPILOTKIT_RUNTIME_URL || "http://localhost:4111";
@@ -14,7 +16,7 @@ const MASTRA_URL = process.env.NEXT_PUBLIC_COPILOTKIT_RUNTIME_URL || "http://loc
  * @property {function} setCurrentEndpoint - Function to update the current endpoint
  *
  * @author Dean Machines Team
- * @date 2025-01-13
+ * @date 2025-06-13
  * @version 1.0.0
  */
 const AgentContext = createContext<{
@@ -33,11 +35,11 @@ const AgentContext = createContext<{
  * @example
  * ```typescript
  * const { currentEndpoint, setCurrentEndpoint } = useAgent();
- * setCurrentEndpoint('http://localhost:4111/copilotkit/research');
+ * setCurrentEndpoint('${MASTRA_URL}/copilotkit/research');
  * ```
  *
  * @author Dean Machines Team
- * @date 2025-01-13
+ * @date 2025-06-13
  */
 export const useAgent = () => useContext(AgentContext);
 
@@ -61,25 +63,33 @@ export const useAgent = () => useContext(AgentContext);
  * ```
  *
  * @author Dean Machines Team
- * @date 2025-01-13
+ * @date 2025-06-13
  * @version 1.0.0
  */
 export default function PlaygroundLayout({ children }: { children: React.ReactNode }) {
-    const [currentEndpoint, setCurrentEndpoint] = useState(`${MASTRA_URL}/copilotkit`);
-
-    return (
+    const [currentEndpoint, setCurrentEndpoint] = useState(`${MASTRA_URL}/copilotkit`);    return (
         <AgentContext.Provider value={{ currentEndpoint, setCurrentEndpoint }}>
-            <CopilotKit
-                runtimeUrl={currentEndpoint}
-                headers={{
-                    'X-User-ID': 'playground-user',
-                    'X-Session-ID': `session-${Date.now()}`,
-                    'X-Project-Context': 'DeanMachines Playground',
-                    'X-Debug-Mode': 'true',
-                }}
-            >
-                {children}
-            </CopilotKit>
+            <div className="min-h-screen bg-background">
+                <Header />
+                <CopilotKit
+                    runtimeUrl={currentEndpoint}
+                    headers={{
+                        'X-User-ID': 'playground-user',
+                        'X-Session-ID': `session-${Date.now()}`,
+                        'X-Project-Context': 'DeanMachines Playground',
+                        'X-Debug-Mode': 'true',
+                    }}
+                >
+                    <CopilotSidebar
+                        labels={{
+                            title: "Playground AI Assistant",
+                            initial: "Welcome to the Dean Machines Playground! How can I help you today?",
+                        }}
+                    >
+                        {children}
+                    </CopilotSidebar>
+                </CopilotKit>
+            </div>
         </AgentContext.Provider>
     );
 }

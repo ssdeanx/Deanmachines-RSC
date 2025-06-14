@@ -3,7 +3,11 @@ description: "TypeScript, React 19, and Next.js 15 development standards for Dea
 globs: ["src/**/*.tsx", "src/**/*.ts", "*.ts", "*.tsx"]
 alwaysApply: true
 ---
-
+---
+description: "TypeScript, React 19, and Next.js 15 development standards for Dean Machines RSC. Covers modern React patterns, TypeScript best practices, and Next.js App Router conventions."
+globs: ["src/**/*.tsx", "src/**/*.ts", "*.ts", "*.tsx"]
+alwaysApply: true
+---
 # Dean Machines RSC: TypeScript & React Standards
 
 This rule defines the coding standards and best practices for TypeScript and React development in the Dean Machines RSC project.

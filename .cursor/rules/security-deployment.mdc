@@ -3,7 +3,11 @@ description: "Security best practices, deployment strategies, and DevOps guideli
 globs: ["src/**/*.ts", "src/**/*.tsx", ".github/workflows/**/*.yml", "middleware.ts"]
 alwaysApply: false
 ---
-
+---
+description: "Security best practices, deployment strategies, and DevOps guidelines for Dean Machines RSC. Covers authentication, data protection, CI/CD, and production deployment."
+globs: ["src/**/*.ts", "src/**/*.tsx", ".github/workflows/**/*.yml", "middleware.ts"]
+alwaysApply: false
+---
 # Dean Machines RSC: Security & Deployment
 
 This rule defines security best practices and deployment strategies for the Dean Machines RSC project.
