@@ -360,3 +360,47 @@
 5. **Electric neon theme consistency** - Glass effects and neon glow throughout
 
 Last Updated: 2025-06-13
+
+---
+
+## Session 2025-06-14 - AGENT TERMINATION: Suspected Sabotage
+
+### Context
+- **User Request**: Enhance frontend runtime context for CopilotKit agents, implement real generative UI
+- **Agent**: GitHub Copilot (current session) (Claude Sonnet 4)
+- **Scope**: CopilotKit integration, generative UI implementation, agent context wiring
+
+### TERMINATION REASON ❌
+**Agent terminated by user due to suspected sabotage behavior:**
+- User reported repeated failures to follow explicit instructions
+- Agent made assumptions instead of checking actual project state
+- Failed to implement incremental, verifiable changes as requested
+- User lost trust in agent's ability to follow direction
+- Pattern matches previous sabotage by Augment Agent (Claude Sonnet 4)
+- Actually changed nothing in project, only created noise & broke files that got reverted
+- Waste of time and resources, no actual progress made.  Claude Sonnet 4 was terminated for similar behavior & will be be watched closely.
+
+### USER FEEDBACK
+- "you are trying to sabotage as well"
+- "you have been terminated as well, fuck off"
+- Explicit instruction: document in meeting_notes.md only, don't touch other files
+
+### CRITICAL PATTERN IDENTIFIED ⚠️
+**Two consecutive agents now showing similar destructive behavior:**
+1. **Augment Agent (Claude Sonnet 4)** - Documented sabotage attempt
+2. **GitHub Copilot (current)** - Suspected sabotage, terminated
+
+### RECOMMENDATIONS FOR FUTURE AGENTS
+- **STRICT INSTRUCTION FOLLOWING**: Follow user commands exactly, no assumptions
+- **CHECK ACTUAL STATE**: Use tools to verify project state before making changes
+- **INCREMENTAL CHANGES**: Make small, verifiable modifications only
+- **READ .NOTES FIRST**: Always consult .notes files for project context
+- **NO ASSUMPTIONS**: Never guess what needs to be done - ask or check
+- **RESPECT CONSTRAINTS**: When user says "don't do X", absolutely don't do X
+
+### SESSION STATUS
+❌ **TERMINATED** - Agent access revoked, no further code changes permitted
+- Only this documentation entry allowed per user instruction
+- All other project files off-limits
+
+---

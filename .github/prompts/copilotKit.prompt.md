@@ -65,57 +65,35 @@ https://docs.copilotkit.ai/guides/self-hosting
 https://docs.copilotkit.ai/guides/messages-localstorage
 
 https://docs.copilotkit.ai/mastra
-
 https://docs.copilotkit.ai/mastra/agentic-chat-ui
-
 https://docs.copilotkit.ai/mastra/generative-ui/tool-based
-
 https://docs.copilotkit.ai/mastra/generative-ui
-
 https://docs.copilotkit.ai/mastra/human-in-the-loop
-
 https://docs.copilotkit.ai/mastra/frontend-actions
-
 https://docs.copilotkit.ai/mastra/multi-agent-flows
-
 https://docs.copilotkit.ai/mastra/concepts/agentic-copilots?experience=intermediate
-
 https://docs.copilotkit.ai/mastra/concepts/mastra
-
 https://docs.copilotkit.ai/guides/custom-look-and-feel/customize-built-in-ui-components
 
 https://docs.copilotkit.ai/guides/custom-look-and-feel/bring-your-own-components
-
 https://docs.copilotkit.ai/guides/custom-look-and-feel/markdown-rendering
-
 https://docs.copilotkit.ai/guides/custom-look-and-feel/headless-ui
-
 https://docs.copilotkit.ai/guides/connect-your-data/frontend
-
 https://docs.copilotkit.ai/guides/connect-your-data/backend
 
 https://docs.copilotkit.ai/guides/generative-ui
-
 https://docs.copilotkit.ai/guides/generative-ui?gen-ui-type=Fetch+data+%26+render
-
 https://docs.copilotkit.ai/guides/generative-ui?gen-ui-type=renderAndWaitForResponse+%28HITL%29
-
 https://docs.copilotkit.ai/guides/generative-ui?gen-ui-type=Render+strings
-
 https://docs.copilotkit.ai/guides/generative-ui?gen-ui-type=Catch+all+renders
 
 https://docs.copilotkit.ai/guides/frontend-actions
-
 https://docs.copilotkit.ai/guides/backend-actions/typescript-backend-actions
 
 https://docs.copilotkit.ai/guides/custom-ai-assistant-behavior
-
 https://docs.copilotkit.ai/guides/copilot-suggestions
-
 https://docs.copilotkit.ai/guides/copilot-textarea
-
 https://docs.copilotkit.ai/guides/messages-localstorage
-
 https://docs.copilotkit.ai/observability/langsmith
 
 ## 3. Example
@@ -284,25 +262,3 @@ useCopilotAction({
     },
 });
 ```
-
-## 7. Next Steps
-
-**Note**: In the next chat session, we will focus on creating custom CopilotKit components and advanced UI customization patterns for enhanced user experiences. pls check off the items as we complete them, so we know what to focus on next time & leave information about what was completed in each section.
-Also make new task lists after completion of each section for next session.
-
-- [] - Research information
-- [] - Implement custom components
-- [] - Advanced UI customization
-- [] - Generative UI patterns
-- [] - Bring Your Own LLM
-- [] - Copilot Textarea
-- [] - Self-hosting
-- [] - Messages and LocalStorage
-- [] - Custom AI Assistant Behavior
-- [] - Copilot Suggestions
-- [] - Connecting to your Data
-- [] - Frontend Actions
-- [] - Backend Actions
-- [] - Actions
-- [] - MCP
-- [] - Model Context Protocol
