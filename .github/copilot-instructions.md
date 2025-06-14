@@ -1,10 +1,5 @@
 ---
 description: AI rules derived by SpecStory from the project AI interaction history
-globs: *
----
-
----
-description: AI rules derived by SpecStory from the project AI interaction history
 applyTo: *
 ---
 
@@ -37,7 +32,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - Refer to project notes, task management files, and meeting notes for project context and completed tasks when available. The specific `#file://.notes` reference has been generalized to allow for flexibility in note-taking file names. **IMPORTANT:** This file contains a record of all project decisions and context between chats and should be consulted to avoid repeating mistakes or forgetting key details.
 - Use `#githubRepo` to specify a Github repository to analyze. The format should be `ssdeanx/deanmachines-rsc`. Ensure the repository is publicly accessible. If access issues arise, inform the user. When analyzing a GitHub repository, pay close attention to the architecture, technology stack, current status, critical issues (especially authentication challenges), design and UI features, project roadmap, and development principles.
 - All instructions in `#file://.notes` should be strictly followed.
-- Before touching anything, check `#file:copilotKit.prompt.md`.
+- Before touching anything, check `#file://copilotKit.prompt.md`.
 - When a `#githubRepo` is specified, analyze the repository's structure, recent commits, and specific files as requested. Ensure the repository is publicly accessible and the path (`owner/repo`) is correct. If access issues arise, inform the user.
 - Use `#file://filename.md` to reference local context files within the workspace. Use `#file://filename.ts` to reference local typescript files within the workspace.
 - Use `#file://dean-machines-network.ts` to reference network files.
@@ -47,9 +42,9 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - Use `#fetch` to retrieve and analyze content from external URLs.
 - Use semantic search to thoroughly check files before drawing conclusions. Avoid assumptions and guessing.
 - Use `#file://copilotKit.prompt.md` to reference the copilotKit prompt file. **IMPORTANT:** This file contains implementation guidelines, NOT for saving context between chats.
-- Before making any changes, always check `#file:copilotKit.prompt.md` and `#fetch` all relevant URLs to gain complete context.
-- Use `#file:copilotkit` to reference custom copilot components.
-- Use `#file:task_list.md` to reference the current task status and priorities.
+- Before making any changes, always check `#file://copilotKit.prompt.md` and `#fetch` all relevant URLs to gain complete context.
+- Use `#file://copilotkit` to reference custom copilot components.
+- Use `#file://task_list.md` to reference the current task status and priorities.
 
 ## CODING STANDARDS
 
