@@ -15,6 +15,8 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - OpenAPI
 - Lucide React
 - Tailwind CSS
+- Python
+- Neo4j (version >= 5.26.0)
 
 ## PROJECT DOCUMENTATION & CONTEXT SYSTEM
 
@@ -22,6 +24,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - OpenAPI specifications (`openapi.json`) should be used to understand API structures and workflows.
 - When working with CopilotKit components, fetch and review the official CopilotKit documentation to understand the core components and hooks.
 - When working with custom CopilotKit components, ensure comprehensive understanding of core CopilotKit components and hooks by fetching relevant URLs.
+- Refer to `#file:.notes` and related task management and meeting notes for project context and completed tasks.
 
 ## CODING STANDARDS
 
@@ -31,16 +34,20 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - Ensure explicit import of both the CopilotKit component and its stylesheet when using CopilotKit UI components.
 - Use Zod schemas for validation of all agent actions and workflow inputs/outputs.
 - Remove inline CSS from components; use Tailwind CSS and global CSS classes for styling.
+- Use `${MASTRA_URL}` for endpoint consistency in `Actions.tsx` and related components.
 
 ## WORKFLOW & RELEASE RULES
 
 - Ensure all workflows are correctly exported and integrated for use with CopilotKit and UI components.
 - Verify that new workflows or endpoints are registered and exposed correctly.
+- Use Dockerfiles that don't expose hardcoded credentials or run as root.
+- Neo4j passwords and other secrets must not be hardcoded in Dockerfiles. They should be injected at runtime.
 
 ## DEBUGGING
 
 - Check for errors in referenced files (`Actions.tsx`, `InteractiveCodeGraph.tsx`, `page.tsx`) to ensure compatibility with exported workflows.
 - Verify consistency of OpenAPI paths (e.g., `/api/mcp/{serverId}/tools/{toolId}/execute`, `/api/mcp/{serverId}/tools`) with the API structure.
+- When debugging `Actions.tsx`, ensure it is using the agent context from the layout to switch endpoints using `setCurrentEndpoint('${MASTRA_URL}/copilotkit/research');`.
 
 ## FILE NAMING CONVENTIONS
 
@@ -62,3 +69,19 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - The header should display a live agent status (with pulse), the current agent/user, and a progress bar that visually tracks workflow progress and errors.
 - Use the `Header.tsx` component as the main navigation bar for playground pages.
 - Ensure the `Header` component includes navigation links styled consistently with the project's design system, including appropriate button styling, hover states, and active state styling using primary colors.
+
+## SECURITY
+
+- Avoid hardcoding credentials in `.env.example` and `mcp.ts`.
+- Use environment variables for sensitive information like Neo4j credentials.
+- Validate and sanitize all user input before sending it to agents or workflows.
+- Ensure Dockerfiles do not expose hardcoded credentials or run as root.
+
+## DOCKER CONFIGURATION
+
+- Create non-root user in Dockerfile to run the container.
+- All application files within the container should be owned by the non-root user.
+- Use secrets management for production deployments.
+- Scan images regularly with tools like `docker scout` or `trivy`.
+- Keep base images updated to get latest security patches.
+- Consider using distroless images for even smaller attack surface.

@@ -1,6 +1,7 @@
 import { MCPClient } from "@mastra/mcp";
 import { PinoLogger } from '@mastra/loggers';
 import { z } from 'zod';
+import { env } from '../config/environment';
 
 
 const logger = new PinoLogger({ name: 'mcp', level: 'info' });
@@ -199,7 +200,7 @@ export const mcpStdio = new MCPClient({
       env: {
         GITHUB_TOKEN: process.env.GITHUB_TOKEN! || ""
       },
-      timeout: 60000,
+      timeout: 75000,
       enableServerLogs: true,
       logger: (logMessage) => {
         logger.info(`[MCP:github] ${logMessage.message}`, { level: logMessage.level });
@@ -214,7 +215,7 @@ export const mcpStdio = new MCPClient({
       env: {
         "MEMORY_FILE_PATH": "C:\\Users\\dm\\Documents\\deanmachines-rsc\\graphs.json"
       },
-      timeout: 60000,
+      timeout: 75000,
       enableServerLogs: true,
       logger: (logMessage) => {
         logger.info(`[MCP:memoryGraph] ${logMessage.message}`, { level: logMessage.level });
@@ -223,12 +224,26 @@ export const mcpStdio = new MCPClient({
     ddgsearch: {
       command: "uvx",
       args: ["duckduckgo-mcp-server"],
-      timeout: 60000,
+      timeout: 75000,
       enableServerLogs: true,
       logger: (logMessage) => {
-        logger.info(`[MCP:memoryGraph] ${logMessage.message}`, { level: logMessage.level }); // Note: This logger prefix seems to be a copy-paste error from memoryGraph, consider changing to [MCP:ddgsearch]
+        logger.info(`[MCP:ddgsearch] ${logMessage.message}`, { level: logMessage.level });
       }
-    }
+    },
+    neo4j: {
+      command: "uvx",
+      args: [ "mcp-neo4j-memory@0.1.4" ],
+      env: {
+        "NEO4J_URL": env.NEO4J_URL,
+        "NEO4J_USERNAME": env.NEO4J_USERNAME,
+        "NEO4J_PASSWORD": env.NEO4J_PASSWORD
+    },
+    timeout: 75000,
+      enableServerLogs: true,
+      logger: (logMessage) => {
+        logger.info(`[MCP:neo4j] ${logMessage.message}`, { level: logMessage.level });
+      }
+  }
 //  terminalController: {
 //    command: "uvx",
 //    args: ["terminal_controller", "C:\\Users\\dm\\Documents\\deanmachines-rsc\\.next\\var"],

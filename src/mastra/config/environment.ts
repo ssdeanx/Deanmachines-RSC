@@ -16,10 +16,14 @@ const envSchema = z.object({
   LANGSMITH_API_KEY: z.string().min(1, "LangSmith API key is required"),
   LANGSMITH_ENDPOINT: z.string().default("https://api.smith.langchain.com"),
   LANGSMITH_PROJECT: z.string().default("pr-warmhearted-jewellery-74"),
-  
-  // Database configuration for LibSQL/Turso (for Mastra agents and AI memory)
+    // Database configuration for LibSQL/Turso (for Mastra agents and AI memory)
   DATABASE_URL: z.string().min(1, "Database URL is required"),
   DATABASE_AUTH_TOKEN: z.string().min(1, "Database Auth is required"),
+  
+  // Neo4j configuration for graph database
+  NEO4J_URL: z.string().min(1, "Neo4j URL is required"),
+  NEO4J_USERNAME: z.string().min(1, "Neo4j username is required"),
+  NEO4J_PASSWORD: z.string().min(1, "Neo4j password is required"),
   
   // Supabase configuration for user authentication and data
   NEXT_PUBLIC_SUPABASE_URL: z.string().min(1, "Supabase URL is required"),
