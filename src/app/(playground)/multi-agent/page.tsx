@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useCopilotReadable, useCopilotAction } from "@copilotkit/react-core";
+// copilot: IMPLEMENT
 import { CopilotChat, CopilotPopup, CopilotSidebar } from "@copilotkit/react-ui";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

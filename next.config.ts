@@ -1,30 +1,43 @@
-import type { NextConfig } from "next";
+// Import Next.js config
+import type { NextConfig } from 'next';
+
+// Import MDX config
+import createMDX from '@next/mdx';
+
+// Import remark and rehype plugins
+import remarkGfm from 'remark-gfm';
+import remarkFrontmatter from 'remark-frontmatter';
+import rehypeSlug from 'rehype-slug';
+import rehypeHighlight from 'rehype-highlight';
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@mastra/*",
-    "isolated-vm",
-    "@ai-sdk/google",
-    "ai",
-    "shelljs",
-    "crawlee",
-    "dayjs",
-    "@xenova/transformers",
-    "node-fetch",
-    "isomorphic-git",
-    "isomorphic-fetch",
-    "jsinspect-plus",
-    "jsdom",
-    "@isomorphic-git/lightning-fs",
-    "marked",
-    "js-yaml",
-    "vitest",
-    "jszip",
-    "zod",
-    "eslintcc",
-    "langsmith",
-    "langsmith/vercel",
-    "@copilotkit/runtime",
-    "quick-lru"
+  // Configure pageExtensions to include MDX files
+  pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
+  serverExternalPackages: [
+    '@mastra/*',
+    'isolated-vm',
+    '@ai-sdk/google',
+    'ai',
+    'shelljs',
+    'crawlee',
+    'dayjs',
+    '@xenova/transformers',
+    'node-fetch',
+    'isomorphic-git',
+    'isomorphic-fetch',
+    'jsinspect-plus',
+    'jsdom',
+    '@isomorphic-git/lightning-fs',
+    'marked',
+    'js-yaml',
+    'vitest',
+    'jszip',
+    'zod',
+    'eslintcc',
+    'langsmith',
+    'langsmith/vercel',
+    '@copilotkit/runtime',
+    'quick-lru'
   ],
   experimental: {
     optimizeCss: true,
@@ -94,4 +107,23 @@ const nextConfig: NextConfig = {
   }
 };
 
-export default nextConfig;
+// Configure MDX with essential plugins
+const withMDX = createMDX({
+  options: {
+    remarkPlugins: [
+      // GitHub Flavored Markdown support
+      remarkGfm,
+      // Frontmatter support
+      remarkFrontmatter,
+    ],
+    rehypePlugins: [
+      // Auto-generate heading IDs for linking
+      rehypeSlug,
+      // Syntax highlighting for code blocks
+      rehypeHighlight,
+    ],
+  },
+});
+
+// Combine MDX and Next.js config
+export default withMDX(nextConfig);
