@@ -14,7 +14,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PlaygroundNav } from '../components/playground-nav';
 import { useAgent } from '../layout';
 import { Users, Activity, ArrowRight, CheckCircle } from 'lucide-react';
 
@@ -64,8 +63,8 @@ export default function MultiAgentPage() {
         handler: async ({ agent, task }) => {
             const newTask: AgentTask = {
                 id: `task-${Date.now()}`,
-                agent,
-                task,
+                agent: agent,
+                task: task,
                 status: 'pending',
                 timestamp: new Date().toISOString(),
             };
@@ -203,7 +202,6 @@ export default function MultiAgentPage() {
             </div>
 
             <div className="container mx-auto px-4 py-6">
-                <PlaygroundNav />
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">

@@ -1,14 +1,28 @@
 ---
 applyTo: "src/mastra/**/*.ts"
+description: "Mastra AI Framework Guidelines for the Dean Machines RSC Project"
+tags: [mastra, ai, framework, guidelines]
 ---
-# Mastra AI Backend Guidelines
+# Mastra AI Framework Guidelines
 
-- Ensure all Mastra-related code is placed in the `src/mastra` directory.
-- Use TypeScript for all Mastra-related files.
-- Follow the Mastra API structure and conventions.
-- Use the `mastra` prefix for all Mastra-related functions, classes, and variables.
-- Document all Mastra-related code with TSDoc comments.
-- Use the `@mastra` tag for all Mastra-related TSDoc comments.
+> **Framework Overview**: Mastra is an opinionated TypeScript framework for building AI applications and features quickly. Built by the Gatsby team, it provides primitives for workflows, agents, RAG, integrations, and evals. Mastra leverages the Vercel AI SDK for model routing and supports deployment on local machines or serverless clouds.
+
+## 🎯 Core Principles
+
+- **TypeScript-First**: Native TypeScript experience with full type safety
+- **Developer Experience**: Clean, intuitive development environment with built-in observability
+- **Production Ready**: Deploy to Vercel, Cloudflare Workers, Netlify, or standalone Node.js servers
+- **Unified Provider API**: Switch between OpenAI, Anthropic, Google Gemini with a single line of code
+- **Observability Built-in**: OpenTelemetry integration, tracing, logging, and evaluation tools
+
+## 📁 Directory Structure & Organization
+
+- Ensure all Mastra-related code is placed in the `src/mastra` directory
+- Use TypeScript for all Mastra-related files
+- Follow the established Mastra API structure and conventions
+- Use consistent naming with the `mastra` prefix for core functions and classes
+- Document all Mastra-related code with comprehensive TSDoc comments
+- Use the `@mastra` tag for all Mastra-related TSDoc comments
 
 # structure
 
@@ -114,3 +128,153 @@ applyTo: "src/mastra/**/*.ts"
 - Use JSDoc comments for functions and classes.
 - Use ESLint and Prettier for code formatting and linting.
 - Use Git for version control and commit messages should be clear and descriptive.
+
+## 🚀 Mastra Core Features
+
+### 🤖 Agent Development
+- **Persistent Memory**: Agents maintain conversation history and context across sessions
+- **Tool Calling**: Agents can execute functions and interact with external systems
+- **Semantic Memory**: Retrieve information based on recency, similarity, or conversation thread
+- **Multi-Agent Orchestration**: Coordinate multiple specialized agents in workflows
+
+### 🔄 Workflow Engine
+- **Graph-Based Execution**: Define discrete steps with deterministic control flow
+- **Control Flow Syntax**: Use `.then()`, `.branch()`, `.parallel()` for complex orchestration
+- **State Tracking**: Log inputs and outputs at each step with full observability
+- **Pipeline Integration**: Connect to observability tools for monitoring and debugging
+
+### 📚 Retrieval-Augmented Generation (RAG)
+- **Document Processing**: Handle text, HTML, Markdown, and JSON formats
+- **Embedding Creation**: Generate and store semantic embeddings in vector databases
+- **Multi-Provider Support**: Unified API for Pinecone, pgvector, and other vector stores
+- **Semantic Search**: Query-time retrieval with relevance scoring and reranking
+
+### 🔌 Model & Provider Management
+- **Vercel AI SDK Integration**: Unified interface for all LLM providers
+- **Provider Switching**: OpenAI, Anthropic, Google Gemini with consistent API
+- **Streaming Support**: Real-time response streaming for better UX
+- **Model Selection**: Choose specific models and configure parameters per use case
+
+### 📊 Observability & Evaluation
+- **Built-in Tracing**: OpenTelemetry integration for comprehensive monitoring
+- **Automated Evals**: Model-graded, rule-based, and statistical assessment methods
+- **Quality Metrics**: Toxicity, bias, relevance, and factual accuracy scoring
+- **Custom Evaluations**: Define domain-specific evaluation criteria
+
+## 🏗️ Architecture Patterns
+
+### Agent Creation Template
+```typescript
+import { Agent } from '@mastra/core/agent';
+import { createTracedGoogleModel } from '../config';
+import { agentMemory } from '../agentMemory';
+
+/**
+ * @mastra Agent for [specific domain/purpose]
+ * Implements [key capabilities]
+ * 
+ * @example
+ * ```typescript
+ * const result = await myAgent.generate({
+ *   messages: [{ role: 'user', content: 'Hello' }],
+ *   tools: [myTool]
+ * });
+ * ```
+ * 
+ * @see {@link https://mastra.ai/docs/agents | Mastra Agent Documentation}
+ */
+export const myAgent = new Agent({
+  name: 'my-agent',
+  instructions: 'Clear, specific instructions for the agent...',
+  model: createTracedGoogleModel(),
+  memory: agentMemory,
+  tools: [/* relevant tools */]
+});
+```
+
+### Tool Development Pattern
+```typescript
+import { createTool } from '@mastra/core/tools';
+import { z } from 'zod';
+
+const inputSchema = z.object({
+  // Define strict validation schemas
+  query: z.string().min(1).describe('Search query'),
+  options: z.object({
+    limit: z.number().optional().default(10)
+  }).optional()
+});
+
+const outputSchema = z.object({
+  result: z.string(),
+  metadata: z.record(z.any()).optional()
+});
+
+/**
+ * @mastra Tool for [specific functionality]
+ * 
+ * @param input - Validated input matching inputSchema
+ * @returns Promise resolving to string result
+ * 
+ * @example
+ * ```typescript
+ * const result = await myTool.execute({
+ *   query: 'search term',
+ *   options: { limit: 5 }
+ * });
+ * ```
+ */
+export const myTool = createTool({
+  id: 'my-tool',
+  description: 'Clear description of tool functionality',
+  inputSchema,
+  outputSchema,
+  execute: async ({ query, options }) => {
+    // Tool implementation with proper error handling
+    try {
+      // ... implementation
+      return 'Tool result as string';
+    } catch (error) {
+      throw new Error(`Tool execution failed: ${error.message}`);
+    }
+  }
+});
+```
+
+### Workflow Orchestration Pattern
+```typescript
+import { Workflow } from '@mastra/core/workflow';
+import { z } from 'zod';
+
+const workflowInputSchema = z.object({
+  // Define workflow inputs
+});
+
+/**
+ * @mastra Workflow for [specific process]
+ * Orchestrates [description of steps]
+ */
+export const myWorkflow = new Workflow({
+  name: 'my-workflow',
+  inputSchema: workflowInputSchema,
+  execute: async (input) => {
+    return workflow
+      .step('initial-step', async () => {
+        // First step implementation
+      })
+      .then('process-step', async (previousResult) => {
+        // Sequential step
+      })
+      .branch('decision-point', {
+        condition: (data) => data.needsProcessing,
+        onTrue: workflow.step('process-true', async () => { /* ... */ }),
+        onFalse: workflow.step('process-false', async () => { /* ... */ })
+      })
+      .parallel([
+        workflow.step('parallel-1', async () => { /* ... */ }),
+        workflow.step('parallel-2', async () => { /* ... */ })
+      ])
+      .execute(input);
+  }
+});
+```

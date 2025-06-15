@@ -23,7 +23,8 @@ const nextConfig: NextConfig = {
     "eslintcc",
     "langsmith",
     "langsmith/vercel",
-    "@copilotkit/runtime"
+    "@copilotkit/runtime",
+    "quick-lru"
   ],
   experimental: {
     optimizeCss: true,

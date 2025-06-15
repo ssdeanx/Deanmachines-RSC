@@ -40,9 +40,6 @@ const searchMessagesSchema = z.object({
   after: z.number().int().min(0).default(0),
 });
 
-// Zod schema for summary function inputs
-const summarySchema = z.object({ resourceId: z.string().nonempty(), threadId: z.string().nonempty(), historySize: z.number().int().min(1).default(100) });
-
 /**
  * Shared Mastra agent memory instance using LibSQL for storage and vector search.
  *
@@ -68,120 +65,33 @@ export const agentMemory = new Memory({
   vector: agentVector,
   embedder: fastembed.base,
   options: {
-    lastMessages: 1000,
+    lastMessages: 1000, // This remains a system-level config for retrieval
     semanticRecall: {
-      topK: 8, // Number of similar messages to retrieve
-      // Range of messages to consider around each match
+      topK: 5,
       messageRange: {
-        before: 5, // Consider 5 messages before the match
-        after: 2, // Consider 2 messages after the match
+        before: 4,
+        after: 1,
       },
     },
     workingMemory: {
       enabled: true,
       template: `
 ---
-# {{agent_name}} Working Memory
-Description: This is the working memory for the {{agent_name}}, which is used to store dynamic context and knowledge
-Timestamp: {{new Date().toISOString()}}
+# {{agent_name}} WM
+Ctx: S:{{session_id}} U:{{user_id}} Q:"{{user_query_summary}}" Sent:{{sentiment_score}} UnresQ:{{unresolved_questions_count}}
+Hist: {{summarized_history_short}}
+Notes: {{assistant_scratchpad_summary}}
+Plan: CurAct:"{{current_action}}" Next:"{{next_action_preview}}"
+Entities: {{key_entities_list}}
+Goals: {{active_goals_short}}
+Hypo: {{current_hypotheses_brief}}
+Signals: {{critical_signals_list}}
+Flags: Learn:{{is_learning}} Clarify:{{needs_clarification}} Load:{{is_high_load}} Plan:{{is_planning}} Wait:{{is_waiting}} Exec:{{is_executing}}
+Peers: {{collaborating_agents_ids}}
+SharedKB: {{relevant_shared_kb_snippets}}
+LearnEvents: {{recent_learning_highlights}}
 ---
-
-CurrentContext:
-  SessionID: "{{session_id}}" # Unique identifier for the user session
-  UserID: "{{user_id}}" # Unique identifier for the user
-  InteractionFocus: "{{user_query}}." # User's current query or focus
-  UserSentimentEstimate: "{{sentiment_score}}" # Estimate of user's sentiment
-  UnresolvedQuestions: "{{unresolved_questions}}" # List of unresolved questions
-      - type: "user_query"
-        content: "{{user_query}}" # User's query or input
-      - type: "agent_response"
-        content: "{{agent_response}}" # Agent's response to the query
-
-DynamicScratchpad: "{{assistant_notes}}" # Dynamic notes for current session
-  - type: "internal_monologue"
-    timestamp: "{{new Date(Date.now() - 30000).toISOString()}}" # 30 seconds ago
-    thought: "{{agent_thought}}" # Agent's internal thought process
-  - type: "retrieved_knowledge_summary"
-    timestamp: "{{new Date(Date.now() - 20000).toISOString()}}" # 20 seconds ago
-    source: "internal_search_results_topic_advanced_WM"
-    summary: "{{agent_summary}}" # Summary of retrieved knowledge
-  - type: "planning_step"
-    timestamp: "{{new Date(Date.now() - 10000).toISOString()}}" # 10 seconds ago
-    action_considered: "{{agent_action_considered}}" # Action under consideration
-  - type: "current_action"
-    timestamp: "{{new Date().toISOString()}}"
-    action: "{{agent_current_action}}" # Current action being executed
-
-TrackedEntitiesAndBeliefs: # Key entities/concepts agent is currently tracking
-  - entity_id: "{{entity_id}}" # Unique identifier for the entity
-    type: "Concept"
-    properties:
-      definition: "{{entity_definition}}" # Definition of the entity
-      user_interest_level: "{{entity_user_interest_level}}" # User's interest level
-      discussion_history: "{{entity_discussion_history}}" # Discussion history
-    agent_belief: "{{entity_agent_belief}}" # Agent's belief about the entity
-  - entity_id: "{{user_profile_id}}" # User profile identifier
-    type: "User"
-    properties:
-      preferred_format: "{{user_preferred_format}}" # Inferred by agent
-      technical_level_estimate: "{{user_technical_level_estimate}}" # Estimate of user's technical level
-      recent_interactions: "{{user_recent_interactions}}" # Summary of recent interactions
-
-OperationalGoals: "{{operational_goals}}" # Short-term, evolving goals for the current interaction
-  - goal_id: "{{goal_id}}" # Unique identifier for the goal
-    description: "{{goal_description}}" # Description of the goal
-    status: "{{goal_status}}" # Status of the goal
-    sub_goals:
-      - description: "{{sub_goal_description}}" # Description of the sub-goal
-      - status: "{{sub_goal_status}}" # Status of the sub-goal
-      - plan: "{{sub_goal_plan}}" # Plan to achieve the sub-goal
-      - "{sub_goal_action}" # Action to achieve the sub-goal
-
-ActiveHypotheses:
-  - hypothesis_id: "{{hypothesis_id}}" # Unique identifier for the hypothesis
-    statement: "{{hypothesis_statement}}" # Statement of the hypothesis
-    confidence: "{{hypothesis_confidence}}" # Confidence in the hypothesis
-
-RelevantContextualSignals:
-  - signal_type: "{{signal_type}}" # Type of the signal
-    value: "{{signal_value}}" # Value of the signal
-    implication: "{{signal_implication}}" # Implication of the signal
-
-InternalStateFlags:
-  is_learning_new_topic: {{answer}} # Whether the agent is learning a new topic
-  requires_clarification_on_last_user_input: {{answer}} # Whether the agent requires clarification on the last user input
-  high_computational_load: {{answer}} # Whether the agent has a high computational load
-  is_in_planning_mode: {{answer}} # Whether the agent is in planning mode
-  is_waiting_for_user_input: {{answer}} # Whether the agent is waiting for user input
-  is_executing_action: {{answer}} # Whether the agent is executing an action
-
-InteractingAgents:
-  - agent_id: "{{agent_name}}" # From CurrentContext
-    role: "{{role}}" # Primary querant or observer
-    last_interaction_summary: "{{last_interaction_summary}}" # Summary of the last interaction
-  - agent_id: "{{agent_name}}" # Another AI agent
-    status: "{{status}}" # Status of the agent
-    capabilities_relevant_to_current_focus: ["{{capability_1}}", "{{capability_2}}"] # Capabilities relevant to the current focus
-
-SharedKnowledgeReferences:
-  - ref_id: "{{ref_id}}" # Unique identifier for the reference
-    agreed_with: ["{{agent_name_1}}", "{{agent_name_2}}"] # Agents that agreed with the reference
-    source: "{{source}}" # Source of the reference
-    summary: "{{summary}}" # Summary of the reference
-    last_accessed: "{{new Date().toISOString()}}" # Timestamp of the last access
-    created_at: "{{new Date().toISOString()}}" # Timestamp of the creation
-    created_by: "{{agent_name}}" # Agent that created the reference
-
-RecentLearningEvents:
-  - event_type: "{{event_type}}" # Type of the event
-    timestamp: "{{new Date().toISOString()}}" # Timestamp of the event
-    user_feedback: "{{user_feedback}}" # User feedback related to the event
-    agent_action_taken: "{agent_action_taken}" # Action taken by the agent as a result of the event
-  - event_type: "{event_type}" # Type of the event
-    timestamp: "{{new Date().toISOString()}}" # Timestamp of the event
-    tool_id: "{{tool_id}}" # ID of the tool used in the event
-    outcome: "{{outcome}}" # Outcome of the event
-      `, // End of the illustrative YAML template string
+      `,
     },
   },
   processors: [
@@ -346,61 +256,6 @@ export function maskWorkingMemoryStream(
   return maskStreamTags(textStream, 'working_memory', { onStart, onEnd, onMask });
 }
 
-/**
- * Generates a concise summary of the recent memory for a given thread using Google Gemini.
- * @param resourceId - The resource ID owning the thread
- * @param threadId - The thread identifier
- * @param historySize - Number of recent messages to include in the summary generation
- * @returns The summary text
- */
-export async function generateMemorySummary(
-  resourceId: string,
-  threadId: string,
-  historySize = 100
-): Promise<string> {
-  const params = summarySchema.parse({ resourceId, threadId, historySize });
-  try {
-    // Retrieve recent messages
-    const { messages } = await agentMemory.query({
-      resourceId: params.resourceId,
-      threadId: params.threadId,
-      selectBy: { last: params.historySize }
-    });
-
-    // Build prompt from messages
-    const content = messages.map(m => `${m.role}: ${m.content}`).join('\n');
-    const prompt = `Please provide a concise summary of the following conversation messages:\n${content}`;
-
-    // Generate summary with Google Gemini model
-    const model = google('gemini-2.0-flash-exp');
-    logger.info(`Generating memory summary with prompt: ${prompt.substring(0, 50)}...`);
-
-    const result = await model.doGenerate({
-      inputFormat: 'messages',
-      mode: { type: 'regular' },
-      prompt: [
-        {
-          role: 'system',
-          content: 'You are a helpful assistant that summarizes conversations.',
-        },
-        {
-          role: 'user',
-          content: [{ type: 'text', text: prompt }],
-        },
-      ],
-    });
-
-    // Extract summary text from first generation
-    if (typeof result.text === 'string') {
-      return result.text;
-    }
-    
-    throw new Error('Unexpected response format from model');
-  } catch (error: unknown) {
-    logger.error(`generateMemorySummary failed: ${(error as Error).message}`);
-    throw error;
-  }
-}
 /**
  * Enhanced search function with performance tracking and detailed logging
  * @param threadId - Thread identifier

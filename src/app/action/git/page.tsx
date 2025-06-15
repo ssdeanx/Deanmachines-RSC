@@ -1,6 +1,8 @@
+"use client";
+ 
 import { Form } from "./form";
  
-export default async function Page() {
+export default function Page() {
   return (
     <>
       <h1>Git Information</h1>
