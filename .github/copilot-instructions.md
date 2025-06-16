@@ -33,6 +33,8 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - quick-lru
 - CODECOV
 - ag-ui
+- Windsurf AI IDE
+- fastembed
 
 ## PROJECT DOCUMENTATION & CONTEXT SYSTEM
 
@@ -61,7 +63,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     - **Config:** The `config/` directory holds configuration files for providers (e.g., Google Gemini), environment validation, and observability/logging.
     - **Networks:** The `networks/` directory contains agent network definitions (e.g., `dean-machines-network.ts`).
     - **Tools:** The `tools/` directory includes all MCP tool implementations (e.g., `graphRAG.ts`, `vectorQueryTool.ts`, `stock-tools.ts`, `weather-tool.ts`, `mcp.ts`).
-    - **Workflows:** The `workflows/` directory contains workflow definitions (e.g., `code-graph-maker.ts`, `code-graph-maker-advanced.ts`, `weather-workflow.ts`).
+    - **Workflows:** The `workflows/` directory contains workflow definitions (e.g., `code-graph-maker.ts`, `code-graph-maker-advanced.ts`).
     - **Agent Memory:** The `agentMemory.ts` file sets up persistent and vector storage for agent memory using LibSQL.
 - When using `#file://inline-directives.instructions.md`:
     - The following inline directives are supported:
@@ -98,19 +100,16 @@ This file contains the rules and guidelines for the AI coding assistant to follo
             ```
         - **`// copilot: TYPE`** - Add TypeScript types
             ```typescript
-            // copilot: TYPE
             const data = fetchData(); // Should add type definition
             ```
         - **`// copilot: TEST`** - Generate tests
             ```typescript
-            // copilot: TEST
             function sum(a: number, b: number) {
               return a + b;
             }
             ```
         - **`// copilot: Z`** - Generate Zod schema
             ```typescript
-            // copilot: Z
             interface User {
               id: number;
               name: string;
@@ -119,33 +118,28 @@ This file contains the rules and guidelines for the AI coding assistant to follo
             ```
         - **`// copilot: DOC`** - Add TSDoc comments
             ```typescript
-            // copilot: DOC
             function calculateArea(width: number, height: number): number {
               return width * height;
             }
             ```
         - **`// copilot: HOOK`** - Create/fix React hooks
             ```typescript
-            // copilot: HOOK
             function useData(url: string) {
               // Should handle loading and error states
             }
             ```
         - **`// copilot: STYLE`** - Add Tailwind styling
-            ```tsx
-            // copilot: STYLE
+            ```typescript
             <button>Click me</button> {/* Should use electric neon theme and glassmorphism */}
             ```
         - **`// copilot: ERROR`** - Add error handling
             ```typescript
-            // copilot: ERROR
             function divide(a: number, b: number) {
               return a / b; // Handle division by zero
             }
             ```
         - **`// copilot: ASYNC`** - Convert to async/await
             ```typescript
-            // copilot: ASYNC
             function fetchData() {
               return new Promise((resolve) => {
                 setTimeout(() => resolve("Data"), 1000);
@@ -154,17 +148,14 @@ This file contains the rules and guidelines for the AI coding assistant to follo
             ```
         - **`// copilot: FILE_FIX`** - Fix entire file
             ```typescript
-            // copilot: FILE_FIX
             // This file has multiple issues and needs a thorough check
             ```
         - **`// copilot: FILE_Z`** - Add Zod schemas for whole file
             ```typescript
-            // copilot: FILE_Z
             // This file uses several interfaces that need validation
             ```
         - **`// copilot: trace1`** through **`// copilot: trace3`** - Sequential trace points
             ```typescript
-            // copilot: trace1
             console.log("Starting process");
             // copilot: trace2
             const result = doSomething();
@@ -173,12 +164,10 @@ This file contains the rules and guidelines for the AI coding assistant to follo
             ```
         - **`// copilot: trace_`** - Stop tracing
             ```typescript
-            // copilot: trace_
             console.log("End of tracing");
             ```
         - **`// copilot: RENAME`** - Suggest better names for variables/functions
             ```typescript
-            // copilot: RENAME
             let a = 5; // Suggest better name for 'a'
             ```
         - **`// copilot: EXPLAIN`** - Add explanatory comments for complex logic
@@ -191,81 +180,66 @@ This file contains the rules and guidelines for the AI coding assistant to follo
             ```
         - **`// copilot: REFACTOR`** - Restructure code for better readability
             ```typescript
-            // copilot: REFACTOR
             function processData(data: any) {
               // This function is too long and complex
             }
             ```
         - **`// copilot: VALIDATE`** - Add input validation
             ```typescript
-            // copilot: VALIDATE
             function createUser(name: string, age: number) {
               // Validate name and age
             }
             ```
         - **`// copilot: MOCK`** - Generate mock data or test fixtures
             ```typescript
-            // copilot: MOCK
             // Generate mock user data for testing
             ```
         - **`// copilot: UTIL`** - Create utility functions
             ```typescript
-            // copilot: UTIL
             // Need a function to format dates
             ```
         - **`// copilot: AUTH`** - Add authentication/authorization
             ```typescript
-            // copilot: AUTH
             <Dashboard /> {/* Should check if user is authenticated */}
             ```
         - **`// copilot: LOG`** - Add logging statements
             ```typescript
-            // copilot: LOG
             processPayment(user, amount); {/* Should add audit log of payment details */}
             ```
         - **`// copilot: CACHE`** - Add caching logic
             ```typescript
-            // copilot: CACHE
             getPosts(userId); {/* Expensive N+1 query - cache results */}
             ```
         - **`// copilot: PERF`** - Performance optimizations
             ```typescript
-            // copilot: PERF
             <MyComponent data={expensiveData} />; {/* Avoid re-renders - use memo */}
             ```
         - **`// copilot: API`** - Create API endpoint
             ```typescript
-            // copilot: API
             // Endpoint to create a new user with validation
             ```
         - **`// copilot: DB`** - Database queries/operations
             ```typescript
-            // copilot: DB
             // Complex multi-table query to fetch user activity
             ```
         - **`// copilot: SCHEMA`** - Database schema/migrations
             ```typescript
-            // copilot: SCHEMA
             // Define table structure with indexes and constraints
             ```
         - **`// copilot: A11Y`** - Add accessibility features
             ```typescript
-            // copilot: A11Y
             <form> {/* Missing labels and aria attributes */} </form>
             ```
         - **`// copilot: RESPONSIVE`** - Make responsive design
             ```typescript
-            // copilot: RESPONSIVE
             <Grid> {/* Add mobile breakpoints for responsiveness */} </Grid>
             ```
         - **`// copilot: CONFIG`** - Configuration setup
             ```typescript
-            // copilot: CONFIG
             // Need to configure API keys and feature flags
             ```
         - **`// copilot: ENV`** - Environment variables
             ```typescript
-            // copilot: ENV
             const apiKey = "hardcoded_api_key"; {/* Should use environment variable */}
             ```
     - Copilot directive comments start with `// copilot:`
@@ -304,6 +278,27 @@ This file contains the rules and guidelines for the AI coding assistant to follo
       4. Add performance considerations (e.g., memoization needs)
       5. Include testing requirements in the directive blocks
     - **IMPORTANT**: The user will likely only use `// copilot: task` to mark tasks.
+- When analyzing `.prompt.md` files, identify key components, configurations, and agents related to the Dean Machines RSC project.
+- When analyzing `.prompt.md` files, use the following structure to present the found components:
+  ## 🎯 **Core Architecture Components Found**
+
+  ### **1. Mastra AI Framework Integration**
+    - **Main Configuration**: `src/mastra/index.ts` - Central Mastra configuration with 22+ agents, workflows, and networks
+    - **Agent Memory System**: `src/mastra/agentMemory.ts` - LibSQL/Turso storage with vector search using fastembed
+    - **Google AI Provider**: `src/mastra/config/googleProvider.ts` and `src/mastra/config/index.ts` - Traced Google AI models with LangSmith integration
+
+  ### **2. Agent Orchestration System (22+ Agents)**
+    **Core Agents:**
+    - `src/mastra/agents/master-agent.ts` - Primary orchestrator with comprehensive Zod validation
+    - `src/mastra/agents/strategizer-agent.ts` - Strategic planning and decision making
+    - `src/mastra/agents/supervisor-agent.ts` - Multi-agent coordination and quality control
+    - `src/mastra/agents/analyzer-agent.ts` - Deep analysis and pattern recognition
+
+    **Development Agents:**
+    - `src/mastra/agents/code-agent.ts` - Code analysis, generation, and optimization
+    - `src/mastra/agents/git-agent.ts` - Version control operations and repository management
+    - `src/mastra/agents/debug-agent.ts` - Error detection and debugging assistance
+    - `src/mastra/agents/documentation`
 
 ## CODING STANDARDS
 
@@ -325,6 +320,8 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - **IMPORTANT**: Do not attempt to rewrite entire files in one shot. Enhance existing components step by step.
 - **IMPORTANT**: Before coding, be absolutely sure what you're working on.
 - **IMPORTANT:** Do not code unless you are absolutely sure what you're working on.
+- **IMPORTANT**: After every code change, run error checks (get_errors).
+- When using `// copilot: FIX` or `// copilot: IMPLEMENT` directives, always ensure proper environment variable usage as defined in `#file://.env.example`.
 
 ## WORKFLOW & RELEASE RULES
 
@@ -576,15 +573,20 @@ By following these guidelines, commit messages will be more informative, consist
 - **Pre-mortem Analysis** - Before implementing, imagine the feature has failed spectacularly and work backward
 - **First Principles Thinking** - Break down to fundamental truths
 
-## CHANGELOG
+## AI IDE CONFIGURATION
 
-- **2025-06-15**: Added guidance on the `ssdeanx/deanmachines-rsc` GitHub repository structure, focusing on the `mastra` directory, including agents, config, networks, tools, and agent memory.
-- **2025-06-15**: Added `AGENT MEMORY MANAGEMENT` to guide the agents in reducing prompt token bloat and improving tracing/observability.
-- **2025-06-15**: Added the `quick-lru` library to the TECH STACK.
-- **2025-06-15**: Added a CRITICAL WARNING against modifying the `MemoryProcessor` or `SummarizeProcessor` within `agentMemory.ts` unless explicitly instructed.
-- **2025-06-15**: Added a CRITICAL WARNING: **Do not touch that memory processor. Its barely ever used.**
-- **2025-06-15**: Added documentation of inline directives system.
-- **2025-06-14**: Added comprehensive section documenting the successful agent runtime context integration. This includes implementation details, key tips & best practices, critical success patterns, things to avoid, and performance metrics.
-- **2025-06-14**: Updated Frontend Runtime Context Integration strategy to include enhancing existing CopilotKit components, implementing tool-based rendering, creating custom agent rendering, and implementing interactive UI elements.
-- **2025-06-14**: Added a CRITICAL WARNING against creating new files unless explicitly instructed.
-- **2025-06-14**: Added a CRITICAL WARNING against rewriting
+- Use Windsurf AI IDE for enhanced development workflow.
+- Refer to the Windsurf documentation and online resources for configuration and usage examples.
+- The primary configuration file is `.windsurfrules` located in the project root.
+- Utilize the latest trends and techniques for AI-assisted development.
+- Ensure perfect context for the project by configuring Windsurf with the project's architecture, technologies, and coding standards.
+
+## AGENT TERMINATION POLICY
+
+- **The AI coding assistant can be terminated (banned from touching files) for repeatedly failing to follow instructions, removing existing code, or making incorrect assumptions.**
+
+## AGENT CODE ACCESS
+
+- **After termination, the AI coding assistant is banned from touching/modifying any files in the codebase. It can only provide code explanations, guidance, and architecture discussions.**
+
+## CHANGEL
