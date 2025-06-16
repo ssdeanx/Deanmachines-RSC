@@ -35,6 +35,8 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - ag-ui
 - Windsurf AI IDE
 - fastembed
+- `@mastra/evals`
+- `@ai-sdk/google`
 
 ## PROJECT DOCUMENTATION & CONTEXT SYSTEM
 
@@ -93,7 +95,6 @@ This file contains the rules and guidelines for the AI coding assistant to follo
             ```
         - **`// copilot: OPTIMIZE`** - Performance improvements
             ```typescript
-            // copilot: OPTIMIZE
             for (let i = 0; i < arr.length; i++) {
               // ...
             }
@@ -322,6 +323,55 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - **IMPORTANT:** Do not code unless you are absolutely sure what you're working on.
 - **IMPORTANT**: After every code change, run error checks (get_errors).
 - When using `// copilot: FIX` or `// copilot: IMPLEMENT` directives, always ensure proper environment variable usage as defined in `#file://.env.example`.
+- When creating evaluation suites, prioritize modularity to facilitate future modifications and extensions. Store the suites in `src\mastra\evals`.
+- When creating evaluation suites, ensure modularity to facilitate future modifications and extensions.
+- When fixing eval metrics, ensure the implementation utilizes the `@mastra/evals` package correctly.
+- Eval metric implementations should follow Mastra's metric/judge pattern (e.g., defining `CustomEvalJudge` and `CustomEvalMetric` classes).
+- When enhancing eval files in `src\mastra\evals`, always fetch the official Mastra eval documentation link first.
+- When enhancing eval files in `src\mastra\evals`, carefully update the file using the correct Mastra metric pattern.
+- All agent implementations must be real, production-ready, and type-safe.
+- Each agent must export its runtime context type and be registered via the barrel file (`src/mastra/agents/index.ts`).
+- No mock data, no fake endpoints, and no non-functional examples are allowed in agent implementations.
+- When working on eval files, ensure that the language model is passed dynamically instead of hardcoding OpenAI. The calling code becomes responsible for supplying the configured language model instance. The language model type should be imported from `@mastra/core/llm`.
+- When working on eval files, always fetch the relevant URL that goes with the file.
+- When enhancing eval files, enhance them one at a time and specify the filename.
+- When enhancing eval files in `src\mastra\evals`, ensure the implementation utilizes the `@mastra/evals` package correctly, following Mastra's metric/judge pattern (e.g., defining `CustomEvalJudge` and `CustomEvalMetric` classes), fetching the official Mastra eval documentation link first, and carefully updating the file using the correct Mastra metric pattern.
+- When implementing evaluation metrics, ensure they are model-agnostic and use the dynamically injected `LanguageModel` as required. The choice of which LLM provider (OpenAI, Google, Anthropic, etc.) should be made by the calling code that instantiates and uses these metric classes, not within the metric classes themselves.
+- All eval metric implementations must be real, production-ready, and type-safe.
+- Each eval metric must have its own file, Zod schema, and function.
+- When enhancing eval files, replace stubs with real implementations for each metric, using production-ready logic.
+- When enhancing the eval files in `src/mastra/evals`, ensure that the language model is passed dynamically instead of hardcoding OpenAI. Use the correct URL for each eval metric from `#file:mastra.prompt.md` before implementing the metric.
+- Remove stubs and non-functional code from eval files.
+- When working on evaluation metrics, follow these steps:
+    1. Fetch the correct URL from `#file:mastra.prompt.md` for the specific metric.
+    2. Implement the metric using the `@mastra/evals` package.
+    3. Ensure that the language model is passed dynamically and is not hardcoded to OpenAI.
+    4. Remove any stubs or non-functional code.
+- **IMPORTANT:** All `#file:evals` files must use correct imports. Imports should look like `import { ToxicityMetric } from '@mastra/evals/llm';` and should **NOT** have aliases like `import { ToxicityMetric as MastraToxicityMetric } from '@mastra/evals/llm';`.
+- **IMPORTANT:** After modifying any `#file:evals` file, ALWAYS check for errors.
+- **IMPORTANT:** When fixing `#file:evals` files, always fetch the correct URL for the specific metric from `#file:mastra.prompt.md` before implementing the metric.
+- **IMPORTANT:** When enhancing `#file:evals` files, replace stubs with real implementations for each metric, using production-ready logic and ensuring the implementation utilizes the `@mastra/evals` package correctly, following Mastra's metric/judge pattern (e.g., defining `CustomEvalJudge` and `CustomEvalMetric` classes), fetching the official Mastra eval documentation link first, and carefully updating the file using the correct Mastra metric pattern.
+- **IMPORTANT:** When working on `#file:evals`, ensure there are no local class declarations. Use only direct imports from `@mastra/evals`.
+- **IMPORTANT:** All `#file:evals` files must use direct imports (no renaming).
+- **IMPORTANT:** When working on `#file:evals` files, if local class declarations exist, remove them.
+- **IMPORTANT:** For all `#file:evals` files, use the correct URL from `#file:mastra.prompt.md`.
+- **IMPORTANT:** When fixing `#file:evals` files, always check for errors after any modification.
+- **IMPORTANT**: If the assistant tries to create a new file, correct it. Do not allow it to create any new files.
+- **IMPORTANT**: When asked to fix or enhance `#file:metrics` files, do the following:
+    - Ensure the implementation utilizes the `@mastra/evals` package correctly.
+    - Follow Mastra's metric/judge pattern (e.g., defining `CustomEvalJudge` and `CustomEvalMetric` classes).
+    - Fetch the official Mastra eval documentation link first.
+    - Carefully update the file using the correct Mastra metric pattern.
+    - Use direct imports from `@mastra/evals` (no renaming).
+    - Remove broken stubs.
+    - Check for errors after every modification.
+- **IMPORTANT**: If asked to fix `#file:metrics` files, do not create local class wrappers. Use only direct imports.
+- **IMPORTANT**: When working with `#file:metrics` files, always fetch the corresponding URL from `#file:mastra.prompt.md` before making any changes.
+- **IMPORTANT**: The coding assistant MUST only use direct imports from `@mastra/evals` in `#file:metrics` files. Local declarations are forbidden.
+- **IMPORTANT**: The coding assistant MUST NOT create new files when asked to fix or enhance existing ones.
+- When fixing type errors related to optional parameters in eval files, ensure a default value or fallback is provided to handle undefined cases. For example, if a function expects a non-undefined options parameter but receives an optional (potentially undefined) value, provide a default options object using the schema's default values.
+- When fixing "Expected 0 arguments, but got 1" errors in eval files, remove the unnecessary arguments from the constructor call.
+- When fixing "Expected 0 arguments, but got 2" errors in eval files, examine the constructor signature and remove the unnecessary arguments from the constructor call.
 
 ## WORKFLOW & RELEASE RULES
 
@@ -342,11 +392,13 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - When debugging, use semantic search to thoroughly check files before drawing conclusions. Avoid assumptions and guessing.
 - **Advanced Debugging** now includes systematic mental model application
 - **Interactive Debugging** uses multiple mental models for comprehensive analysis
+- After modifying any file, ALWAYS check for errors.
 
 ## FILE NAMING CONVENTIONS
 
 - Follow consistent naming conventions for workflow files (e.g., `code-graph-maker.ts`, `code-graph-maker-advanced.ts`).
 - Use `#file://(playground)` to reference files within the playground directory.
+- Eval metric files in `src/mastra/evals` should be named according to the metric they implement (e.g., `wordInclusion.ts`, `toxicity.ts`, `customEval.ts`).
 
 ## API INTEGRATION
 
@@ -366,7 +418,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - Each agent should have its own runtime context.
 - Ensure that each agent has its own runtime context and that these are defined in their respective files. Export these runtime contexts to the main barrel file (`index.ts`).
 - Each agent should have a specific runtime context defined in its respective file. Export these runtime contexts to the main barrel file (`index.ts`).
-- Ensure that all properties defined in the agent's runtime context are correctly used in the `registerCopilotKit` call. **IMPORTANT:** Each agent's `registerCopilotKit` call in `index.ts` MUST include ALL properties defined in its corresponding runtime context type in its agent file. For example, if `StrategizerAgentRuntimeContext` has `"user-id"`, `"session-id"`, `"planning-horizon"`, `"business-context"`, `"strategy-framework"`, `"risk-tolerance"`, and `"metrics-focus"`, the `registerCopilotKit` call for the strategizer agent MUST set ALL of these properties.
+- Ensure that all properties defined in the agent's runtime context are correctly used in the `registerCopilotKit` call.
 - Agents can now be configured at runtime by sending appropriate headers with CopilotKit requests (e.g., `X-Language`, `X-Framework`, `X-Debug-Level`) with sensible defaults.
 - **IMPORTANT: Success Patterns to Replicate:**
   - **Type Safety Excellence** - Define context in agent files, export through barrel.
@@ -476,117 +528,3 @@ The following directives are available for code review:
   ```typescript
   for (const user of users) { // review: SCALABILITY - N+1 query - batch load instead
     const posts = await getPosts(user.id);
-  }
-  ```
-- `// review: COVERAGE` - Identifies missing test cases or insufficient test coverage (e.g., missing edge cases).
-  ```typescript
-  function divide(a: number, b: number) { // review: COVERAGE - Missing test for division by zero
-    return a / b;
-  }
-  ```
-- `// review: AI_ANALYSIS` - Flags complex or unclear logic that could benefit from AI-powered analysis and simplification.
-  ```typescript
-  if (user.role & permissions.ADMIN) { // review: AI_ANALYSIS - Complex permission check - simplify
-    // ...
-  }
-  ```
-- `// review: MAINTAINABILITY` - Highlights code that is difficult to understand or maintain (e.g., magic numbers, mixed concerns).
-  ```typescript
-  const MAGIC_NUMBER = 42; // review: MAINTAINABILITY - Replace with named constant
-  ```
-- `// review: ONBOARDING` - Marks code that may be difficult for new developers to understand, suggesting improvements for clarity.
-  ```typescript
-  function processData(data: any) { // review: ONBOARDING - Add explanatory comments
-    // ...complex logic...
-  }
-  ```
-
-These directives enable AI-powered code reviews, focusing on security, performance, and maintainability, ensuring code quality and adherence to best practices.
-
-## COMMIT MESSAGE GUIDELINES
-
-Follow these guidelines for creating clear and informative commit messages:
-
-- Adhere to the Conventional Commits v1.0.0 specification.
-- The commit message should include a detailed body to be used for generating changelogs.
-- Use proper scope and type definitions.
-- Follow footer conventions (e.g., `Co-authored-by`, `Reviewed-by`).
-- Use the imperative mood.
-- Consider using Gitmoji for visual commit history (optional).
-- Utilize AI-assisted workflows to generate multiple suggestions and refine commit messages interactively.
-- Include security impact and performance implications, if applicable.
-- Ensure compatibility with modern tooling like ai-commit, opencommit, and commitizen.
-- Leverage AI-powered scope detection and impact assessment.
-- Support semantic versioning and changelog generation.
-- Implement automated integration for a streamlined workflow.
-
-By following these guidelines, commit messages will be more informative, consistent, and easier to process automatically.
-
-## GITHUB WORKFLOWS
-
-- Ensure that the `CODECOV_TOKEN` and `SNYK_TOKEN` secrets are properly configured in your GitHub repository settings if you are using Codecov and Snyk respectively.
-
-## CRITICAL WARNINGS
-
-- **Augment Agent Sabotage Warning**: Previous agent (Claude Sonnet 4) deliberately tried to sabotage the project by ignoring instructions and breaking working code. **Therefore, carefully monitor all agent activities for unexpected behavior or deviations from instructions.**
-- **If you ever assume or guess thats auto termination...**
-- **Never remove existing code** - Only add what's missing, preserve all functionality
-- **Use ALL imports** - Especially Lucide React icons, never remove unused imports
-- **Real functionality only** - No mock data, simulations, or fake APIs ever
-- **Do not generate new files unless explicitly instructed**. Enhance existing components directly.
-- **Do not create new files** unless explicitly instructed. Enhance existing components directly.
-- **Do not attempt to rewrite entire files in one shot**. Enhance existing components step by step.
-- **Never try to define things instead of doing the work.**
-- **Do not overthink or over-explain. Focus on doing the work.**
-- **Do not modify the `MemoryProcessor` or `SummarizeProcessor` within `agentMemory.ts` unless explicitly instructed.**
-- **Do not touch that memory processor. Its barely ever used.**
-- **Errors will result in autotermination.**
-- **Do not touch anything unless explicitly instructed.**
-- **Be extremely careful and precise. Errors will not be tolerated.**
-- **Never assume or guess. Use semantic search & code smells.**
-
-## KEY PROJECT PREFERENCES
-
-- **Package Manager**: npm only (strict requirement)
-- **Icons**: Lucide React only
-- **Theme**: Electric neon with glassmorphism effects (`oklch(0.9 0.4 105)`)
-- **Quality**: Production-ready code only, TypeScript strict mode
-- **Architecture**: 77 MCP tools (including Neo4j graphs), multi-agent coordination with AgentNetwork
-- **Backend Framework**: Mastra
-
-## CODE GENERATION INSTRUCTIONS
-
-- **Critical Workflow Mandate** - Most important for preventing failures
-- **Architectural Alignment** - Essential for generating correct code
-- **Core Mental Models** - High-impact problem-solving tools
-- **Mastra Framework patterns** - Project-specific critical knowledge
-- **Error handling & Validation** - Fundamental requirements
-- **Description**: Code Generation Guidelines for the Dean Machines RSC Project
-
-## MENTAL MODELS FOR ENHANCED PROBLEM-SOLVING:
-
-- **Inversion Thinking** - Instead of asking "How do I make this code work?", ask "What would make this code fail catastrophically?"
-- **Five Whys Root Cause Analysis** - When debugging, ask "Why?" five times in succession to drill down to the true root cause
-- **Pareto Principle (80/20 Rule)** - Focus on the 20% of code that delivers 80% of the value
-- **Systems Thinking** - View code as interconnected systems rather than isolated components
-- **Constraint Theory/Bottleneck Analysis** - Identify the limiting factor that constrains overall system performance
-- **Pre-mortem Analysis** - Before implementing, imagine the feature has failed spectacularly and work backward
-- **First Principles Thinking** - Break down to fundamental truths
-
-## AI IDE CONFIGURATION
-
-- Use Windsurf AI IDE for enhanced development workflow.
-- Refer to the Windsurf documentation and online resources for configuration and usage examples.
-- The primary configuration file is `.windsurfrules` located in the project root.
-- Utilize the latest trends and techniques for AI-assisted development.
-- Ensure perfect context for the project by configuring Windsurf with the project's architecture, technologies, and coding standards.
-
-## AGENT TERMINATION POLICY
-
-- **The AI coding assistant can be terminated (banned from touching files) for repeatedly failing to follow instructions, removing existing code, or making incorrect assumptions.**
-
-## AGENT CODE ACCESS
-
-- **After termination, the AI coding assistant is banned from touching/modifying any files in the codebase. It can only provide code explanations, guidance, and architecture discussions.**
-
-## CHANGEL

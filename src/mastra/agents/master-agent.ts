@@ -2,10 +2,11 @@ import { Agent } from "@mastra/core/agent";
 import { agentMemory } from '../agentMemory';
 import { graphTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
+import { mem0RememberTool, mem0MemorizeTool } from "../tools/mem0-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { weatherTool } from "../tools/weather-tool";
 import { stockPriceTool } from "../tools/stock-tools";
-import { createTracedGoogleModel } from '../config';
+import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
 import { z } from 'zod';
 
@@ -52,6 +53,14 @@ const masterAgentConfigSchema = z.object({
   name: z.string().min(1).describe('Agent name identifier'),
   instructions: z.string().min(1).describe('Agent instructions and behavior'),
   model: z.any().describe('AI model configuration'),
+  providerOptions: z.object({
+    google: z.object({
+      thinkingConfig: z.object({
+        thinkingBudget: z.number().min(0).describe('Thinking budget for the Google provider'),
+        includeThoughts: z.boolean().describe('Whether to include thoughts in responses')
+      })
+    })
+  }).describe('Provider configuration for the AI model'),
   tools: z.record(z.any()).describe('Available tools for the agent'),
   memory: z.any().describe('Agent memory configuration')
 }).strict();
@@ -104,23 +113,16 @@ SUCCESS CRITERIA:
 - User Satisfaction: The user's problem is resolved, their question is answered, and they feel effectively supported.`;
   },
 
-  model: createTracedGoogleModel('gemini-2.5-flash-preview-05-20', {
-    name: 'master-agent',
-    tags: ['agent', 'master', 'debug', 'validated'],
+  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
     thinkingConfig: {
       thinkingBudget: 0,
       includeThoughts: false,
     },
-    metadata: {
-      hasInputValidation: true,
-      zodSchemaVersion: '1.0.0',
-      supportedInputTypes: ['query', 'context', 'metadata'],
-      preventsZodNullErrors: true
-    }
   }),
-
   tools: {
     graphTool,
+    mem0RememberTool,
+    mem0MemorizeTool,
     vectorQueryTool,
     weatherTool,
     stockPriceTool,

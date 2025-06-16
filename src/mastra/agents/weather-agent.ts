@@ -1,5 +1,5 @@
 import { Agent } from '@mastra/core/agent';
-import { createTracedGoogleModel } from '../config';
+import { createGemini25Provider } from '../config/googleProvider';
 import { weatherTool } from '../tools/weather-tool';
 import { agentMemory } from '../agentMemory';
 import { mcp } from '../tools/mcp';
@@ -42,14 +42,12 @@ export const weatherAgent = new Agent({
 
       Use the weatherTool to fetch current weather data.
 `,
-  model: createTracedGoogleModel('gemini-2.5-flash-preview-05-20', {
-          name: 'weather-agent',
-          tags: ['agent', 'weather', 'debug'],
-          thinkingConfig: {
-              thinkingBudget: 0,
-              includeThoughts: false,
-          },
-    }),
+  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+        thinkingConfig: {
+          thinkingBudget: 0,
+          includeThoughts: false,
+        },
+      }),
   tools: { 
     weatherTool,
     ...await mcp.getTools(),

@@ -4,7 +4,7 @@ import { graphTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { stockPriceTool } from "../tools/stock-tools";
 import { PinoLogger } from "@mastra/loggers";
-import { createTracedGoogleModel } from '../config';
+import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
 
 const logger = new PinoLogger({ name: 'evolveAgent', level: 'info' });
@@ -34,14 +34,12 @@ export const evolveAgent = new Agent({
 
     Use available tools for data querying, graph analysis, and financial data.
   `,
-  model: createTracedGoogleModel('gemini-2.5-flash-preview-05-20', {
-    name: 'evolve-agent',
-    tags: ['agent', 'evolve', 'analysis', 'statistics'],
-    thinkingConfig: {
-      thinkingBudget: 0,
-      includeThoughts: false,
-    },
-  }),  tools: {
+  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+        thinkingConfig: {
+          thinkingBudget: 0,
+          includeThoughts: false,
+        },
+      }),  tools: {
     graphTool,
     vectorQueryTool,
     stockPriceTool,

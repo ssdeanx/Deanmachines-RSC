@@ -5,7 +5,7 @@ import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { stockPriceTool } from "../tools/stock-tools";
 import { weatherTool } from "../tools/weather-tool";
 import { PinoLogger } from "@mastra/loggers";
-import { createTracedGoogleModel } from '../config';
+import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
 
 const logger = new PinoLogger({ name: 'specialAgent', level: 'info' });
@@ -42,14 +42,12 @@ export const specialAgent = new Agent({
 
     Use all available tools to provide comprehensive multi-domain analysis.
   `,
-  model: createTracedGoogleModel('gemini-2.5-flash-preview-05-20', {
-    name: 'special-agent',
-    tags: ['agent', 'special', 'multi-domain', 'innovation'],
-    thinkingConfig: {
-      thinkingBudget: 0,
-      includeThoughts: false,
-    },
-  }),  tools: {
+  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+        thinkingConfig: {
+          thinkingBudget: 0,
+          includeThoughts: false,
+        },
+      }),  tools: {
     graphTool,
     vectorQueryTool,
     stockPriceTool,

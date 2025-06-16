@@ -3,7 +3,7 @@ import { agentMemory } from '../agentMemory';
 import { graphTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
-import { createTracedGoogleModel } from '../config';
+import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
 
 const logger = new PinoLogger({ name: 'documentationAgent', level: 'info' });
@@ -40,14 +40,13 @@ export const documentationAgent = new Agent({
 
     Use available tools to analyze existing documentation and gather relevant information.
   `,
-  model: createTracedGoogleModel('gemini-2.5-flash-preview-05-20', {
-    name: 'documentation-agent',
-    tags: ['agent', 'documentation', 'writing', 'knowledge'],
-    thinkingConfig: {
-      thinkingBudget: 0,
-      includeThoughts: false,
-    },
-  }),  tools: {
+  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+        thinkingConfig: {
+          thinkingBudget: 0,
+          includeThoughts: false,
+        },
+      }),  
+  tools: {
     graphTool,
     vectorQueryTool,
     ...await mcp.getTools(),

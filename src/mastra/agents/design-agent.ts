@@ -2,7 +2,7 @@ import { Agent } from "@mastra/core/agent";
 import { agentMemory } from '../agentMemory';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
-import { createTracedGoogleModel } from '../config';
+import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
 
 const logger = new PinoLogger({ name: 'designAgent', level: 'info' });
@@ -39,9 +39,7 @@ export const designAgent = new Agent({
 
     Use available tools to query design patterns and best practices.
   `,
-  model: createTracedGoogleModel('gemini-2.5-flash-preview-05-20', {
-    name: 'design-agent',
-    tags: ['agent', 'design', 'ui', 'ux'],
+  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
     thinkingConfig: {
       thinkingBudget: 0,
       includeThoughts: false,

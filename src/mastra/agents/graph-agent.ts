@@ -3,7 +3,7 @@ import { agentMemory } from '../agentMemory';
 import { graphTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
-import { createTracedGoogleModel } from '../config';
+import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
 
 /**
@@ -88,14 +88,12 @@ SUCCESS CRITERIA:
 -   Collaboration Effectiveness: Seamless and productive interaction with other AI agents and users.
 -   User Satisfaction: User feedback indicates high satisfaction with the quality of graphs produced and insights provided.
   `,
-  model: createTracedGoogleModel('gemini-2.5-flash-preview-05-20', {
-    name: 'graph-agent',
-    tags: ['agent', 'graph', 'knowledge', 'analysis'],
-    thinkingConfig: {
-      thinkingBudget: 0,
-      includeThoughts: false,
-    },
-  }),
+  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+        thinkingConfig: {
+          thinkingBudget: 0,
+          includeThoughts: false,
+        },
+      }),
   tools: {
     graphTool,
     vectorQueryTool,

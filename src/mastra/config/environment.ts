@@ -32,7 +32,8 @@ const envSchema = z.object({
   AUTH_DATABASE_URL: z.string().optional(),
   NEXTAUTH_URL: z.string().optional(),
   AUTH_SECRET: z.string().optional(),
-  
+  SUPABASE_URL: z.string().min(1, "Supabase URL is required"),
+  MEM0_API_KEY: z.string().min(1, "Mem0 API key is required"),
   GITHUB_TOKEN: z.string().min(1, "GitHub API key is required"),
 });
 // Validate environment variables

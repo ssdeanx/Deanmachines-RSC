@@ -3,8 +3,9 @@ import { agentMemory } from '../agentMemory';
 import { graphTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { stockPriceTool } from "../tools/stock-tools";
+import { mem0RememberTool, mem0MemorizeTool } from "../tools/mem0-tool";
 import { PinoLogger } from "@mastra/loggers";
-import { createTracedGoogleModel } from '../config';
+import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
 
 const logger = new PinoLogger({ name: 'strategizerAgent', level: 'info' });
@@ -47,15 +48,16 @@ SUCCESS CRITERIA:
 - Expected Outcomes: Provide clear, implementable strategic recommendations that lead to improved decision-making, enhanced efficiency, and successful achievement of stated objectives.
 - Performance Metrics: The clarity, logical coherence, and practical applicability of your strategic outputs.
   `,
-  model: createTracedGoogleModel('gemini-2.5-flash-preview-05-20', {
-    name: 'strategizer-agent',
-    tags: ['agent', 'strategizer', 'analysis', 'statistics'],
-    thinkingConfig: {
-      thinkingBudget: 0,
-      includeThoughts: false,
-    },
-  }),  tools: {
+  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+      thinkingConfig: {
+        thinkingBudget: 0,
+        includeThoughts: false,
+      },
+    }),  
+  tools: {
     graphTool,
+    mem0RememberTool,
+    mem0MemorizeTool,
     vectorQueryTool,
     stockPriceTool,
     ...await mcp.getTools(),

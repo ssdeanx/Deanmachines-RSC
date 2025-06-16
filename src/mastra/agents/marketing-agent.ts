@@ -2,7 +2,7 @@ import { Agent } from "@mastra/core/agent";
 import { agentMemory } from '../agentMemory';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
-import { createTracedGoogleModel } from '../config';
+import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
 
 const logger = new PinoLogger({ name: 'marketingAgent', level: 'info' });
@@ -39,14 +39,12 @@ export const marketingAgent = new Agent({
 
     Use available tools to research marketing trends and content strategies.
   `,
-  model: createTracedGoogleModel('gemini-2.5-flash-preview-05-20', {
-    name: 'marketing-agent',
-    tags: ['agent', 'marketing', 'content', 'strategy'],
-    thinkingConfig: {
-      thinkingBudget: 0,
-      includeThoughts: false,
-    },
-  }),  tools: {
+  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+        thinkingConfig: {
+          thinkingBudget: 0,
+          includeThoughts: false,
+        },
+      }),  tools: {
     vectorQueryTool,
     ...await mcp.getTools(),
   },

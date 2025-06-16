@@ -2,7 +2,7 @@ import { Agent } from "@mastra/core/agent";
 import { agentMemory } from '../agentMemory';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
-import { createTracedGoogleModel } from '../config';
+import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
 
 /**
@@ -80,14 +80,12 @@ Success Criteria:
 - Effective and timely provision of relevant Git data to other AI agents, enabling their successful operation.
 - High user satisfaction with guidance and automated assistance.
   `,
-  model: createTracedGoogleModel('gemini-2.5-flash-preview-05-20', {
-    name: 'git-agent',
-    tags: ['agent', 'git', 'version-control', 'workflow'],
-    thinkingConfig: {
-      thinkingBudget: 0,
-      includeThoughts: false,
-    },
-  }),  tools: {
+  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+        thinkingConfig: {
+          thinkingBudget: 0,
+          includeThoughts: false,
+        },
+      }),  tools: {
     vectorQueryTool,
     ...await mcp.getTools(),
   },
