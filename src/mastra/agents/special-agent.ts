@@ -1,8 +1,10 @@
 import { Agent } from "@mastra/core/agent";
 import { agentMemory } from '../agentMemory';
-import { graphTool } from '../tools/graphRAG';
+import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { stockPriceTool } from "../tools/stock-tools";
+import { chunkerTool } from "../tools/chunker-tool";
+import { rerankTool } from "../tools/rerank-tool";
 import { weatherTool } from "../tools/weather-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
@@ -48,8 +50,10 @@ export const specialAgent = new Agent({
           includeThoughts: false,
         },
       }),  tools: {
-    graphTool,
+    graphRAGTool,
     vectorQueryTool,
+    chunkerTool,
+    rerankTool,
     stockPriceTool,
     weatherTool,
     ...await mcp.getTools(),

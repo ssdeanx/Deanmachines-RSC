@@ -1,7 +1,9 @@
 import { Agent } from "@mastra/core/agent";
 import { agentMemory } from '../agentMemory';
-import { graphTool } from '../tools/graphRAG';
-import { vectorQueryTool } from "../tools/vectorQueryTool";
+import { graphRAGTool } from '../tools/graphRAG';
+import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
+import { chunkerTool } from "../tools/chunker-tool";
+import { rerankTool } from "../tools/rerank-tool";
 import { stockPriceTool } from "../tools/stock-tools";
 import { mem0RememberTool, mem0MemorizeTool } from "../tools/mem0-tool";
 import { PinoLogger } from "@mastra/loggers";
@@ -55,10 +57,13 @@ SUCCESS CRITERIA:
       },
     }),  
   tools: {
-    graphTool,
+    graphRAGTool,
     mem0RememberTool,
     mem0MemorizeTool,
+    chunkerTool,
+    rerankTool,
     vectorQueryTool,
+    hybridVectorSearchTool,
     stockPriceTool,
     ...await mcp.getTools(),
   },

@@ -1,14 +1,25 @@
 import { Agent } from "@mastra/core/agent";
 import { agentMemory } from '../agentMemory';
-import { graphTool } from '../tools/graphRAG';
-import { vectorQueryTool } from "../tools/vectorQueryTool";
+import { graphRAGTool } from '../tools/graphRAG';
+import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
 import { mem0RememberTool, mem0MemorizeTool } from "../tools/mem0-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { weatherTool } from "../tools/weather-tool";
 import { stockPriceTool } from "../tools/stock-tools";
+import { chunkerTool } from "../tools/chunker-tool";
+import { rerankTool } from "../tools/rerank-tool";
+import {
+  ToneConsistencyMetric,
+  KeywordCoverageMetric,
+  CompletenessMetric,
+  ContentSimilarityMetric,
+  TextualDifferenceMetric                       
+} from '@mastra/evals/nlp';
+
 import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
 import { z } from 'zod';
+import { CustomEvalMetric } from "../evals/customEval";
 
 /**
  * Runtime context type for the Master Agent
@@ -61,6 +72,9 @@ const masterAgentConfigSchema = z.object({
       })
     })
   }).describe('Provider configuration for the AI model'),
+  eval: z.object({
+    metrics: z.array(z.any()).describe('Evaluation metrics for the agent'),
+  }).describe('Evaluation configuration for the agent'),
   tools: z.record(z.any()).describe('Available tools for the agent'),
   memory: z.any().describe('Agent memory configuration')
 }).strict();
@@ -120,23 +134,36 @@ SUCCESS CRITERIA:
     },
   }),
   tools: {
-    graphTool,
+    graphRAGTool,
     mem0RememberTool,
     mem0MemorizeTool,
+    hybridVectorSearchTool,
+    rerankTool,
+    chunkerTool,
     vectorQueryTool,
     weatherTool,
     stockPriceTool,
     ...await mcp.getTools(),
-  },
-  memory: agentMemory
+  },  memory: agentMemory,
+  evals: {  
+    toneConsistency: new ToneConsistencyMetric(),
+    keywordCoverage: new KeywordCoverageMetric(),
+    completeness: new CompletenessMetric(),
+    contentSimilarity: new ContentSimilarityMetric(),
+    textualDifference: new TextualDifferenceMetric(),
+    customEval: new CustomEvalMetric(createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+      thinkingConfig: {
+        thinkingBudget: 0,
+        includeThoughts: false,
+      },
+    })),
+  }
 });
 
 /**
- * Validate input data against master agent schema
- * @param input - Raw input data to validate
- * @returns Validated input data
- * @throws ZodError if validation fails
- */
+
+
+ * Validate input data against master agent schema * @param input - Raw input data to validate * @returns Validated input data * @throws ZodError if validation fails */
 export function validateMasterAgentInput(input: unknown): z.infer<typeof masterAgentInputSchema> {
   try {
     return masterAgentInputSchema.parse(input);

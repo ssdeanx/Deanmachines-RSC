@@ -1,8 +1,10 @@
 import { Agent } from "@mastra/core/agent";
 import { agentMemory } from '../agentMemory';
-import { graphTool } from '../tools/graphRAG';
+import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { stockPriceTool } from "../tools/stock-tools";
+import { chunkerTool } from "../tools/chunker-tool";
+import { rerankTool } from "../tools/rerank-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
@@ -40,8 +42,10 @@ export const evolveAgent = new Agent({
           includeThoughts: false,
         },
       }),  tools: {
-    graphTool,
+    graphRAGTool,
     vectorQueryTool,
+    chunkerTool,
+    rerankTool,
     stockPriceTool,
     ...await mcp.getTools(),
   },

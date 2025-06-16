@@ -1,6 +1,8 @@
 import { Agent } from "@mastra/core/agent";
 import { agentMemory } from '../agentMemory';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
+import { chunkerTool } from "../tools/chunker-tool";
+import { rerankTool } from "../tools/rerank-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
@@ -45,6 +47,8 @@ export const designAgent = new Agent({
       includeThoughts: false,
     },
   }),  tools: {
+    chunkerTool,
+    rerankTool,
     vectorQueryTool,
     ...await mcp.getTools(),
   },

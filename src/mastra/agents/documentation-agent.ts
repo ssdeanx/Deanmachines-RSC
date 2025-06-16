@@ -1,10 +1,12 @@
 import { Agent } from "@mastra/core/agent";
 import { agentMemory } from '../agentMemory';
-import { graphTool } from '../tools/graphRAG';
+import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
+import { chunkerTool } from "../tools/chunker-tool";
+import { rerankTool } from "../tools/rerank-tool";
 
 const logger = new PinoLogger({ name: 'documentationAgent', level: 'info' });
 logger.info('Initializing documentationAgent');
@@ -47,8 +49,10 @@ export const documentationAgent = new Agent({
         },
       }),  
   tools: {
-    graphTool,
+    graphRAGTool,
     vectorQueryTool,
+    chunkerTool,
+    rerankTool,
     ...await mcp.getTools(),
   },
   memory: agentMemory

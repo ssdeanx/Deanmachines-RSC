@@ -1,28 +1,31 @@
-// Enhanced on 2025-01-11 with comprehensive Zod validation and document chunking integration
+/**
+ * GraphRAG Tool - Production-ready implementation for Dean Machines RSC
+ * Uses createGraphRAGTool from @mastra/rag with LibSQL vector store integration
+ * Supports chunking, embedding, upserting, and graph-based querying
+ * 
+ * @author Dean Machines RSC Project
+ * @version 2.0.0 - Complete rewrite using correct Mastra patterns
+ */
+
 import { createTool, ToolExecutionContext } from '@mastra/core/tools';
-import { 
-  GraphRAG, 
-  MDocument, 
-  createGraphRAGTool, 
-  createDocumentChunkerTool
-} from '@mastra/rag';
+import { createGraphRAGTool, MDocument } from '@mastra/rag';
 import { z } from 'zod';
-import { generateId, ToolExecutionOptions } from 'ai'; // Standard ID generation
+import { generateId } from 'ai';
 import { PinoLogger } from '@mastra/loggers';
 import { RuntimeContext } from "@mastra/core/runtime-context";
 import { fastembed } from '@mastra/fastembed';
+import { agentVector } from '../agentMemory';
+import { embedMany } from 'ai';
 
 const logger = new PinoLogger({ name: 'GraphRAGTool' });
 
 /**
- * Comprehensive Zod schemas for GraphRAG tool validation
- * Prevents Google AI models Zod null validation errors
+ * Zod schemas for GraphRAG tool validation
  */
-const graphOptionsSchema = z.object({
-  dimension: z.number().int().positive().default(384).describe('Dimension of the embedding vectors'),
-  threshold: z.number().min(0).max(1).default(0.7).describe('Similarity threshold for creating edges between nodes'),
-  randomWalkSteps: z.number().int().positive().default(100).describe('Number of steps in random walk for graph traversal'),
-  restartProb: z.number().min(0).max(1).default(0.15).describe('Probability of restarting random walk from query node')
+const documentInputSchema = z.object({
+  text: z.string().min(1).describe('The document text content to process'),
+  type: z.enum(['text', 'html', 'markdown', 'json', 'latex']).default('text').describe('Type of document content'),
+  metadata: z.record(z.any()).optional().describe('Metadata associated with the document')
 }).strict();
 
 const chunkParamsSchema = z.object({
@@ -32,117 +35,96 @@ const chunkParamsSchema = z.object({
   separator: z.string().default('\n').describe('Character(s) to use as chunk separator')
 }).strict();
 
-const documentMetadataSchema = z.record(z.any()).optional().describe('Metadata associated with the document');
-
-const documentInputSchema = z.object({
-  text: z.string().min(1).describe('The document text content to process'),
-  type: z.enum(['text', 'html', 'markdown', 'json', 'latex']).default('text').describe('Type of document content'),
-  metadata: documentMetadataSchema.optional()
+const upsertInputSchema = z.object({
+  document: documentInputSchema,
+  chunkParams: chunkParamsSchema.optional(),
+  indexName: z.string().default('context').describe('Name of the index to upsert to'),
+  createIndex: z.boolean().default(true).describe('Whether to create the index if it does not exist')
 }).strict();
 
-const graphRAGInputSchema = z.object({
+const upsertOutputSchema = z.object({
+  success: z.boolean().describe('Whether the upsert operation was successful'),
+  chunksProcessed: z.number().int().min(0).describe('Number of chunks processed and upserted'),
+  indexName: z.string().describe('Name of the index used'),
+  processingTime: z.number().min(0).describe('Time taken to process and upsert in milliseconds'),
+  chunkIds: z.array(z.string()).describe('Array of chunk IDs that were upserted')
+}).strict();
+
+const queryInputSchema = z.object({
   query: z.string().min(1).describe('The query to search for relationships and patterns'),
-  vectorStoreName: z.string().min(1).optional().describe('Name of the vector store to query'),
-  indexName: z.string().min(1).optional().describe('Name of the index within the vector store'),
+  indexName: z.string().default('context').describe('Name of the index to query'),
   topK: z.number().int().positive().default(10).describe('Number of results to return'),
-  filter: z.record(z.any()).optional().describe('Optional metadata filters'),
+  threshold: z.number().min(0).max(1).default(0.7).describe('Similarity threshold for graph connections'),
   includeVector: z.boolean().default(false).describe('Whether to include vector data in results'),
-  minScore: z.number().min(0).max(1).default(0).describe('Minimum similarity score threshold'),
-  enableFilter: z.boolean().default(false).describe('Enable filtering of results based on metadata'),
-  includeSources: z.boolean().default(true).describe('Include the full retrieval objects in the results'),
-  graphOptions: graphOptionsSchema.optional(),
-  document: documentInputSchema.optional().describe('Optional document to chunk and add to the graph'),
-  chunkParams: chunkParamsSchema.optional().describe('Parameters for document chunking')
+  minScore: z.number().min(0).max(1).default(0).describe('Minimum similarity score threshold')
 }).strict();
 
 const queryResultSchema = z.object({
   id: z.string().describe('Unique chunk/document identifier'),
   score: z.number().describe('Similarity score for this retrieval'),
+  content: z.string().describe('The chunk content'),
   metadata: z.record(z.any()).describe('All metadata fields'),
-  vector: z.array(z.number()).optional().describe('Embedding vector if available'),
-  document: z.string().optional().describe('Full chunk/document text if available')
+  vector: z.array(z.number()).optional().describe('Embedding vector if requested')
 }).strict();
 
-const graphRAGOutputSchema = z.object({
-  relevantContext: z.string().describe('Combined text from the most relevant document chunks retrieved using graph-based ranking'),
+const queryOutputSchema = z.object({
+  relevantContext: z.string().describe('Combined text from the most relevant document chunks'),
   sources: z.array(queryResultSchema).describe('Array of full retrieval result objects with metadata and similarity scores'),
-  totalChunks: z.number().int().min(0).describe('Total number of chunks processed'),
+  totalResults: z.number().int().min(0).describe('Total number of results found'),
   graphStats: z.object({
     nodes: z.number().int().min(0).describe('Number of nodes in the graph'),
     edges: z.number().int().min(0).describe('Number of edges in the graph'),
-    avgConnections: z.number().min(0).describe('Average connections per node')
-  }).optional().describe('Statistics about the graph structure'),
-  processingTime: z.number().min(0).describe('Time taken to process the query in milliseconds'),
-  documentChunks: z.array(z.object({
-    id: z.string().describe('Unique chunk identifier'),
-    content: z.string().describe('Chunk text content'),
-    metadata: z.record(z.any()).describe('Chunk metadata')
-  })).optional().describe('Document chunks if document was processed')
-}).strict();
-
-const documentChunkerInputSchema = z.object({
-  document: documentInputSchema,
-  chunkParams: chunkParamsSchema.optional()
-}).strict();
-
-const documentChunkerOutputSchema = z.object({
-  chunks: z.array(z.object({
-    id: z.string().describe('Unique chunk identifier'),
-    content: z.string().describe('Chunk text content'),
-    metadata: z.record(z.any()).describe('Chunk metadata'),
-    size: z.number().int().min(0).describe('Size of the chunk in characters')
-  })).describe('Array of document chunks with their content and metadata'),
-  totalChunks: z.number().int().min(0).describe('Total number of chunks created'),
-  strategy: z.string().describe('Chunking strategy used'),
-  processingTime: z.number().min(0).describe('Time taken to chunk the document in milliseconds')
+    avgScore: z.number().min(0).describe('Average similarity score')
+  }).describe('Statistics about the graph structure'),
+  processingTime: z.number().min(0).describe('Time taken to process the query in milliseconds')
 }).strict();
 
 /**
- * Enhanced GraphRAG tool with document chunking integration
- * Uses real Mastra createGraphRAGTool functionality
+ * Runtime context type for GraphRAG tool configuration
  */
-export const graphTool = createGraphRAGTool({
-  id: 'graph_rag',
-  vectorStoreName: "agentMemory",
-  indexName: "context",
-  model: fastembed.base,
-  enableFilter: true,
-  includeSources: true,
-  graphOptions: {
-    dimension: 768, // Default dimension for fastembed.base
-    threshold: 0.7,
-    randomWalkSteps: 100,
-    restartProb: 0.15,
-   
-  },
-  description: "Analyze document relationships and patterns using graph-based retrieval with optional document chunking capabilities"
-});
+export type GraphRAGRuntimeContext = {
+  indexName: string;
+  topK: number;
+  threshold: number;
+  minScore: number;
+  dimension: number;
+  userId?: string;
+  sessionId?: string;
+  category?: string;
+  debug?: boolean;
+};
 
 /**
- * Document chunker tool for preprocessing documents before adding to GraphRAG
+ * Document upsert tool - Handles chunking, embedding, and storing documents
  */
-export const documentChunkerTool = createTool({
-  id: 'document_chunker_with_validation',
-  description: 'Chunk documents into smaller pieces with comprehensive validation and metadata extraction',
-  inputSchema: documentChunkerInputSchema,
-  outputSchema: documentChunkerOutputSchema,
-  // Removed explicit ToolExecutionContext type annotation to allow inference
-  // Explicitly type the destructured argument, ensuring 'input' is recognized by intersecting the inferred
-  // ToolExecutionContext with a type that defines 'input'.
-  execute: async ({ input, context }: ToolExecutionContext<typeof documentChunkerInputSchema> & { input: z.infer<typeof documentChunkerInputSchema> }): Promise<z.infer<typeof documentChunkerOutputSchema>> => {
+export const graphRAGUpsertTool = createTool({
+  id: 'graph_rag_upsert',
+  description: 'Chunk documents, create embeddings, and upsert them to the LibSQL vector store for GraphRAG retrieval',
+  inputSchema: upsertInputSchema,
+  outputSchema: upsertOutputSchema,
+  execute: async ({ input, runtimeContext }: ToolExecutionContext<typeof upsertInputSchema> & { 
+    input: z.infer<typeof upsertInputSchema>;
+    runtimeContext?: RuntimeContext<GraphRAGRuntimeContext>;
+  }): Promise<z.infer<typeof upsertOutputSchema>> => {
     const startTime = Date.now();
     
-    // The 'input' is now directly available from destructuring.
-    // Zod parsing will handle validation, including if input is unexpectedly undefined/null.
-    // Adding an explicit check for clarity or specific error handling if needed.
-    if (!input) {
-      throw new Error('Input is required for document chunking');
-    }
-    
     try {
-      // Validate input against schema
-      const validatedInput = documentChunkerInputSchema.parse(input);
-      logger.info('Document chunker input validated', { input: validatedInput });
+      const validatedInput = upsertInputSchema.parse(input);
+      
+      // Get runtime context values
+      const userId = runtimeContext?.get('userId') || 'anonymous';
+      const sessionId = runtimeContext?.get('sessionId') || 'default';
+      const debug = runtimeContext?.get('debug') || false;
+      
+      if (debug) {
+        logger.info('Starting document upsert', { 
+          textLength: validatedInput.document.text.length,
+          type: validatedInput.document.type,
+          indexName: validatedInput.indexName,
+          userId,
+          sessionId
+        });
+      }
 
       // Create MDocument based on type
       let doc: MDocument;
@@ -158,240 +140,254 @@ export const documentChunkerTool = createTool({
         case 'json':
           doc = MDocument.fromJSON(text, metadata);
           break;
+        case 'latex':
+          doc = MDocument.fromText(text, metadata); // Fallback to text for LaTeX
+          break;
         case 'text':
         default:
           doc = MDocument.fromText(text, metadata);
           break;
       }
 
-      // Create chunker tool with validated params
-      const chunkerParams = validatedInput.chunkParams || {
+      // Chunk the document
+      const chunkParams = validatedInput.chunkParams || {
         strategy: 'recursive' as const,
         size: 512,
         overlap: 50,
         separator: '\n'
       };
 
-      const chunker = createDocumentChunkerTool({
-        doc,
-        params: chunkerParams
+      const chunks = await doc.chunk({
+        strategy: chunkParams.strategy,
+        size: chunkParams.size,
+        overlap: chunkParams.overlap,
+        separator: chunkParams.separator
       });
 
-      if (!chunker || !chunker.execute) {
-        throw new Error('Failed to create document chunker tool');
+      logger.info('Document chunked successfully', { totalChunks: chunks.length });
+
+      // Create embeddings
+      const chunkTexts = chunks.map(chunk => chunk.text);
+      const { embeddings } = await embedMany({
+        model: fastembed.base,
+        values: chunkTexts
+      });
+
+      // Create index if needed
+      if (validatedInput.createIndex) {
+        try {
+          await agentVector.createIndex({
+            indexName: validatedInput.indexName,
+            dimension: 768 // fastembed.base dimension
+          });
+          logger.info('Index created or already exists', { indexName: validatedInput.indexName });
+        } catch (error) {
+          // Index might already exist, continue
+          logger.warn('Index creation warning (might already exist)', { 
+            indexName: validatedInput.indexName,
+            error: error instanceof Error ? error.message : String(error)
+          });
+        }
       }
 
-      // Execute chunking
-      const { chunks } = await chunker.execute({
-        context,
-        runtimeContext: new RuntimeContext(new Map())
+      // Upsert embeddings and metadata
+      const chunkIds: string[] = [];
+      const metadataArray = chunks.map((chunk, index) => {
+        const chunkId = generateId();
+        chunkIds.push(chunkId);
+        return {
+          id: chunkId,
+          text: chunk.text,
+          ...chunk.metadata,
+          ...metadata,
+          chunkIndex: index,
+          totalChunks: chunks.length,
+          strategy: chunkParams.strategy,
+          chunkSize: chunk.text.length
+        };
       });
-      const processingTime = Date.now() - startTime;
 
-      // Transform chunks to match our schema
-      const transformedChunks = chunks.map((chunk: { content?: string; text?: string; metadata?: Record<string, unknown> }) => ({
-        id: generateId(),
-        content: chunk.content || chunk.text || '',
-        metadata: chunk.metadata || {},
-        size: (chunk.content || chunk.text || '').length
-      }));
+      await agentVector.upsert({
+        indexName: validatedInput.indexName,
+        vectors: embeddings,
+        metadata: metadataArray
+      });
+
+      const processingTime = Date.now() - startTime;
       
       const result = {
-        chunks: transformedChunks,
-        totalChunks: transformedChunks.length,
-        strategy: chunkerParams.strategy,
-        processingTime
+        success: true,
+        chunksProcessed: chunks.length,
+        indexName: validatedInput.indexName,
+        processingTime,
+        chunkIds
       };
 
-      logger.info('Document chunking completed successfully', { 
-        totalChunks: result.totalChunks, 
-        processingTime: result.processingTime 
-      });
-
-      // Validate output
-      return documentChunkerOutputSchema.parse(result);
+      logger.info('Document upsert completed successfully', result);
+      return upsertOutputSchema.parse(result);
 
     } catch (error) {
-      logger.error('Document chunking failed', { error: error instanceof Error ? error.message : String(error) });
-      throw new Error(`Document chunking failed: ${error instanceof Error ? error.message : String(error)}`);
+      logger.error('Document upsert failed', { 
+        error: error instanceof Error ? error.message : String(error)
+      });
+      
+      const result = {
+        success: false,
+        chunksProcessed: 0,
+        indexName: input.indexName || 'context',
+        processingTime: Date.now() - startTime,
+        chunkIds: []
+      };
+      
+      return upsertOutputSchema.parse(result);
     }
   }
 });
 
 /**
- * Enhanced GraphRAG query tool with comprehensive validation and document processing
+ * GraphRAG query tool - Uses createGraphRAGTool with LibSQL vector store
  */
-export const enhancedGraphRAGTool = createTool({
-  id: 'enhanced_graph_rag_query',
-  description: 'Advanced graph-based RAG with document chunking, relationship analysis, and comprehensive validation',
-  inputSchema: graphRAGInputSchema,
-  outputSchema: graphRAGOutputSchema,
-  execute: async ({ context, input }: ToolExecutionContext<typeof graphRAGInputSchema> & { input: z.infer<typeof graphRAGInputSchema> }): Promise<z.infer<typeof graphRAGOutputSchema>> => {
+export const graphRAGTool = createGraphRAGTool({
+  vectorStoreName: 'libsql',
+  indexName: 'context',
+  model: fastembed.base,
+  graphOptions: {
+    dimension: 768,
+    threshold: 0.7
+  }
+});
+
+/**
+ * Enhanced GraphRAG query tool with comprehensive validation
+ */
+export const graphRAGQueryTool = createTool({
+  id: 'graph_rag_query',
+  description: 'Query the GraphRAG system for complex document relationships and patterns using graph-based retrieval',
+  inputSchema: queryInputSchema,
+  outputSchema: queryOutputSchema,
+  execute: async ({ input, runtimeContext }: ToolExecutionContext<typeof queryInputSchema> & { 
+    input: z.infer<typeof queryInputSchema>;
+    runtimeContext?: RuntimeContext<GraphRAGRuntimeContext>;
+  }): Promise<z.infer<typeof queryOutputSchema>> => {
     const startTime = Date.now();
     
     try {
-      // Validate input against schema
-      const validatedInput = graphRAGInputSchema.parse(input);
-      logger.info('GraphRAG input validated', { input: validatedInput });
-
-      let documentChunks: Array<{
-        id: string;
-        content: string;
-        metadata: Record<string, unknown>;
-      }> = [];
-
-      // Process document if provided
-      if (validatedInput.document && documentChunkerTool?.execute) {
-        // Prepare the specific input for the documentChunkerTool
-        const chunkerToolInputData = {
-          document: {
-            text: validatedInput.document.text,
-            type: validatedInput.document.type,
-            metadata: validatedInput.document.metadata,
-          },
-          chunkParams: validatedInput.chunkParams,
-        };
-
-        const chunkerExecutionContext: ToolExecutionContext<typeof documentChunkerInputSchema> = {
-          ...(context as any),
-          context: chunkerToolInputData,
-          runtimeContext: new RuntimeContext(new Map())
-        };
-        
-        const chunkerResult = await documentChunkerTool.execute(chunkerExecutionContext);
-        
-        documentChunks = chunkerResult.chunks.map(chunk => ({
-          id: chunk.id,
-          content: chunk.content,
-          metadata: chunk.metadata
-        }));
-
-        logger.info('Document processed and chunked', { totalChunks: documentChunks.length });
+      const validatedInput = queryInputSchema.parse(input);
+      
+      // Get runtime context values
+      const userId = runtimeContext?.get('userId') || 'anonymous';
+      const sessionId = runtimeContext?.get('sessionId') || 'default';
+      const debug = runtimeContext?.get('debug') || false;
+      const indexName = runtimeContext?.get('indexName') || validatedInput.indexName;
+      const topK = runtimeContext?.get('topK') || validatedInput.topK;
+      const threshold = runtimeContext?.get('threshold') || validatedInput.threshold;
+      
+      if (debug) {
+        logger.info('Starting GraphRAG query', { 
+          query: validatedInput.query,
+          indexName,
+          topK,
+          threshold,
+          userId,
+          sessionId
+        });
       }
 
-      // Prepare runtime context for GraphRAG tool
-      const runtimeContext = new RuntimeContext<{
-        vectorStoreName?: string;
-        indexName?: string;
-        topK?: number;
-        filter?: Record<string, unknown>;
-        includeVector?: boolean;
-        minScore?: number;
-        randomWalkSteps?: number;
-        restartProb?: number;
-      }>();
+      // Create runtime context for the GraphRAG tool
+      const graphRAGContext = new RuntimeContext();
+      graphRAGContext.set('indexName', indexName);
+      graphRAGContext.set('topK', topK);
+      graphRAGContext.set('threshold', threshold);
+      graphRAGContext.set('minScore', validatedInput.minScore);
 
-      // Set runtime parameters
-      if (validatedInput.vectorStoreName) {
-        runtimeContext.set("vectorStoreName", validatedInput.vectorStoreName);
-      }
-      if (validatedInput.indexName) {
-        runtimeContext.set("indexName", validatedInput.indexName);
-      }
-      if (validatedInput.topK) {
-        runtimeContext.set("topK", validatedInput.topK);
-      }
-      if (validatedInput.filter) {
-        runtimeContext.set("filter", validatedInput.filter);
-      }
-      if (validatedInput.includeVector !== undefined) {
-        runtimeContext.set("includeVector", validatedInput.includeVector);
-      }
-      if (validatedInput.minScore !== undefined) {
-        runtimeContext.set("minScore", validatedInput.minScore);
-      }
-      if (validatedInput.graphOptions?.randomWalkSteps) {
-        runtimeContext.set("randomWalkSteps", validatedInput.graphOptions.randomWalkSteps);
-      }
-      if (validatedInput.graphOptions?.restartProb) {
-        runtimeContext.set("restartProb", validatedInput.graphOptions.restartProb);
-      }
-
-      // Execute GraphRAG query
-      const graphResult = await graphTool.execute({ 
+      // Execute the GraphRAG query
+      const graphResult = await graphRAGTool.execute({
         context: {
           queryText: validatedInput.query,
-          topK: validatedInput.topK
+          topK: validatedInput.topK,
+          includeVector: validatedInput.includeVector,
+          minScore: validatedInput.minScore
         },
-        runtimeContext
+        runtimeContext: graphRAGContext
       });
 
       const processingTime = Date.now() - startTime;
 
-      // Create comprehensive result
+      // Transform results to match our schema
+      const sources = (graphResult.sources || []).map((source: {
+        id?: string;
+        score?: number;
+        metadata?: Record<string, unknown>;
+        text?: string;
+        content?: string;
+        vector?: number[];
+      }) => ({
+        id: source.id || generateId(),
+        score: source.score || 0,
+        content: source.text || source.content || '',
+        metadata: source.metadata || {},
+        vector: validatedInput.includeVector ? source.vector : undefined
+      }));
+
+      const totalResults = sources.length;
+      const avgScore = totalResults > 0 ? sources.reduce((sum: number, s: { score: number }) => sum + s.score, 0) / totalResults : 0;
+
       const result = {
-        relevantContext: graphResult.relevantContext || '',
-        sources: (graphResult.sources || []).map((source: {
-          id?: string;
-          score?: number;
-          metadata?: Record<string, unknown>;
-          vector?: unknown;
-          document?: unknown;
-        }) => ({
-          id: source.id || generateId(),
-          score: source.score || 0,
-          metadata: source.metadata || {},
-          vector: source.vector,
-          document: source.document
-        })),
-        totalChunks: (graphResult.sources || []).length + documentChunks.length,
+        relevantContext: graphResult.relevantContext || sources.map((s: { content: string }) => s.content).join('\n\n'),
+        sources,
+        totalResults,
         graphStats: {
-          nodes: (graphResult.sources || []).length,
-          edges: Math.floor((graphResult.sources || []).length * 1.5),
-          avgConnections: (graphResult.sources || []).length > 0 ? 1.5 : 0
+          nodes: totalResults,
+          edges: Math.floor(totalResults * 1.5), // Estimated edges based on threshold
+          avgScore
         },
-        processingTime,
-        documentChunks: documentChunks.length > 0 ? documentChunks : undefined
+        processingTime
       };
 
       logger.info('GraphRAG query completed successfully', { 
         relevantContextLength: result.relevantContext.length,
-        sourcesCount: result.sources.length,
-        totalChunks: result.totalChunks,
+        totalResults: result.totalResults,
+        avgScore: result.graphStats.avgScore,
         processingTime: result.processingTime 
       });
 
-      // Validate output
-      return graphRAGOutputSchema.parse(result);
+      return queryOutputSchema.parse(result);
 
     } catch (error) {
       logger.error('GraphRAG query failed', { 
         error: error instanceof Error ? error.message : String(error),
-        input: input
+        query: input.query
       });
-      throw new Error(`GraphRAG query failed: ${error instanceof Error ? error.message : String(error)}`);
+      
+      // Return empty results on error
+      const result = {
+        relevantContext: '',
+        sources: [],
+        totalResults: 0,
+        graphStats: {
+          nodes: 0,
+          edges: 0,
+          avgScore: 0
+        },
+        processingTime: Date.now() - startTime
+      };
+      
+      return queryOutputSchema.parse(result);
     }
-
-  }});  
-  
-  /**
- * Runtime context for GraphRAG tool configuration
- */
-export const runtimeContext = new RuntimeContext<{
-  vectorStoreName: string;
-  indexName: string;
-  topK: number;
-  filter: Record<string, unknown>;
-  model: string;
-  description: string;
-  graphOptions: {
-    dimension: number;
-    threshold: number;
-    randomWalkSteps: number;
-    restartProb: number;
-  };
-}>();
-// Set default runtime context values
-runtimeContext.set("vectorStoreName", "agentStorage");
-runtimeContext.set("indexName", "context");
-runtimeContext.set("topK", 5);
-runtimeContext.set("filter", { category: "context" });
-runtimeContext.set("model", "fastembed");
-runtimeContext.set("description", "Analyze context relationships to find complex patterns and connections in the data");
-runtimeContext.set("graphOptions", {
-  dimension: 768,
-  threshold: 0.7,
-  randomWalkSteps: 100,
-  restartProb: 0.15,
+  }
 });
+
+/**
+ * Runtime context for GraphRAG tools with default values
+ */
+export const graphRAGRuntimeContext = new RuntimeContext<GraphRAGRuntimeContext>();
+
+// Set default runtime context values
+graphRAGRuntimeContext.set("indexName", "context");
+graphRAGRuntimeContext.set("topK", 10);
+graphRAGRuntimeContext.set("threshold", 0.7);
+graphRAGRuntimeContext.set("minScore", 0.0);
+graphRAGRuntimeContext.set("dimension", 768);
+graphRAGRuntimeContext.set("category", "document");
+graphRAGRuntimeContext.set("debug", false);
 

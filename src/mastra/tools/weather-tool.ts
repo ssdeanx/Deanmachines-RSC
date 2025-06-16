@@ -1,5 +1,21 @@
-import { createTool } from '@mastra/core/tools';
+import { createTool, ToolExecutionContext } from '@mastra/core/tools';
+import { RuntimeContext } from '@mastra/core/di';
 import { z } from 'zod';
+import { PinoLogger } from '@mastra/loggers';
+
+const logger = new PinoLogger({ name: 'WeatherTool', level: 'info' });
+
+/**
+ * Runtime context type for weather tool configuration
+ */
+export type WeatherRuntimeContext = {
+  'temperature-scale': 'celsius' | 'fahrenheit';
+  'user-id'?: string;
+  'session-id'?: string;
+  'language'?: string;
+  'location-preference'?: string;
+  'debug'?: boolean;
+};
 
 interface GeocodingResponse {
   results: {
@@ -8,6 +24,7 @@ interface GeocodingResponse {
     name: string;
   }[];
 }
+
 interface WeatherResponse {
   current: {
     time: string;
@@ -20,25 +37,71 @@ interface WeatherResponse {
   };
 }
 
+const inputSchema = z.object({
+  location: z.string().describe('City name or coordinates'),
+}).strict();
+
+const outputSchema = z.object({
+  temperature: z.number(),
+  feelsLike: z.number(),
+  humidity: z.number(),
+  windSpeed: z.number(),
+  windGust: z.number(),
+  conditions: z.string(),
+  location: z.string(),
+  temperatureScale: z.string(),
+  userId: z.string().optional(),
+  sessionId: z.string().optional(),
+}).strict();
+
 export const weatherTool = createTool({
   id: 'get-weather',
-  description: 'Get current weather for a location',
-  inputSchema: z.object({
-    location: z.string().describe('City name'),
-  }),
-  outputSchema: z.object({
-    temperature: z.number(),
-    feelsLike: z.number(),
-    humidity: z.number(),
-    windSpeed: z.number(),
-    windGust: z.number(),
-    conditions: z.string(),
-    location: z.string(),
-  }),
-  execute: async ({ context }) => {
-    return await getWeather(context.location);
+  description: 'Get current weather for a location with temperature scale preference',
+  inputSchema,
+  outputSchema,
+  execute: async ({ input, runtimeContext }: ToolExecutionContext<typeof inputSchema> & { 
+    input: z.infer<typeof inputSchema>;
+    runtimeContext?: RuntimeContext<WeatherRuntimeContext>;
+  }): Promise<z.infer<typeof outputSchema>> => {
+    // Get runtime context values with defaults
+    const temperatureScale = runtimeContext?.get('temperature-scale') || 'celsius';
+    const userId = runtimeContext?.get('user-id') || undefined;
+    const sessionId = runtimeContext?.get('session-id') || undefined;
+    const debug = runtimeContext?.get('debug') || false;
+
+    if (debug) {
+      logger.info('Weather tool executed with runtime context', {
+        temperatureScale,
+        userId,
+        sessionId,
+        location: input.location
+      });
+    }
+
+    const weatherData = await getWeather(input.location);
+    
+    // Convert temperature if needed
+    const convertedData = temperatureScale === 'fahrenheit' ? {
+      ...weatherData,
+      temperature: (weatherData.temperature * 9/5) + 32,
+      feelsLike: (weatherData.feelsLike * 9/5) + 32
+    } : weatherData;
+    
+    return outputSchema.parse({
+      ...convertedData,
+      temperatureScale,
+      userId,
+      sessionId
+    });
   },
 });
+
+/**
+ * Runtime context instance for weather tool with defaults
+ */
+export const weatherRuntimeContext = new RuntimeContext<WeatherRuntimeContext>();
+weatherRuntimeContext.set('temperature-scale', 'celsius');
+weatherRuntimeContext.set('debug', false);
 
 const getWeather = async (location: string) => {
   const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1`;

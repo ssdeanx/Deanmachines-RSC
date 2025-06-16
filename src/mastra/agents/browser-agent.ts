@@ -4,6 +4,8 @@ import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
+import { chunkerTool } from "../tools/chunker-tool";
+import { rerankTool } from "../tools/rerank-tool";
 
 const logger = new PinoLogger({ name: 'browserAgent', level: 'info' });
 logger.info('Initializing browserAgent');
@@ -42,6 +44,8 @@ export const browserAgent = new Agent({
       }),
   tools: {
     vectorQueryTool,
+    chunkerTool,
+    rerankTool,
     ...await mcp.getTools(),
   },
   memory: agentMemory

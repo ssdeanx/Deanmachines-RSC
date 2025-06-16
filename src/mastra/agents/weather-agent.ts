@@ -1,6 +1,8 @@
 import { Agent } from '@mastra/core/agent';
 import { createGemini25Provider } from '../config/googleProvider';
 import { weatherTool } from '../tools/weather-tool';
+import { chunkerTool } from "../tools/chunker-tool";
+import { rerankTool } from "../tools/rerank-tool";
 import { agentMemory } from '../agentMemory';
 import { mcp } from '../tools/mcp';
 
@@ -50,6 +52,8 @@ export const weatherAgent = new Agent({
       }),
   tools: { 
     weatherTool,
+    chunkerTool,
+    rerankTool,
     ...await mcp.getTools(),
   },
   memory: agentMemory

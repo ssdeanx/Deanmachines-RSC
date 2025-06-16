@@ -4,6 +4,8 @@ import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
+import { chunkerTool } from "../tools/chunker-tool";
+import { rerankTool } from "../tools/rerank-tool";
 
 const logger = new PinoLogger({ name: 'managerAgent', level: 'info' });
 logger.info('Initializing managerAgent');
@@ -11,6 +13,9 @@ logger.info('Initializing managerAgent');
 /**
  * Manager agent for project management, task coordination, and resource planning
  * Specializes in agile methodologies, team coordination, and project delivery
+ * 
+ * @mastra ManagerAgent class
+ * [EDIT: 2025-06-16] [BY: ss]
  */
 export const managerAgent = new Agent({
   name: "Manager Agent",
@@ -46,6 +51,8 @@ export const managerAgent = new Agent({
         },
       }),  tools: {
     vectorQueryTool,
+    chunkerTool,
+    rerankTool,
     ...await mcp.getTools(),
   },
   memory: agentMemory

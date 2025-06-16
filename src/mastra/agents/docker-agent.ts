@@ -4,6 +4,8 @@ import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
+import { chunkerTool } from "../tools/chunker-tool";
+import { rerankTool } from "../tools/rerank-tool";
 
 const logger = new PinoLogger({ name: 'dockerAgent', level: 'info' });
 logger.info('Initializing dockerAgent');
@@ -46,6 +48,8 @@ export const dockerAgent = new Agent({
         },
       }),
   tools: {
+    chunkerTool,
+    rerankTool,
     vectorQueryTool,
     ...await mcp.getTools(),
   },

@@ -1,9 +1,22 @@
-import { createTool } from "@mastra/core/tools";
+import { createTool, ToolExecutionContext } from "@mastra/core/tools";
+import { RuntimeContext } from '@mastra/core/di';
 import { z } from "zod";
 import { generateId } from 'ai';
 import { PinoLogger } from '@mastra/loggers';
 
 const logger = new PinoLogger({ name: 'stockTools', level: 'info' });
+
+/**
+ * Runtime context type for stock tools configuration
+ */
+export type StockRuntimeContext = {
+  'user-id'?: string;
+  'session-id'?: string;
+  'currency-preference'?: 'USD' | 'EUR' | 'GBP' | 'JPY';
+  'data-source'?: string;
+  'include-extended-hours'?: boolean;
+  'debug'?: boolean;
+};
 
 // Enhanced Zod schemas with comprehensive validation
 const stockInputSchema = z.object({
@@ -13,7 +26,7 @@ const stockInputSchema = z.object({
     .regex(/^[A-Z0-9.-]+$/, "Invalid stock symbol format")
     .transform(s => s.toUpperCase())
     .describe("The stock ticker symbol (e.g., AAPL, MSFT, GOOGL)"),
-});
+}).strict();
 
 const stockOutputSchema = z.object({
   symbol: z.string().describe("Stock ticker symbol"),
@@ -22,21 +35,25 @@ const stockOutputSchema = z.object({
   timestamp: z.string().datetime().describe("Data timestamp in ISO format"),
   requestId: z.string().describe("Unique request identifier"),
   source: z.string().default("mastra-stock-data").describe("Data source"),
-});
+  userId: z.string().optional(),
+  sessionId: z.string().optional(),
+}).strict();
 
 const threadInfoInputSchema = z.object({
   includeResource: z.boolean()
     .optional()
     .default(false)
     .describe("Whether to include resource information in the response"),
-});
+}).strict();
 
 const threadInfoOutputSchema = z.object({
   threadId: z.string().describe("Current conversation thread ID"),
   resourceId: z.string().optional().describe("Resource ID if requested"),
   timestamp: z.string().datetime().describe("Response timestamp"),
   requestId: z.string().describe("Unique request identifier"),
-});
+  userId: z.string().optional(),
+  sessionId: z.string().optional(),
+}).strict();
 
 // API response schema for validation
 const stockApiResponseSchema = z.object({
@@ -72,31 +89,57 @@ export const stockPriceTool = createTool({
   description: "Fetches the current stock price for a given ticker symbol with comprehensive validation",
   inputSchema: stockInputSchema,
   outputSchema: stockOutputSchema,
-  execute: async ({ context }) => {
+  execute: async ({ input, runtimeContext }: ToolExecutionContext<typeof stockInputSchema> & {
+    input: z.infer<typeof stockInputSchema>;
+    runtimeContext?: RuntimeContext<StockRuntimeContext>;
+  }): Promise<z.infer<typeof stockOutputSchema>> => {
     const requestId = generateId();
-    logger.info(`[${requestId}] Stock price request started`, { symbol: context.symbol });
+    
+    // Get runtime context values
+    const userId = runtimeContext?.get('user-id') || 'anonymous';
+    const sessionId = runtimeContext?.get('session-id') || 'default';
+    const currencyPreference = (runtimeContext?.get('currency-preference') as string) || 'USD';
+    const dataSource = (runtimeContext?.get('data-source') as string) || 'mastra-stock-data';
+    const debug = runtimeContext?.get('debug') || false;
+    
+    if (debug) {
+      logger.info(`[${requestId}] Stock price request started`, { 
+        symbol: input.symbol,
+        userId,
+        sessionId,
+        currencyPreference
+      });
+    }
     
     try {
-      const price = await getStockPrice(context.symbol);
+      const price = await getStockPrice(input.symbol);
       
-      const result = {
-        symbol: context.symbol,
+      const result = stockOutputSchema.parse({
+        symbol: input.symbol,
         price: price,
-        currency: "USD",
+        currency: currencyPreference,
         timestamp: new Date().toISOString(),
         requestId,
-        source: "mastra-stock-data",
-      };
-      
-      logger.info(`[${requestId}] Stock price request completed successfully`, { 
-        symbol: result.symbol,
-        price: result.price 
+        source: dataSource,
+        userId,
+        sessionId
       });
+      
+      if (debug) {
+        logger.info(`[${requestId}] Stock price request completed successfully`, { 
+          symbol: result.symbol,
+          price: result.price,
+          userId,
+          sessionId
+        });
+      }
       
       return result;
     } catch (error) {
       logger.error(`[${requestId}] Stock price request failed`, { 
-        symbol: context.symbol,
+        symbol: input.symbol,
+        userId,
+        sessionId,
         error: error instanceof Error ? error.message : 'Unknown error'
       });
       throw error;
@@ -110,30 +153,62 @@ export const threadInfoTool = createTool({
   description: "Returns information about the current conversation thread with comprehensive validation",
   inputSchema: threadInfoInputSchema,
   outputSchema: threadInfoOutputSchema,
-  execute: async ({ context }) => {
+  execute: async ({ input, runtimeContext }: ToolExecutionContext<typeof threadInfoInputSchema> & {
+    input: z.infer<typeof threadInfoInputSchema>;
+    runtimeContext?: RuntimeContext<StockRuntimeContext>;
+  }): Promise<z.infer<typeof threadInfoOutputSchema>> => {
     const requestId = generateId();
-    logger.info(`[${requestId}] Thread info request started`, { includeResource: context.includeResource });
+    
+    // Get runtime context values
+    const userId = runtimeContext?.get('user-id') || 'anonymous';
+    const sessionId = runtimeContext?.get('session-id') || 'default';
+    const debug = runtimeContext?.get('debug') || false;
+    
+    if (debug) {
+      logger.info(`[${requestId}] Thread info request started`, { 
+        includeResource: input.includeResource,
+        userId,
+        sessionId
+      });
+    }
     
     try {
-      const result = {
-        threadId: "current-thread-id", // This would typically come from actual thread context
-        resourceId: context.includeResource ? "current-resource-id" : undefined,
+      const result = threadInfoOutputSchema.parse({
+        threadId: sessionId, // Use session ID as thread ID
+        resourceId: input.includeResource ? `resource-${userId}-${sessionId}` : undefined,
         timestamp: new Date().toISOString(),
         requestId,
-      };
-      
-      logger.info(`[${requestId}] Thread info request completed successfully`, { 
-        threadId: result.threadId,
-        includeResource: context.includeResource 
+        userId,
+        sessionId
       });
+      
+      if (debug) {
+        logger.info(`[${requestId}] Thread info request completed successfully`, { 
+          threadId: result.threadId,
+          includeResource: input.includeResource,
+          userId,
+          sessionId
+        });
+      }
       
       return result;
     } catch (error) {
       logger.error(`[${requestId}] Thread info request failed`, { 
-        includeResource: context.includeResource,
+        includeResource: input.includeResource,
+        userId,
+        sessionId,
         error: error instanceof Error ? error.message : 'Unknown error'
       });
       throw error;
     }
   },
 });
+
+/**
+ * Runtime context instance for stock tools with defaults
+ */
+export const stockRuntimeContext = new RuntimeContext<StockRuntimeContext>();
+stockRuntimeContext.set('currency-preference', 'USD');
+stockRuntimeContext.set('data-source', 'mastra-stock-data');
+stockRuntimeContext.set('include-extended-hours', false);
+stockRuntimeContext.set('debug', false);

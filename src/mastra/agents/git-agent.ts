@@ -4,6 +4,8 @@ import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
+import { chunkerTool } from "../tools/chunker-tool";
+import { rerankTool } from "../tools/rerank-tool";
 
 /**
  * Runtime context type for the Git Agent
@@ -37,6 +39,7 @@ logger.info('Initializing gitAgent');
 /**
  * Git agent for version control operations, workflow optimization, and repository management
  * Specializes in Git best practices, branching strategies, and collaboration workflows
+ * [EDIT: 2025-06-16] [BY: ss]
  */
 export const gitAgent = new Agent({
   name: "Git Agent",
@@ -87,6 +90,8 @@ Success Criteria:
         },
       }),  tools: {
     vectorQueryTool,
+    chunkerTool,
+    rerankTool,
     ...await mcp.getTools(),
   },
   memory: agentMemory

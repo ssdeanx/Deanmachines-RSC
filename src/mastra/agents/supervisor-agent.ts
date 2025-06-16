@@ -1,7 +1,9 @@
 import { Agent } from "@mastra/core/agent";
 import { agentMemory } from '../agentMemory';
-import { graphTool } from '../tools/graphRAG';
-import { vectorQueryTool } from "../tools/vectorQueryTool";
+import { graphRAGTool } from '../tools/graphRAG';
+import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
+import { chunkerTool } from "../tools/chunker-tool";
+import { rerankTool } from "../tools/rerank-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
@@ -46,7 +48,11 @@ export const supervisorAgent = new Agent({
           includeThoughts: false,
         },
       }),  tools: {
-    graphTool,
+    graphRAGTool,
+    hybridVectorSearchTool,
+    chunkerTool,
+    rerankTool,
+    // Using vectorQueryTool for direct vector queries
     vectorQueryTool,
     ...await mcp.getTools(),
   },

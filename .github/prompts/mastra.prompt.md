@@ -60,7 +60,7 @@ After generating embeddings, you need to store them in a database that supports 
 The LibSQLVector class provides methods to create collections and insert embeddings into LibSQL, a fork of SQLite with vector extensions.
 
 ```ts
-import { openai } from "@ai-sdk/openai";
+import { google } from "@ai-sdk/google";
 import { LibSQLVector } from "@mastra/core/vector/libsql";
 import { MDocument } from "@mastra/rag";
 import { embedMany } from "ai";
@@ -71,7 +71,7 @@ const chunks = await doc.chunk();
  
 const { embeddings } = await embedMany({
   values: chunks.map((chunk) => chunk.text),
-  model: openai.embedding("text-embedding-3-small"),
+  model: google.embedding("text-embedding-004"),
 });
  
 const libsql = new LibSQLVector({

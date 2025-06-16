@@ -95,7 +95,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
             ```
         - **`// copilot: OPTIMIZE`** - Performance improvements
             ```typescript
-            for (let i = 0; i < arr.length; i++) {
+            for (let i = 0; < arr.length; i++) {
               // ...
             }
             ```
@@ -300,6 +300,10 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     - `src/mastra/agents/git-agent.ts` - Version control operations and repository management
     - `src/mastra/agents/debug-agent.ts` - Error detection and debugging assistance
     - `src/mastra/agents/documentation`
+- When the user specifies `#file:instructions #file:mastra #file:tools #file:agentMemory.ts`, analyze all of the specified files to understand the project structure and requirements.
+- When the user specifies `#file:rerank-tool.ts`, analyze the specified file.
+- When the user specifies `#file:mastra.prompt.md`, analyze the specified file.
+- When the user specifies `#file:vectorQueryTool.ts #file:rerank-tool.ts #file:chunker-tool.ts`, analyze all of the specified files.
 
 ## CODING STANDARDS
 
@@ -317,10 +321,10 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - Use npm for package management.
 - Production-ready code quality is a must.
 - No fake simulations or mock data are allowed.
-- **IMPORTANT**: Do not generate new files unless explicitly instructed. Enhance existing components directly.
+- **IMPORTANT**: Do not generate new files unless explicitly instructed, unless specifically instructed to do so. Enhance existing components directly.
 - **IMPORTANT**: Do not attempt to rewrite entire files in one shot. Enhance existing components step by step.
 - **IMPORTANT**: Before coding, be absolutely sure what you're working on.
-- **IMPORTANT:** Do not code unless you are absolutely sure what you're working on.
+- **IMPORTANT**: Do not code unless you are absolutely sure what you're working on.
 - **IMPORTANT**: After every code change, run error checks (get_errors).
 - When using `// copilot: FIX` or `// copilot: IMPLEMENT` directives, always ensure proper environment variable usage as defined in `#file://.env.example`.
 - When creating evaluation suites, prioritize modularity to facilitate future modifications and extensions. Store the suites in `src\mastra\evals`.
@@ -343,21 +347,21 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - When enhancing the eval files in `src/mastra/evals`, ensure that the language model is passed dynamically instead of hardcoding OpenAI. Use the correct URL for each eval metric from `#file:mastra.prompt.md` before implementing the metric.
 - Remove stubs and non-functional code from eval files.
 - When working on evaluation metrics, follow these steps:
-    1. Fetch the correct URL from `#file:mastra.prompt.md` for the specific metric.
+    1. Fetch the correct URL from `#file://mastra.prompt.md` for the specific metric.
     2. Implement the metric using the `@mastra/evals` package.
     3. Ensure that the language model is passed dynamically and is not hardcoded to OpenAI.
     4. Remove any stubs or non-functional code.
-- **IMPORTANT:** All `#file:evals` files must use correct imports. Imports should look like `import { ToxicityMetric } from '@mastra/evals/llm';` and should **NOT** have aliases like `import { ToxicityMetric as MastraToxicityMetric } from '@mastra/evals/llm';`.
-- **IMPORTANT:** After modifying any `#file:evals` file, ALWAYS check for errors.
-- **IMPORTANT:** When fixing `#file:evals` files, always fetch the correct URL for the specific metric from `#file:mastra.prompt.md` before implementing the metric.
-- **IMPORTANT:** When enhancing `#file:evals` files, replace stubs with real implementations for each metric, using production-ready logic and ensuring the implementation utilizes the `@mastra/evals` package correctly, following Mastra's metric/judge pattern (e.g., defining `CustomEvalJudge` and `CustomEvalMetric` classes), fetching the official Mastra eval documentation link first, and carefully updating the file using the correct Mastra metric pattern.
-- **IMPORTANT:** When working on `#file:evals`, ensure there are no local class declarations. Use only direct imports from `@mastra/evals`.
-- **IMPORTANT:** All `#file:evals` files must use direct imports (no renaming).
-- **IMPORTANT:** When working on `#file:evals` files, if local class declarations exist, remove them.
-- **IMPORTANT:** For all `#file:evals` files, use the correct URL from `#file:mastra.prompt.md`.
-- **IMPORTANT:** When fixing `#file:evals` files, always check for errors after any modification.
-- **IMPORTANT**: If the assistant tries to create a new file, correct it. Do not allow it to create any new files.
-- **IMPORTANT**: When asked to fix or enhance `#file:metrics` files, do the following:
+- **IMPORTANT:** All `#file://evals` files must use correct imports. Imports should look like `import { ToxicityMetric } from '@mastra/evals/llm';` and should **NOT** have aliases like `import { ToxicityMetric as MastraToxicityMetric } from '@mastra/evals/llm';`.
+- **IMPORTANT:** After modifying any `#file://evals` file, ALWAYS check for errors.
+- **IMPORTANT:** When fixing `#file://evals` files, always fetch the correct URL for the specific metric from `#file://mastra.prompt.md` before implementing the metric.
+- **IMPORTANT:** When enhancing `#file://evals` files, replace stubs with real implementations for each metric, using production-ready logic and ensuring the implementation utilizes the `@mastra/evals` package correctly, following Mastra's metric/judge pattern (e.g., defining `CustomEvalJudge` and `CustomEvalMetric` classes), fetching the official Mastra eval documentation link first, and carefully updating the file using the correct Mastra metric pattern.
+- **IMPORTANT:** When working on `#file://evals`, ensure there are no local class declarations. Use only direct imports from `@mastra/evals`.
+- **IMPORTANT:** All `#file://evals` files must use direct imports (no renaming).
+- **IMPORTANT:** When working on `#file://evals` files, if local class declarations exist, remove them.
+- **IMPORTANT:** For all `#file://evals` files, use the correct URL from `#file://mastra.prompt.md`.
+- **IMPORTANT:** When fixing `#file://evals` files, always check for errors after any modification.
+- **IMPORTANT**: If the assistant tries to create a new file, correct it, unless specifically instructed to do so, unless specifically instructed to do so.
+- **IMPORTANT**: When asked to fix or enhance `#file://metrics` files, do the following:
     - Ensure the implementation utilizes the `@mastra/evals` package correctly.
     - Follow Mastra's metric/judge pattern (e.g., defining `CustomEvalJudge` and `CustomEvalMetric` classes).
     - Fetch the official Mastra eval documentation link first.
@@ -365,13 +369,38 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     - Use direct imports from `@mastra/evals` (no renaming).
     - Remove broken stubs.
     - Check for errors after every modification.
-- **IMPORTANT**: If asked to fix `#file:metrics` files, do not create local class wrappers. Use only direct imports.
-- **IMPORTANT**: When working with `#file:metrics` files, always fetch the corresponding URL from `#file:mastra.prompt.md` before making any changes.
-- **IMPORTANT**: The coding assistant MUST only use direct imports from `@mastra/evals` in `#file:metrics` files. Local declarations are forbidden.
-- **IMPORTANT**: The coding assistant MUST NOT create new files when asked to fix or enhance existing ones.
+- **IMPORTANT**: If asked to fix `#file://metrics` files, do not create local class wrappers. Use only direct imports.
+- **IMPORTANT**: When working with `#file://metrics` files, always fetch the corresponding URL from `#file://mastra.prompt.md` before making any changes.
+- **IMPORTANT**: The coding assistant MUST only use direct imports from `@mastra/evals` in `#file://metrics` files. Local declarations are forbidden.
+- **IMPORTANT**: The coding assistant MUST NOT create new files when asked to fix or enhance existing ones, unless specifically instructed to do so.
 - When fixing type errors related to optional parameters in eval files, ensure a default value or fallback is provided to handle undefined cases. For example, if a function expects a non-undefined options parameter but receives an optional (potentially undefined) value, provide a default options object using the schema's default values.
 - When fixing "Expected 0 arguments, but got 1" errors in eval files, remove the unnecessary arguments from the constructor call.
 - When fixing "Expected 0 arguments, but got 2" errors in eval files, examine the constructor signature and remove the unnecessary arguments from the constructor call.
+- When encountering the TypeScript error "Object literal may only specify known properties, and 'reference' does not exist in type 'Metric'", ensure that the object being defined adheres strictly to the properties defined in the `Metric` type or interface. Verify all property names and types for accuracy and completeness.
+- When a configuration error related to `reference` not existing on the `Metric` type occurs, ensure that the evaluation configuration uses the correct properties (`input` and `expected` instead of `reference` and `output`).
+- When configuring the `evals` property in agent configurations, use actual `Metric` instances (e.g., `new ToneConsistencyMetric()`) instead of test data objects. Do not use configuration objects with properties like `reference`, `input`, or `output` directly in the `evals` configuration.
+- When importing evaluation metrics, import the actual metric classes directly from `@mastra/evals/nlp` (e.g., `import { ToneConsistencyMetric } from '@mastra/evals/nlp';`) instead of importing evaluation functions.
+- When fixing the error "Cannot create an instance of an abstract class" in eval files:
+    - Remove the abstract class instantiation from the evals configuration.
+    - Keep only the concrete metric implementations that can be instantiated directly.
+    - Remember that abstract classes are meant to be base classes for creating custom judges, not used directly.
+- When enhancing tools, fetch the relevant Mastra documentation URLs to understand best practices.
+- When enhancing tools, analyze the current tools and enhance them to work flawlessly with `agentMemory.ts`.
+- When fixing errors, check the current state of the file to see what errors need fixing, then fetch any relevant documentation.
+- When enhancing tools, consider adding runtime context to allow the front end to interact with them better, similar to how agents have runtime contexts. Use `#fetch https://mastra.ai/en/docs/tools-mcp/dynamic-context` to understand how to put runtime context on tools.
+- When enhancing a tool, the old function should be removed.
+- When creating a chunk tool for all formats, use the Mastra documentation patterns.
+- When creating a new tool (e.g., `chunker-tool.ts`), ensure it includes:
+    - Multi-format support (Text, HTML, Markdown, JSON, LaTeX, CSV, XML).
+    - Multiple chunking strategies (recursive, sentence, paragraph, fixed, semantic).
+    - Runtime context integration for dynamic configuration via headers and user/session-specific settings.
+    - Comprehensive validation with strict Zod schemas, type-safe interfaces, and error handling.
+    - Integration with `agentMemory.ts` for LibSQL storage patterns and metadata handling.
+- **IMPORTANT:** If the coding assistant is asked to fix or enhance tools, it must follow ALL given instructions.
+- **IMPORTANT**: The coding assistant MUST focus on COMPLETING the requested tasks and MUST NOT leave them unfinished.
+- **IMPORTANT**: The coding assistant MUST NOT introduce index files.
+- **IMPORTANT**: When using runtime context, the coding assistant MUST import `RuntimeContext` from `@mastra/core/runtime`.
+- When implementing tools, the tool's `execute` function should use `context` instead of `input` when runtime context is implemented.
 
 ## WORKFLOW & RELEASE RULES
 
@@ -399,6 +428,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - Follow consistent naming conventions for workflow files (e.g., `code-graph-maker.ts`, `code-graph-maker-advanced.ts`).
 - Use `#file://(playground)` to reference files within the playground directory.
 - Eval metric files in `src/mastra/evals` should be named according to the metric they implement (e.g., `wordInclusion.ts`, `toxicity.ts`, `customEval.ts`).
+- New tool files should use a `tool` suffix (e.g. `chunker-tool.ts`).
 
 ## API INTEGRATION
 
@@ -441,6 +471,25 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     - Create custom rendering for each of the 22+ agents.
     - Implement interactive UI elements (HITL components) for agent collaboration.
     - Implement real-time status visualization, including progress indicators and agent state rendering.
+- When enhancing tools, adhere to the Mastra tool development pattern:
+    ```typescript
+    // Comprehensive Zod validation for Google AI compatibility
+    const inputSchema = z.object({...}).strict();
+    const outputSchema = z.object({...}).strict();
+
+    export const myTool = createTool({
+      id: 'tool-id',
+      description: 'Clear description',
+      inputSchema,
+      outputSchema,
+      execute: async ({ input, context }) => {
+        // Implementation with error handling and logging
+      }
+    });
+    ```
+- Tools are imported to agents.
+- All tools using `#file:mcp.ts` MUST have runtime context.
+- The tool's `execute` function should use `context` instead of `input` when runtime context is implemented.
 
 ## AGENT MEMORY MANAGEMENT
 
@@ -461,70 +510,4 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - **Best Practices**
   - Set memory scope: Only store what’s needed (task state, user prefs, etc.).
   - Optimize for token usage: Aggressively summarize, trim, and modularize context.
-  - Namespacing: Separate memory by session/user/task to avoid cross-contamination.
-  - Persist memory: Use scalable storage (vector DBs, object stores) for long-term/returning agents.
-  - Prune old/irrelevant memory: Prevent context drift and token bloat.
-  - Privacy & compliance: Encrypt, hash, and audit memory access; get user consent.
-- **Observability & Tracing**
-  - Use tools like **LangSmith**, **Langfuse**, and **OpenTelemetry** to trace memory usage, token counts, and agent decisions.
-  - Monitor for high token usage and optimize memory strategies accordingly.
-- When using the `SummarizeProcessor` (or any other processor), caching summaries using `quick-lru` can significantly speed things up when the same portion of history needs to be summarized again.
-- If you frequently retrieve and process the same pieces of data (e.g., results of specific semantic searches, user profile information if it were part of this pipeline), caching them using `quick-lru` can reduce latency.
-
-## UI/UX
-
-- The header should display a live agent status (with pulse), the current agent/user, and a progress bar that visually tracks workflow progress and errors.
-- Use the `Header.tsx` component as the main navigation bar for playground pages.
-- Ensure the `Header` component includes navigation links styled consistently with the project's design system, including appropriate button styling, hover states, and active state styling using primary colors.
-- Use an electric neon theme with glassmorphism effects (e.g., `oklch(0.9 0.4 105)`).
-- Create a generative UI page with a sidebar for chat and interactive elements in the frontend.
-
-## SECURITY
-
-- Avoid hardcoding credentials in `.env.example` and `mcp.ts`.
-- Use environment variables for sensitive information like Neo4j credentials.
-- Validate and sanitize all user input before sending it to agents or workflows.
-- Ensure Dockerfiles do not expose hardcoded credentials or run as root.
-
-## DOCKER CONFIGURATION
-
-- Create non-root user in Dockerfile to run the container.
-- All application files within the container should be owned by the non-root user.
-- Use secrets management for production deployments.
-- Scan images regularly with tools like `docker scout` or `trivy`.
-- Keep base images updated to get latest security patches.
-- Consider using distroless images for even smaller attack surface.
-
-## AGENT NETWORKS
-
-- When implementing AgentNetworks, consider using `AgentNetwork` from `@mastra/core/network` for LLM-based dynamic routing of agents, especially when using a Master Agent to coordinate specialized agents.
-- AgentNetworks are suitable for scenarios involving a Master Agent coordinating specialized agents via LLM-based dynamic routing.
-- Workflows are suitable for scenarios requiring explicit control with predetermined sequences.
-- Agent memory should reside within the agents themselves, not the network.
-- **IMPORTANT:** No fake simulations or mock data are allowed when creating or using AgentNetworks.
-- Each agent's runtime context should be specific to that agent and defined within the agent's file, then exported to a barrel file.
-- Each agent should have its own runtime context.
-- Ensure that each agent has its own runtime context and that these are defined in their respective files. Export these runtime contexts to the main barrel file (`index.ts`).
-- Each agent should have a specific runtime context defined in its respective file. Export these runtime contexts to the main barrel file (`index.ts`).
-- Ensure that all properties defined in the agent's runtime context are correctly used in the `registerCopilotKit` call.
-
-## CODE REVIEW DIRECTIVES
-
-The following directives are available for code review:
-
-- `// review: SECURITY` - Identifies potential security vulnerabilities (e.g., hardcoded secrets, missing input validation).
-  ```typescript
-  const apiKey = "hardcoded_api_key"; // review: SECURITY - Should use environment variable
-  ```
-- `// review: PERF` - Highlights performance bottlenecks (e.g., unnecessary re-renders, expensive operations).
-  ```typescript
-  <MyComponent data={expensiveData} />; // review: PERF - Avoid re-renders - use memo
-  ```
-- `// review: MEMORY` - Detects potential memory leaks or inefficient memory usage (e.g., unbounded caches).
-  ```typescript
-  const cache = {}; // review: MEMORY - Should use LRU cache with a limit
-  ```
-- `// review: SCALABILITY` - Addresses scalability concerns (e.g., N+1 queries, sequential processing).
-  ```typescript
-  for (const user of users) { // review: SCALABILITY - N+1 query - batch load instead
-    const posts = await getPosts(user.id);
+  - Namespacing: Separate memory by session

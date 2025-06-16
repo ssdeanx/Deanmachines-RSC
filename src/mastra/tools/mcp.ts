@@ -423,7 +423,7 @@ export const mcp = {  /**
    * Get the appropriate client for a server
    */
   getClientForServer(server: string) {
-    const stdioServers = ['filesystem', 'docker', 'git', 'time'];
+    const stdioServers = ['filesystem', 'git', 'time', 'fetch', 'puppeteer', 'github', 'memoryGraph', 'ddgsearch', 'neo4j'];
 
 
     if (stdioServers.includes(server)) {
@@ -1082,4 +1082,3 @@ export function clearMCPAnalytics() {
   //}
 //);
 
-// Generated on 2025-06-01 - Enhanced with comprehensive MCP tracing and analytics

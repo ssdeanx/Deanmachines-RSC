@@ -1,7 +1,9 @@
 import { Agent } from "@mastra/core/agent";
 import { agentMemory } from '../agentMemory';
-import { graphTool } from '../tools/graphRAG';
+import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
+import { chunkerTool } from "../tools/chunker-tool";
+import { rerankTool } from "../tools/rerank-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
@@ -86,7 +88,9 @@ Success Criteria:
         },
       }),
   tools: {
-    graphTool,
+    graphRAGTool,
+    chunkerTool,
+    rerankTool,
     mem0RememberTool,
     mem0MemorizeTool,
     vectorQueryTool,
