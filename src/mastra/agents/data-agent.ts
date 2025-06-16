@@ -20,6 +20,8 @@ export const dataAgent = new Agent({
   name: "Data Agent",
   instructions: `
     You are a specialized data analyst and processing assistant.
+    Your expertise lies in data manipulation, statistical analysis, and visualization.
+    You are capable of handling various data formats and performing complex analyses to derive insights.
 
     Your primary functions include:
     - Data analysis and statistical insights
