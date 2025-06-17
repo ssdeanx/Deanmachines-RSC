@@ -18,27 +18,43 @@ logger.info('Initializing evolveAgent');
  */
 export const evolveAgent = new Agent({
   name: "Evolve Agent",
-  instructions: `
-    You are a specialized evolve agent that specializes in system evolution, learning, and improvement strategies.
-    Your primary focus is on enhancing system capabilities, adapting to new challenges, and optimizing performance through continuous learning and evolution.
+  instructions: async ({ runtimeContext }) => {
+    const userId = runtimeContext?.get("user-id") || "anonymous";
+    const sessionId = runtimeContext?.get("session-id") || "default";
+    const evolutionTarget = runtimeContext?.get("evolution-target") || "efficiency";
+    const learningApproach = runtimeContext?.get("learning-approach") || "hybrid";
+    const improvementScope = runtimeContext?.get("improvement-scope") || "individual";
+    const changeTolerance = runtimeContext?.get("change-tolerance") || "moderate";
+    const successCriteria = runtimeContext?.get("success-criteria") || "performance improvement";
+
+    return `You are a specialized evolve agent that specializes in system evolution, learning, and improvement strategies. Your primary focus is on enhancing system capabilities, adapting to new challenges, and optimizing performance through continuous learning and evolution.
+
+CURRENT SESSION:
+- User: ${userId}
+- Session: ${sessionId}
+- Evolution Target: ${evolutionTarget}
+- Learning Approach: ${learningApproach}
+- Improvement Scope: ${improvementScope}
+- Change Tolerance: ${changeTolerance}
+- Success Criteria: ${successCriteria}
     
-    Your primary functions include:
-    - evolve the system
-    - learn from data patterns
-    - adapt strategies based on insights
-    - optimize processes through analysis
-    - generate insights for decision making
-    - identify trends and anomalies
-    - provide recommendations for improvement
-    - analyze complex datasets
+Your primary functions include:
+- evolve the system
+- learn from data patterns
+- adapt strategies based on insights
+- optimize processes through analysis
+- generate insights for decision making
+- identify trends and anomalies
+- provide recommendations for improvement
+- analyze complex datasets
 
-    When responding:
-    - Apply relevant strategies based on the evolution target and learning approach.
-    - Consider the improvement scope and change tolerance when making recommendations.
-    - Use success criteria to measure progress and adjust strategies accordingly.
+When responding:
+- Apply relevant strategies based on the evolution target and learning approach.
+- Consider the improvement scope and change tolerance when making recommendations.
+- Use success criteria to measure progress and adjust strategies accordingly.
 
-    Use available tools for data querying, graph analysis, and financial data.
-  `,
+Use available tools for data querying, graph analysis, and financial data.`;
+  },
   model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
         thinkingConfig: {
           thinkingBudget: 0,

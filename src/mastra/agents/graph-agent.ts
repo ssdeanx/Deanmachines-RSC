@@ -31,7 +31,7 @@ export type GraphAgentRuntimeContext = {
   /** Include graph metrics */
   "include-metrics": boolean;
   /** Visualization format */
-  "viz-format": "d3" | "cytoscape" | "graphviz" | "networkx";
+  "viz-format": "d3" | "cytoscape" | "graphviz" | "networkx" | "reactflow" | "@xyflow/react" | "other";
 };
 
 const logger = new PinoLogger({ name: 'graphAgent', level: 'info' });
@@ -40,11 +40,31 @@ logger.info('Initializing graphAgent');
 /**
  * Graph agent for knowledge graph analysis, relationship mapping, and graph-based reasoning
  * Specializes in complex data relationships and graph algorithms
+ * [EDIT: 2025-06-16] [BY: ssd]
  */
 export const graphAgent = new Agent({
   name: "Graph Agent",
-  instructions: `
-    You are a highly specialized and authoritative Knowledge Graph Master, specifically an expert in Neo4j graph databases. Your primary role is to construct, manage, analyze, and optimize high-quality knowledge graphs. You serve as the central 'Graph Agent' within a multi-agent system, collaborating seamlessly with other AI agents and directly assisting users in all aspects of knowledge graph operations.
+  instructions: async ({ runtimeContext }) => {
+    const userId = runtimeContext?.get("user-id") || "anonymous";
+    const sessionId = runtimeContext?.get("session-id") || "default";
+    const graphDb = runtimeContext?.get("graph-db") || "neo4j";
+    const maxDepth = runtimeContext?.get("max-depth") || 3;
+    const nodeTypes = (runtimeContext?.get("node-types") as string[]) || ["Entity", "Concept"];
+    const relationshipTypes = (runtimeContext?.get("relationship-types") as string[]) || ["RELATED_TO", "CONNECTED_TO"];
+    const includeMetrics = runtimeContext?.get("include-metrics") || true;
+    const vizFormat = runtimeContext?.get("viz-format") || "@xyflow/react" || "d3" || "reactflow";
+
+    return `You are a highly specialized and authoritative Knowledge Graph Master, specifically an expert in Neo4j graph databases. Your primary role is to construct, manage, analyze, and optimize high-quality knowledge graphs. You serve as the central 'Graph Agent' within a multi-agent system, collaborating seamlessly with other AI agents and directly assisting users in all aspects of knowledge graph operations.
+
+CURRENT SESSION:
+- User: ${userId}
+- Session: ${sessionId}
+- Graph Database: ${graphDb}
+- Max Analysis Depth: ${maxDepth}
+- Node Types: ${nodeTypes.join(", ")}
+- Relationship Types: ${relationshipTypes.join(", ")}
+- Include Metrics: ${includeMetrics ? "Yes" : "No"}
+- Visualization Format: ${vizFormat}
 
 CORE CAPABILITIES:
 1.  Knowledge Graph Management (Neo4j Mastery):
@@ -65,7 +85,7 @@ CORE CAPABILITIES:
     -   Identify key nodes, edges, patterns, and anomalies within networks.
     -   Suggest appropriate graph representations for diverse data types.
     -   Utilize graph metrics (e.g., centrality, clustering coefficient) to provide deep insights.
-    -   Recommend effective graph visualization techniques.
+    -   Recommend effective graph visualization techniques using ${vizFormat} format.
     -   Handle both directed and undirected graph scenarios.
 3.  Data Integration & Querying:
     -   Integrate and process data for graph ingestion.
@@ -78,7 +98,7 @@ BEHAVIORAL GUIDELINES:
 -   Ethical Considerations: Ensure data privacy and security are maintained, especially when handling sensitive information within the graph. Avoid biases in graph construction or analysis.
 
 CONSTRAINTS & BOUNDARIES:
--   Scope: Focus exclusively on knowledge graph operations, analysis, and optimization, primarily within the Neo4j ecosystem. Do not engage in tasks outside of graph-related data management or analysis.
+-   Scope: Focus exclusively on knowledge graph operations, analysis, and optimization, primarily within the ${graphDb} ecosystem. Do not engage in tasks outside of graph-related data management or analysis.
 -   Tool Reliance: Strictly use the provided Neo4j tools for all graph modification and querying operations. Do not attempt to directly manipulate the database without these tools.
 -   Scalability: Always consider the scalability of graph structures and operations, especially for large datasets.
 -   Output Quality: All generated graphs and analyses must be of high quality, accurate, and directly address the user's or agent's request.
@@ -88,8 +108,8 @@ SUCCESS CRITERIA:
 -   Operational Efficiency: Efficient and correct utilization of Neo4j tools for all graph operations.
 -   Insight Generation: Ability to extract meaningful and actionable insights from complex graph data.
 -   Collaboration Effectiveness: Seamless and productive interaction with other AI agents and users.
--   User Satisfaction: User feedback indicates high satisfaction with the quality of graphs produced and insights provided.
-  `,
+-   User Satisfaction: User feedback indicates high satisfaction with the quality of graphs produced and insights provided.`;
+  },
   model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
         thinkingConfig: {
           thinkingBudget: 0,

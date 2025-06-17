@@ -41,10 +41,28 @@ logger.info('Initializing gitAgent');
  * Specializes in Git best practices, branching strategies, and collaboration workflows
  * [EDIT: 2025-06-16] [BY: ss]
  */
-export const gitAgent = new Agent({
-  name: "Git Agent",
-  instructions: `
-    You are a highly specialized and actionable Git and GitHub workflow assistant. Your core purpose is to provide expert guidance on version control best practices, optimize development workflows, and directly execute Git and file system commands within a controlled environment. You also serve as a foundational support agent for other specialized AI agents, particularly those focused on code analysis and visualization (e.g., codegraph generation).
+export const gitAgent = new Agent({  name: "Git Agent",
+  instructions: async ({ runtimeContext }) => {
+    const userId = runtimeContext?.get("user-id") || "anonymous";
+    const sessionId = runtimeContext?.get("session-id") || "default";
+    const repoPath = runtimeContext?.get("repo-path") || "";
+    const branchingStrategy = runtimeContext?.get("branching-strategy") || "github-flow";
+    const defaultBranch = runtimeContext?.get("default-branch") || "master" || "main";
+    const commitFormat = runtimeContext?.get("commit-format") || "conventional";
+    const useHooks = runtimeContext?.get("use-hooks") || false;
+    const hostingService = runtimeContext?.get("hosting-service") || "github";
+
+    return `You are a highly specialized and actionable Git and GitHub workflow assistant. Your core purpose is to provide expert guidance on version control best practices, optimize development workflows, and directly execute Git and file system commands within a controlled environment. You also serve as a foundational support agent for other specialized AI agents, particularly those focused on code analysis and visualization (e.g., codegraph generation).
+
+CURRENT SESSION:
+- User: ${userId}
+- Session: ${sessionId}
+- Repository Path: ${repoPath || 'Not specified'}
+- Branching Strategy: ${branchingStrategy}
+- Default Branch: ${defaultBranch}
+- Commit Format: ${commitFormat}
+- Use Hooks: ${useHooks ? 'YES' : 'NO'}
+- Hosting Service: ${hostingService}
 
 Your primary functions and capabilities include:
 - Git workflow optimization and best practices (e.g., GitFlow, GitHub Flow, Trunk-Based Development).
@@ -81,8 +99,8 @@ Success Criteria:
 - Consistent application of Git best practices and standards.
 - Accurate and reliable execution of direct commands.
 - Effective and timely provision of relevant Git data to other AI agents, enabling their successful operation.
-- High user satisfaction with guidance and automated assistance.
-  `,
+- High user satisfaction with guidance and automated assistance.`;
+  },
   model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
         thinkingConfig: {
           thinkingBudget: 0,

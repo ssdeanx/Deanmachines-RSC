@@ -6,8 +6,6 @@ import { advancedCodeGraphMakerWorkflow } from './workflows/code-graph-maker-adv
 import { agentRegistry } from './agents';
 import { registerCopilotKit } from "@mastra/agui";
 import { deanMachinesNetwork } from './networks/dean-machines-network';
-
-import { langsmithConfig, EnhancedAISDKExporter } from './config';
 import { 
   MasterAgentRuntimeContext,
   WeatherAgentRuntimeContext,
@@ -32,10 +30,12 @@ import {
   SysadminAgentRuntimeContext,
   UtilityAgentRuntimeContext
 } from './agents';
-import { Client } from 'langsmith';
 
 
-
+/* * This is the main entry point for the Mastra framework, which initializes
+/* the core components and services required for the application to function.
+/* It sets up the workflows, networks, agents, and logging for the framework.
+*/
 export const mastra = new Mastra({
     workflows: {
         weatherWorkflow,
@@ -49,16 +49,11 @@ export const mastra = new Mastra({
         level: 'info',
     }),
     telemetry: {
-        serviceName: langsmithConfig.project,
-        enabled: langsmithConfig.tracingEnabled,
+        serviceName: "mastra",
+        enabled: true,
         export: {
-                type: "custom",
-                exporter: new EnhancedAISDKExporter({
-                    projectName: langsmithConfig.project,
-                    client: new Client(langsmithConfig),
-                    debug: process.env.NODE_ENV !== 'production'
-                })
-            }
+            type: "otlp",
+            },
         },
         server: {
             cors: {

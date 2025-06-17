@@ -304,6 +304,13 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - When the user specifies `#file:rerank-tool.ts`, analyze the specified file.
 - When the user specifies `#file:mastra.prompt.md`, analyze the specified file.
 - When the user specifies `#file:vectorQueryTool.ts #file:rerank-tool.ts #file:chunker-tool.ts`, analyze all of the specified files.
+- When the user specifies `#file:instructions #file:index.ts #file:copilotkit #file:agents`, analyze all of those files before starting.
+- **IMPORTANT:** When asked to work on multiple agent files simultaneously, ensure that each agent's runtime context is correctly implemented and utilized within the agent's logic, following the pattern observed in `master-agent.ts`.
+- When analyzing multiple agent files simultaneously and updating them to follow the `master-agent.ts` pattern, ensure that each agent's instructions are using runtime context by:
+    1. Defining the runtime context type at the top of the file.
+    2. Accessing the runtime context within the instructions function using `({ runtimeContext })`.
+    3. Using personalized context variables within the instructions.
+- Use `#fetch https://mastra.ai/en/examples/agents/hierarchical-multi-agent` to understand hierarchical multi-agent patterns.
 
 ## CODING STANDARDS
 
@@ -401,6 +408,11 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - **IMPORTANT**: The coding assistant MUST NOT introduce index files.
 - **IMPORTANT**: When using runtime context, the coding assistant MUST import `RuntimeContext` from `@mastra/core/runtime`.
 - When implementing tools, the tool's `execute` function should use `context` instead of `input` when runtime context is implemented.
+- **IMPORTANT**: When asked to ensure that each agent's instructions are actually using runtime context, the coding assistant MUST follow the pattern in `#file:master-agent.ts` where the agent has runtime context at the top and uses it in the agent's logic. This pattern MUST be replicated in each agent's instructions.
+- All agents should now follow the `master-agent.ts` runtime context pattern:
+    1. Define the runtime context type at the top of the file.
+    2. Use instructions as an async function that uses `({ runtimeContext })` to access context.
+    3. Use personalized context variables within the instructions.
 
 ## WORKFLOW & RELEASE RULES
 
@@ -489,25 +501,4 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     ```
 - Tools are imported to agents.
 - All tools using `#file:mcp.ts` MUST have runtime context.
-- The tool's `execute` function should use `context` instead of `input` when runtime context is implemented.
-
-## AGENT MEMORY MANAGEMENT
-
-- **Types of Agent Memory**
-  - **Buffer Memory:** Short-term, stores a window of recent interactions (like a chat buffer). Fast, but limited context.
-  - **Summarization Memory:** Compresses long histories into summaries, keeping context relevant while minimizing tokens.
-  - **Vector Memory:** Stores semantic embeddings for long-term recall and knowledge retrieval (e.g., FAISS, ChromaDB, Weaviate).
-- **Hybrid Architectures**
-  - Combine memory types for best results:
-    - **Buffer + Summary:** Responsive chat with efficient context.
-    - **Summary + Vector:** Global context + semantic recall.
-    - **Buffer + Vector + Logs:** For reflection, performance tracking, and auditability.
-  - Use frameworks (e.g., CrewAI, AutoGPT, LangChain, LlamaIndex) to modularize and combine memory backends.
-- **Prompt Engineering for Memory**
-  - Condense context: Summarize or chunk long histories before including in prompts.
-  - Dynamic context windows: Only include the most relevant recent or summarized information.
-  - Knowledge base retrieval: Use vector search to pull in relevant facts on demand, not all at once.
-- **Best Practices**
-  - Set memory scope: Only store what’s needed (task state, user prefs, etc.).
-  - Optimize for token usage: Aggressively summarize, trim, and modularize context.
-  - Namespacing: Separate memory by session
+- The tool's `execute` function
