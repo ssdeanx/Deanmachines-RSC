@@ -163,7 +163,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
             // copilot: trace3
             console.log("Process complete", result);
             ```
-        - **`// copilot: trace_`** - Stop tracing
+        - **`// copilot: trace_** - Stop tracing
             ```typescript
             console.log("End of tracing");
             ```
@@ -300,7 +300,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     - `src/mastra/agents/git-agent.ts` - Version control operations and repository management
     - `src/mastra/agents/debug-agent.ts` - Error detection and debugging assistance
     - `src/mastra/agents/documentation`
-- When the user specifies `#file:instructions #file:mastra #file:tools #file:agentMemory.ts`, analyze all of the specified files to understand the project structure and requirements.
+- When the user specifies `#file:instructions #file:index.ts #file:copilotkit #file:agents`, analyze all of the specified files to understand the project structure and requirements.
 - When the user specifies `#file:rerank-tool.ts`, analyze the specified file.
 - When the user specifies `#file:mastra.prompt.md`, analyze the specified file.
 - When the user specifies `#file:vectorQueryTool.ts #file:rerank-tool.ts #file:chunker-tool.ts`, analyze all of the specified files.
@@ -311,6 +311,13 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     2. Accessing the runtime context within the instructions function using `({ runtimeContext })`.
     3. Using personalized context variables within the instructions.
 - Use `#fetch https://mastra.ai/en/examples/agents/hierarchical-multi-agent` to understand hierarchical multi-agent patterns.
+- Use `#fetch https://mastra.ai/en/reference/agents/createTool`, `#fetch https://mastra.ai/en/reference/tools/create-tool`, `#fetch https://mastra.ai/en/examples/agents/hierarchical-multi-agent`, `#fetch https://mastra.ai/en/examples/agents/using-a-tool`, and `#fetch https://mastra.ai/en/docs/agents/runtime-variables` for understanding agent and tool creation.
+- When the user asks to create `#file:delegate-tools.ts`, use the following guidelines:
+    - The coding assistant MUST use both tool runtime context and agent runtime context.
+    - The coding assistant MUST import `RuntimeContext` from `@mastra/core/di`.
+    - The coding assistant MUST import agents directly from the index file (e.g., `agentRegistry`) and MUST NOT use a local `AGENT_REGISTRY` object.
+    - The coding assistant MUST include `#file:supervisor-agent.ts`.
+    - The coding assistant MUST fetch the relevant documentation URLs to understand the correct Mastra patterns before creating the file.
 
 ## CODING STANDARDS
 
@@ -340,6 +347,17 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - Eval metric implementations should follow Mastra's metric/judge pattern (e.g., defining `CustomEvalJudge` and `CustomEvalMetric` classes).
 - When enhancing eval files in `src\mastra\evals`, always fetch the official Mastra eval documentation link first.
 - When enhancing eval files in `src\mastra\evals`, carefully update the file using the correct Mastra metric pattern.
+- All agent implementations must be real, production-ready, and type-safe.
+- Each agent must export its runtime context type and be registered via the barrel file (`src/mastra/agents/index.ts`).
+- No mock data, no fake endpoints, and no non-functional examples are allowed in agent implementations.
+- When working on eval files, ensure that the language model is passed dynamically instead of hardcoding OpenAI. The calling code becomes responsible for supplying the configured language model instance. The language model type should be imported from `@mastra/core/llm`.
+- When working on eval files, always fetch the relevant URL that goes with the file.
+- When enhancing eval files, enhance them one at a time and specify the filename.
+- When enhancing eval files in `src\mastra\evals`, always fetch the official Mastra eval documentation link first.
+- When enhancing eval files in `src\mastra\evals`, carefully update the file using the correct Mastra metric pattern.
+- When enhancing eval files in `src\mastra\evals`, ensure that the language model is passed dynamically and is not hardcoded to OpenAI. Use the correct URL for each eval metric from `#file:mastra.prompt.md` before implementing the metric.
+- When enhancing the eval files in `src/mastra/evals`, ensure that the language model is passed dynamically instead of hardcoding OpenAI. The calling code becomes responsible for supplying the configured language model instance. The language model type should be imported from `@mastra/core/llm`.
+- When enhancing eval files in `src/mastra/evals`, carefully update the file using the correct Mastra metric pattern.
 - All agent implementations must be real, production-ready, and type-safe.
 - Each agent must export its runtime context type and be registered via the barrel file (`src/mastra/agents/index.ts`).
 - No mock data, no fake endpoints, and no non-functional examples are allowed in agent implementations.
@@ -413,6 +431,20 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     1. Define the runtime context type at the top of the file.
     2. Use instructions as an async function that uses `({ runtimeContext })` to access context.
     3. Use personalized context variables within the instructions.
+- **IMPORTANT**: The coding assistant MUST NOT create a `delegate-tool.ts` file.
+- If asked to create `delegate-tools.ts`, fetch the relevant documentation URLs to understand the correct Mastra patterns before creating the file.
+- **IMPORTANT**: When creating `delegate-tools.ts`, the coding assistant MUST use tool runtime context, not agent runtime context.
+- **IMPORTANT**: When creating `delegate-tools.ts`, the coding assistant MUST import agents directly from the index file (e.g., `agentRegistry`) and MUST NOT use a local `AGENT_REGISTRY` object.
+- **IMPORTANT**: When creating `delegate-tools.ts`, the coding assistant MUST NOT include master agent, but include `#file:supervisor-agent.ts`.
+- **IMPORTANT**: When creating `delegate-tools.ts`, the coding assistant MUST use both tool runtime context and agent runtime context.
+- **IMPORTANT**: When creating `delegate-tools.ts`, the coding assistant MUST import `RuntimeContext` from `@mastra/core/di`.
+- When asked to ensure all tool runtime contexts are exported in `index.ts`, only add the exports, and do not modify any other files unless instructed.
+- When asked to export all tool runtime contexts in `#file:index.ts`, use semantic search to find all `*RuntimeContext` types in the tools directory and export them.
+- The coding assistant must not modify any files when asked to ensure all tool runtime contexts are exported in `index.ts`, unless instructed.
+- **IMPORTANT**: The coding assistant MUST focus on fixing `#file:delegate-tools.ts` and ensuring it imports and uses its imports like all other tools.
+- When analyzing `#file:rerank-tool.ts`, `#file:graphRAG.ts`, and `#file:vectorQueryTool.ts`, analyze the files to understand the correct tool runtime context pattern, then fix `#file:delegate-tools.ts` to follow the same pattern.
+- **IMPORTANT**: If `delegate-tools.ts` can use both agent and tool runtime contexts, it MUST do so.
+- **IMPORTANT**: The current agent being delegated to should NOT be part of the tool runtime context.
 
 ## WORKFLOW & RELEASE RULES
 
@@ -440,65 +472,4 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - Follow consistent naming conventions for workflow files (e.g., `code-graph-maker.ts`, `code-graph-maker-advanced.ts`).
 - Use `#file://(playground)` to reference files within the playground directory.
 - Eval metric files in `src/mastra/evals` should be named according to the metric they implement (e.g., `wordInclusion.ts`, `toxicity.ts`, `customEval.ts`).
-- New tool files should use a `tool` suffix (e.g. `chunker-tool.ts`).
-
-## API INTEGRATION
-
-- Workflow APIs should be registered as CopilotKit endpoints in the API configuration.
-- Expose necessary state to CopilotKit for agent context using `useCopilotReadable`, including user information, preferences, and current session information.
-- Implement granular status updates and error handling for agent/workflow feedback in the UI, including progress, partial results, and error states.
-- When using `useCopilotReadable`, include user and preferences objects to enrich agent context.
-- Implement Zod schemas for validation of all agent actions and workflow inputs/outputs.
-- Ensure that Actions.tsx utilizes `${MASTRA_URL}` for endpoint consistency, such as `setCurrentEndpoint('${MASTRA_URL}/copilotkit/research');`.
-- The `Actions.tsx` component should use the agent context from the layout to switch endpoints.
-- Consider using `AgentNetwork` from `@mastra/core/network` for LLM-based dynamic routing of agents, especially when using a Master Agent to coordinate specialized agents.
-- AgentNetworks are suitable for scenarios involving a Master Agent coordinating specialized agents via LLM-based dynamic routing.
-- Workflows are suitable for scenarios requiring explicit control with predetermined sequences.
-- Agent memory should reside within the agents themselves, not the network.
-- **IMPORTANT:** No fake simulations or mock data are allowed when creating or using AgentNetworks.
-- Each agent's runtime context should be specific to that agent and defined within the agent's file, then exported to a barrel file.
-- Each agent should have its own runtime context.
-- Ensure that each agent has its own runtime context and that these are defined in their respective files. Export these runtime contexts to the main barrel file (`index.ts`).
-- Each agent should have a specific runtime context defined in its respective file. Export these runtime contexts to the main barrel file (`index.ts`).
-- Ensure that all properties defined in the agent's runtime context are correctly used in the `registerCopilotKit` call.
-- Agents can now be configured at runtime by sending appropriate headers with CopilotKit requests (e.g., `X-Language`, `X-Framework`, `X-Debug-Level`) with sensible defaults.
-- **IMPORTANT: Success Patterns to Replicate:**
-  - **Type Safety Excellence** - Define context in agent files, export through barrel.
-  - **Complete Property Management** - Set ALL properties with sensible defaults.
-  - **Documentation Excellence** - Create technical guides with examples.
-  - **Quality Verification** - Use tools to ensure zero errors.
-- **IMPORTANT: Critical Things to Avoid:**
-  - **Generic or any types** - Always use specific runtime context types.
-  - **Missing properties** - Every property in type must be set.
-  - **Partial implementations** - Complete the full pipeline.
-  - **Poor verification** - Always check for TypeScript errors.
-- Eventually work on tool runtime context as well, following the same proven patterns established for agent runtime contexts.
-- **Frontend Runtime Context Integration Strategy:**
-    - Use `useCopilotReadable` hook to provide user-specific, session-specific, and application context to CopilotKit agents from the frontend.
-    - Frontend context should be user-specific, session-specific, and real-time data.
-    - Maintain parent-child relationships in context using `parentId`.
-    - Create a Frontend Runtime Context Provider that manages user session data (user-id, session-id, preferences, current project context), uses `useCopilotReadable` to provide this context to all agents automatically, provides different context based on current agent endpoint, and updates context in real-time as the user interacts with the application.
-    - Enhance existing CopilotKit components by adding user/preference context to `useCopilotReadable` calls, enriching agent context with runtime context types, and adding project-specific context to the existing session state.
-    - Implement tool-based rendering for the 77 MCP tools in `CustomChatInterface`.
-    - Create custom rendering for each of the 22+ agents.
-    - Implement interactive UI elements (HITL components) for agent collaboration.
-    - Implement real-time status visualization, including progress indicators and agent state rendering.
-- When enhancing tools, adhere to the Mastra tool development pattern:
-    ```typescript
-    // Comprehensive Zod validation for Google AI compatibility
-    const inputSchema = z.object({...}).strict();
-    const outputSchema = z.object({...}).strict();
-
-    export const myTool = createTool({
-      id: 'tool-id',
-      description: 'Clear description',
-      inputSchema,
-      outputSchema,
-      execute: async ({ input, context }) => {
-        // Implementation with error handling and logging
-      }
-    });
-    ```
-- Tools are imported to agents.
-- All tools using `#file:mcp.ts` MUST have runtime context.
-- The tool's `execute` function
+- New tool files should

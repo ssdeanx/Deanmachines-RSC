@@ -68,6 +68,7 @@ When responding:
 Use available tools to query project management patterns and best practices.`;
   },
   model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+        responseModalities: ["TEXT", "IMAGE"],
         thinkingConfig: {
           thinkingBudget: 0,
           includeThoughts: false,

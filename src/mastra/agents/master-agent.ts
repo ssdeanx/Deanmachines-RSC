@@ -15,11 +15,11 @@ import {
   ContentSimilarityMetric,
   TextualDifferenceMetric                       
 } from '@mastra/evals/nlp';
-
 import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
 import { z } from 'zod';
-import { CustomEvalMetric } from "../evals/customEval";
+//import { CustomEvalMetric } from "../evals/customEval";
+import { WordInclusionMetric } from "../evals/wordInclusion";
 
 /**
  * Runtime context type for the Master Agent
@@ -62,19 +62,15 @@ const masterAgentOutputSchema = z.object({
  */
 const masterAgentConfigSchema = z.object({
   name: z.string().min(1).describe('Agent name identifier'),
-  instructions: z.string().min(1).describe('Agent instructions and behavior'),
-  model: z.any().describe('AI model configuration'),
-  providerOptions: z.object({
-    google: z.object({
-      thinkingConfig: z.object({
-        thinkingBudget: z.number().min(0).describe('Thinking budget for the Google provider'),
-        includeThoughts: z.boolean().describe('Whether to include thoughts in responses')
-      })
-    })
-  }).describe('Provider configuration for the AI model'),
-  eval: z.object({
-    metrics: z.array(z.any()).describe('Evaluation metrics for the agent'),
-  }).describe('Evaluation configuration for the agent'),
+  instructions: z.string().describe('Detailed instructions for the agent'),
+  runtimeContext: z.object({
+    'user-id': z.string().describe('User identifier'),
+    'session-id': z.string().describe('Session identifier'),
+    'project-context': z.string().describe('Project context'),
+    'debug-mode': z.boolean().describe('Debug mode flag')
+  }).describe('Runtime context for the agent'),
+  model: z.any().describe('Model configuration for the agent'),
+  evals: z.record(z.any()).describe('Evaluation metrics for the agent'),
   tools: z.record(z.any()).describe('Available tools for the agent'),
   memory: z.any().describe('Agent memory configuration')
 }).strict();
@@ -128,6 +124,7 @@ SUCCESS CRITERIA:
   },
 
   model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+    responseModalities: ["TEXT", "IMAGE"],
     thinkingConfig: {
       thinkingBudget: 0,
       includeThoughts: false,
@@ -144,19 +141,44 @@ SUCCESS CRITERIA:
     weatherTool,
     stockPriceTool,
     ...await mcp.getTools(),
-  },  memory: agentMemory,
+  },  
+  memory: agentMemory,
   evals: {  
     toneConsistency: new ToneConsistencyMetric(),
     keywordCoverage: new KeywordCoverageMetric(),
     completeness: new CompletenessMetric(),
+    wordInclusion: new WordInclusionMetric(['master-agent', 'mastra', 'problem-solving', 'agent', 'debugging',
+      'technical', 'assistant', 'flexible', 'tools', 'knowledge', 'retrieval', 'vector', 'similarity',
+      'search', 'documents', 'file', 'system', 'operations', 'mcp', 'git', 'repositories', 'docker',
+      'containers', 'weather', 'stock', 'prices', 'financial', 'data', 'time', 'timezone', 'code', 'programming',
+      'scripting', 'bash', 'shell', 'terminal', 'command', 'prompt', 'input', 'output', 'response', 'result',
+      'answer', 'solution', 'fix', 'bug', 'error', 'warning', 'alert', 'notification', 'message', 'chat',
+      'conversation', 'interaction', 'dialogue', 'exchange', 'communication', 'feedback', 'evaluation',
+      'assessment', 'grading', 'score', 'grade', 'mark', 'point', 'rating', 'rank', 'position', 'order',
+      'sequence', 'chronology', 'timeline', 'history', 'past', 'present', 'future', 'time', 'date', 'day',
+      'week', 'month', 'year', 'decade', 'century', 'millennium', 'age', 'period', 'duration', 'interval',
+      'window', 'span', 'extent', 'scope', 'boundary', 'limit', 'bound', 'fence', 'barrier', 'wall', 'barrier',
+      'obstacle', 'hindrance', 'impediment', 'blocker', 'hurdle', 'challenge', 'obstacle', 'challenge', 'problem',
+      'issue', 'task', 'job', 'duty', 'responsibility', 'accountability', 'obligation', 'commitment',
+      'expectation', 'requirement', 'specification', 'standard', 'criteria', 'principle', 'rule', 'law',
+      'regulation', 'policy', 'procedure', 'protocol', 'format', 'template', 'scheme', 'design', 'pattern',
+      'model', 'framework', 'tool', 'utility', 'resource', 'asset', 'inventory', 'store', 'database',
+      'repository', 'cache', 'memory', 'buffer', 'pool', 'pool', 'well', 'source', 'origin', 'root', 'base',
+      'foundation', 'core', 'essence', 'heart', 'soul', 'spirit', 'mind', 'intelligence', 'reason', 'logic',
+      'judgment', 'decision', 'choice', 'option', 'alternative', 'variety', 'diversity', 'richness', 'complexity',
+      'depth', 'breadth', 'range', 'scope', 'extent', 'reach', 'impact', 'influence', 'power', 'strength',
+      'weakness', 'vulnerability', 'sensitivity', 'resilience', 'adaptability', 'flexibility', 'agility',
+      'nimbleness', 'swiftness', 'speed', 'velocity', 'dynamics', 'motion', 'flow', 'movement', 'change',
+      'transformation', 'evolution', 'progress', 'development']),
     contentSimilarity: new ContentSimilarityMetric(),
     textualDifference: new TextualDifferenceMetric(),
-    customEval: new CustomEvalMetric(createGemini25Provider('gemini-2.5-flash-preview-05-20', {
-      thinkingConfig: {
-        thinkingBudget: 0,
-        includeThoughts: false,
-      },
-    })),
+
+//    customEval: new CustomEvalMetric(createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+//      thinkingConfig: {
+//        thinkingBudget: 0,
+//        includeThoughts: false,
+//      },
+//    })),
   }
 });
 

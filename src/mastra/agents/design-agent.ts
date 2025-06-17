@@ -66,6 +66,7 @@ When responding:
 Use available tools to query design patterns and best practices.`;
   },
   model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+    
     thinkingConfig: {
       thinkingBudget: 0,
       includeThoughts: false,

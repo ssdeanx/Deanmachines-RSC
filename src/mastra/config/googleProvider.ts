@@ -26,9 +26,11 @@ export function createGemini25Provider(
   const defaultOptions: GoogleGenerativeAIProviderOptions = {
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const mergedOptions: GoogleGenerativeAIProviderOptions = {
     ...defaultOptions,
     ...options,
+    responseModalities: options.responseModalities || null,
     thinkingConfig: {
       ...defaultOptions.thinkingConfig,
       includeThoughts: true,
