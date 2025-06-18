@@ -1,7 +1,6 @@
 ---
 applyTo: "src/mastra/**/*.ts"
 description: "Mastra AI Framework Guidelines for the Dean Machines RSC Project"
-tags: [mastra, ai, framework, guidelines]
 ---
 # Mastra AI Framework Guidelines
 
@@ -26,9 +25,17 @@ tags: [mastra, ai, framework, guidelines]
 
 # structure
 
-```txt
-📂mastra
-┣ 📂agents
+```bash
+src
+┣ 📂app
+┃ ┣ 📂api
+┃   ┗ 📂copilotkit
+┃      ┗ 📜route.ts # Main route Mastra -> AG-UI -> CopilotKit -> User
+┃ 📂components
+┃ ┗ 📂ui # shadcn/ui component library
+┃   📂copilotkit # CopilotKit custom component library
+┣ 📂mastra
+┃ ┣ 📂agents
 ┃ ┣ 📜analyzer-agent.ts
 ┃ ┣ 📜browser-agent.ts
 ┃ ┣ 📜code-agent.ts
@@ -57,16 +64,45 @@ tags: [mastra, ai, framework, guidelines]
 ┃ ┣ 📜environment.ts
 ┃ ┣ 📜googleProvider.ts
 ┃ ┗ 📜index.ts
+┣ 📂evals
+┃ ┣ 📜answerRelevancy.ts
+┃ ┣ 📜bias.ts
+┃ ┣ 📜completeness.ts
+┃ ┣ 📜contentSimilarity.ts
+┃ ┣ 📜contextPosition.new.ts
+┃ ┣ 📜contextPrecision.ts
+┃ ┣ 📜contextualRecall.ts
+┃ ┣ 📜customEval.ts
+┃ ┣ 📜faithfulness.ts
+┃ ┣ 📜hallucination.ts
+┃ ┣ 📜keywordCoverage.ts
+┃ ┣ 📜promptAlignment.ts
+┃ ┣ 📜summarization.ts
+┃ ┣ 📜textualDifference.ts
+┃ ┣ 📜toneConsistency.ts
+┃ ┣ 📜toxicity.ts
+┃ ┗ 📜wordInclusion.ts
+┣ 📂networks
+┃ ┗ 📜dean-machines-network.ts
 ┣ 📂tools
+┃ ┣ 📜chunker-tool.ts
+┃ ┣ 📜delegate-tools.ts
 ┃ ┣ 📜graphRAG.ts
+┃ ┣ 📜index.ts
 ┃ ┣ 📜mcp.ts
+┃ ┣ 📜mem0-tool.ts
+┃ ┣ 📜rerank-tool.ts
 ┃ ┣ 📜stock-tools.ts
 ┃ ┣ 📜vectorQueryTool.ts
 ┃ ┗ 📜weather-tool.ts
 ┣ 📂workflows
+┃ ┣ 📜code-graph-maker-advanced.ts
+┃ ┣ 📜code-graph-maker.ts
 ┃ ┗ 📜weather-workflow.ts
-┣ 📜agentMemory.ts
-┗ 📜index.ts
+┣ 📜agentMemory.ts # Memory management and persistence
+┣ 📜index.ts # Mastra entry point
+┗ 📜memory.ts # This is temporary if I want to switch to Supabase
+
 ```
 
 # Augment Guidelines for the Dean Machines RSC Project

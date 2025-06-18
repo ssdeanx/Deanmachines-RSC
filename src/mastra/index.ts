@@ -51,8 +51,12 @@ export const mastra = new Mastra({
     telemetry: {
         serviceName: "mastra",
         enabled: true,
+        sampling: {
+            type: "always_on",
+            },
         export: {
             type: "otlp",
+            endpoint: "http://localhost:4317/v1", // SigNoz local endpoint
             },
         },
         server: {
@@ -419,7 +423,7 @@ export const mastra = new Mastra({
                     runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
                     runtimeContext.set("workflow-type", "weather");
                 }
-            })
+            }),
         ]
     }
 });

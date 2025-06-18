@@ -37,7 +37,8 @@ const nextConfig: NextConfig = {
     'langsmith',
     'langsmith/vercel',
     '@copilotkit/runtime',
-    'quick-lru'
+    'quick-lru',
+    'langfuse'
   ],
   experimental: {
     optimizeCss: true,

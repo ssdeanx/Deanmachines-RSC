@@ -300,7 +300,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     - `src/mastra/agents/git-agent.ts` - Version control operations and repository management
     - `src/mastra/agents/debug-agent.ts` - Error detection and debugging assistance
     - `src/mastra/agents/documentation`
-- When the user specifies `#file:instructions #file:index.ts #file:copilotkit #file:agents`, analyze all of the specified files to understand the project structure and requirements.
+- When the user specifies `#file://../../src/mastra/index.ts`, analyze all of the specified files to understand the project structure and requirements.
 - When the user specifies `#file:rerank-tool.ts`, analyze the specified file.
 - When the user specifies `#file:mastra.prompt.md`, analyze the specified file.
 - When the user specifies `#file:vectorQueryTool.ts #file:rerank-tool.ts #file:chunker-tool.ts`, analyze all of the specified files.

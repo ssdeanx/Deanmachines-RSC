@@ -18,8 +18,11 @@
  * 
  * [EDIT: 2025-06-17] [BY: GitHub Copilot]
  */
-
+// copilot: Use ToolExecutionContext for tool execution
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { createTool, ToolExecutionContext } from '@mastra/core/tools';
+// copilot: Import necessary RuntimeContext for Tool, since we have AgentRuntimeContext
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { RuntimeContext } from '@mastra/core/di';
 import { z } from 'zod';
 import { PinoLogger } from '@mastra/loggers';
