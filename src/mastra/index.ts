@@ -3,9 +3,11 @@ import { PinoLogger } from '@mastra/loggers';
 import { weatherWorkflow } from './workflows/weather-workflow';
 import { codeGraphMakerWorkflow } from './workflows/code-graph-maker';
 import { advancedCodeGraphMakerWorkflow } from './workflows/code-graph-maker-advanced';
+import { fullStackDevelopmentWorkflow } from './workflows/full-stack-development-workflow';
+import { researchAnalysisWorkflow } from './workflows/research-analysis-workflow';
 import { agentRegistry } from './agents';
 import { registerCopilotKit } from "@mastra/agui";
-import { deanMachinesNetwork } from './networks/dean-machines-network';
+import { deanMachinesNetwork, DeanMachinesNetworkRuntimeContext } from './networks/dean-machines-network';
 import { 
   MasterAgentRuntimeContext,
   WeatherAgentRuntimeContext,
@@ -30,6 +32,7 @@ import {
   SysadminAgentRuntimeContext,
   UtilityAgentRuntimeContext
 } from './agents';
+import { LangfuseExporter } from "langfuse-vercel";
 
 
 /* * This is the main entry point for the Mastra framework, which initializes
@@ -40,23 +43,29 @@ export const mastra = new Mastra({
     workflows: {
         weatherWorkflow,
         codeGraphMakerWorkflow,
-        advancedCodeGraphMakerWorkflow
+        advancedCodeGraphMakerWorkflow,
+        fullStackDevelopmentWorkflow,
+        researchAnalysisWorkflow
     },
     networks: {deanMachinesNetwork},
     agents: agentRegistry,
     logger: new PinoLogger({
-        name: 'Mastra',
+        name: 'ai',
         level: 'info',
     }),
     telemetry: {
-        serviceName: "mastra",
+        serviceName: "ai",
         enabled: true,
         sampling: {
             type: "always_on",
             },
         export: {
-            type: "otlp",
-            endpoint: "http://localhost:4317/v1", // SigNoz local endpoint
+            type: "custom",
+            exporter: new LangfuseExporter({
+                publicKey: process.env.LANGFUSE_PUBLIC_KEY,
+                secretKey: process.env.LANGFUSE_SECRET_KEY,
+                baseUrl: process.env.LANGFUSE_HOST,
+            }),
             },
         },
         server: {
@@ -397,7 +406,7 @@ export const mastra = new Mastra({
             // Code Graph Maker Workflow - Basic
             registerCopilotKit({
                 path: "/copilotkit/codeGraphMakerWorkflow",
-                resourceId: "codeGraphMakerWorkflow",
+                resourceId: "codeGraphMaker",
                 setContext: (c, runtimeContext) => {
                     runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
                     runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
@@ -407,7 +416,7 @@ export const mastra = new Mastra({
             // Advanced Code Graph Maker Workflow
             registerCopilotKit({
                 path: "/copilotkit/advancedCodeGraphMakerWorkflow",
-                resourceId: "advancedCodeGraphMakerWorkflow",
+                resourceId: "advancedCodeGraphMaker",
                 setContext: (c, runtimeContext) => {
                     runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
                     runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
@@ -417,11 +426,48 @@ export const mastra = new Mastra({
             // Weather Workflow
             registerCopilotKit({
                 path: "/copilotkit/weatherWorkflow",
-                resourceId: "weatherWorkflow",
+                resourceId: "weather-workflow",
                 setContext: (c, runtimeContext) => {
                     runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
                     runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
                     runtimeContext.set("workflow-type", "weather");
+                }
+            }),
+            registerCopilotKit({
+                path: "/copilotkit/fullStackDevelopmentWorkflow",
+                resourceId: "fullStackDevelopment",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                    runtimeContext.set("workflow-type", "full-stack-development");
+                }
+            }),
+            registerCopilotKit({
+                path: "/copilotkit/researchAnalysisWorkflow",
+                resourceId: "research-analysis-workflow",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                    runtimeContext.set("workflow-type", "research-analysis");
+                }
+            }),
+            // Dean Machines Network - Multi-agent coordination
+            registerCopilotKit<DeanMachinesNetworkRuntimeContext>({
+                path: "/copilotkit/dean-machines-network",
+                resourceId: "dean-machines-network",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                    runtimeContext.set("task-complexity", (c.req.header("X-Task-Complexity") as "simple" | "moderate" | "complex" | "advanced" | "enterprise") || "moderate");
+                    runtimeContext.set("execution-mode", (c.req.header("X-Execution-Mode") as "single-agent" | "multi-agent" | "collaborative" | "autonomous") || "multi-agent");
+                    runtimeContext.set("priority-level", (c.req.header("X-Priority-Level") as "low" | "normal" | "high" | "urgent" | "critical") || "normal");
+                    runtimeContext.set("domain-context", c.req.header("X-Domain-Context") || "general");
+                    runtimeContext.set("preferred-agents", (c.req.header("X-Preferred-Agents") || "").split(",").filter(Boolean));
+                    runtimeContext.set("max-agents", parseInt(c.req.header("X-Max-Agents") || "3"));
+                    runtimeContext.set("routing-strategy", (c.req.header("X-Routing-Strategy") as "auto" | "manual" | "hybrid" | "intelligent") || "intelligent");
+                    runtimeContext.set("debug-mode", c.req.header("X-Debug-Mode") === "true");
+                    runtimeContext.set("trace-execution", c.req.header("X-Trace-Execution") === "true");
+                    runtimeContext.set("response-format", (c.req.header("X-Response-Format") as "detailed" | "concise" | "technical" | "business") || "detailed");
                 }
             }),
         ]

@@ -1,14 +1,15 @@
 // Import Next.js config
 import type { NextConfig } from 'next';
-
 // Import MDX config
 import createMDX from '@next/mdx';
-
 // Import remark and rehype plugins
 import remarkGfm from 'remark-gfm';
 import remarkFrontmatter from 'remark-frontmatter';
+import remarkToc from 'remark-toc';
 import rehypeSlug from 'rehype-slug';
 import rehypeHighlight from 'rehype-highlight';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import rehypePrettyCode from 'rehype-pretty-code';
 
 const nextConfig: NextConfig = {
   // Configure pageExtensions to include MDX files
@@ -38,15 +39,20 @@ const nextConfig: NextConfig = {
     'langsmith/vercel',
     '@copilotkit/runtime',
     'quick-lru',
-    'langfuse'
+    'langfuse-vercel',
+    '@mastra/agui',
+    '@inquirer/prompts'
   ],
   experimental: {
     optimizeCss: true,
     optimizePackageImports: [
       '@copilotkit/react-core',
       '@copilotkit/react-ui',
+      '@copilotkit/react-textarea',
+      '@copilotkit/react-form',
       'lucide-react',
-      'framer-motion'
+      'framer-motion',
+      '@mastra/agui'
     ]
   },
 
@@ -116,12 +122,16 @@ const withMDX = createMDX({
       remarkGfm,
       // Frontmatter support
       remarkFrontmatter,
+      // Table of contents generation
+      remarkToc
     ],
     rehypePlugins: [
       // Auto-generate heading IDs for linking
       rehypeSlug,
       // Syntax highlighting for code blocks
       rehypeHighlight,
+      rehypeAutolinkHeadings,
+      rehypePrettyCode
     ],
   },
 });

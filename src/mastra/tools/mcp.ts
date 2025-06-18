@@ -243,7 +243,14 @@ export const mcpStdio = new MCPClient({
       logger: (logMessage) => {
         logger.info(`[MCP:neo4j] ${logMessage.message}`, { level: logMessage.level });
       }
-  }
+    },
+    sequentialThinking: {
+      command: "npx",
+      args: [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    }
 //  terminalController: {
 //    command: "uvx",
 //    args: ["terminal_controller", "C:\\Users\\dm\\Documents\\deanmachines-rsc\\.next\\var"],

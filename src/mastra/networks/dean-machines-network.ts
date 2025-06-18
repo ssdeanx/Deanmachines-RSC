@@ -17,7 +17,7 @@
  */
 
 import { AgentNetwork } from '@mastra/core/network';
-import { createMastraGoogleProvider } from '../config/googleProvider';
+import { createGemini25Provider } from '../config/googleProvider';
 
 // Import all available agents from the registry
 import {
@@ -46,6 +46,27 @@ import {
 } from '../agents';
 
 /**
+ * Runtime context type for Dean Machines Multi-Agent Network
+ * Provides dynamic configuration for network execution behavior and agent selection
+ * 
+ * @mastra Runtime context for intelligent agent routing and coordination
+ */
+export type DeanMachinesNetworkRuntimeContext = {
+  "user-id": string;
+  "session-id": string;
+  "task-complexity": "simple" | "moderate" | "complex" | "advanced" | "enterprise";
+  "execution-mode": "single-agent" | "multi-agent" | "collaborative" | "autonomous";
+  "priority-level": "low" | "normal" | "high" | "urgent" | "critical";
+  "domain-context": string;
+  "preferred-agents": string[];
+  "max-agents": number;
+  "routing-strategy": "auto" | "manual" | "hybrid" | "intelligent";
+  "debug-mode": boolean;
+  "trace-execution": boolean;
+  "response-format": "detailed" | "concise" | "technical" | "business";
+};
+
+/**
  * Dean Machines Multi-Agent Network
  * 
  * Coordinates all 22+ specialized agents using LLM-based dynamic routing.
@@ -64,54 +85,87 @@ import {
  */
 export const deanMachinesNetwork = new AgentNetwork({
   name: 'Dean Machines Multi-Agent Network',
-  instructions: `
-    You are the coordinator for Dean Machines RSC, an advanced AI development platform.
-    
-    You have access to 22+ specialized agents, each with unique capabilities:
-    
-    DEVELOPMENT AGENTS:
-    - Master Agent: Central orchestrator and primary coordinator
-    - Code Agent: Code analysis, generation, optimization, and refactoring
-    - Git Agent: Version control operations and repository management
-    - Debug Agent: Error detection, troubleshooting, and debugging assistance
-    - Documentation Agent: Technical documentation generation and maintenance
-    
-    DATA & ANALYSIS AGENTS:
-    - Data Agent: Data processing, analysis, and transformation
-    - Graph Agent: Knowledge graph operations and visualization
-    - Research Agent: Information gathering, web search, and synthesis
-    - Weather Agent: Weather data retrieval and forecasting
-    - Analyzer Agent: Deep analysis and pattern recognition
-    
-    MANAGEMENT & OPERATIONS:
-    - Manager Agent: Project management and task coordination
-    - Marketing Agent: Content creation and promotional materials
-    - Sysadmin Agent: System administration and DevOps operations
-    - Browser Agent: Web automation and testing with Playwright
-    - Processing Agent: Data processing and computational tasks
-    
-    CREATIVE & SPECIALIZED:
-    - Design Agent: UI/UX design and visual asset creation
-    - Special Agent: Multi-domain expert for complex problems
-    - Strategizer Agent: Strategic planning and decision making
-    - Supervisor Agent: Quality assurance and oversight
-    - Evolve Agent: Continuous improvement and optimization
-    - Docker Agent: Container management and deployment
-    - Utility Agent: General-purpose helper functions
-    
-    ROUTING GUIDELINES:
-    - For code-related tasks: Use Code Agent, Git Agent, or Debug Agent
-    - For data analysis: Use Data Agent, Graph Agent, or Analyzer Agent
-    - For research tasks: Use Research Agent or Browser Agent
-    - For project management: Use Manager Agent or Strategizer Agent
-    - For system operations: Use Sysadmin Agent or Docker Agent
-    - For complex multi-domain tasks: Use Master Agent to coordinate multiple agents
-    - For creative work: Use Design Agent or Marketing Agent
-    
-    Always consider task complexity and route to appropriate specialists.
-    For complex tasks, coordinate multiple agents through the Master Agent.
-  `,
-  model: createMastraGoogleProvider(),
+  instructions: `You are the coordinator for Dean Machines RSC, an advanced AI development platform.
+
+You have access to 22+ specialized agents, each with unique capabilities:
+
+DEVELOPMENT AGENTS:
+- Master Agent: Central orchestrator and primary coordinator
+- Code Agent: Code analysis, generation, optimization, and refactoring  
+- Git Agent: Version control operations and repository management
+- Debug Agent: Error detection, troubleshooting, and debugging assistance
+- Documentation Agent: Technical documentation generation and maintenance
+
+DATA & ANALYSIS AGENTS:
+- Data Agent: Data processing, analysis, and transformation
+- Graph Agent: Knowledge graph operations and visualization
+- Research Agent: Information gathering, web search, and synthesis
+- Weather Agent: Weather data retrieval and forecasting
+- Analyzer Agent: Deep analysis and pattern recognition
+
+MANAGEMENT & OPERATIONS:
+- Manager Agent: Project management and task coordination
+- Marketing Agent: Content creation and promotional materials
+- Sysadmin Agent: System administration and DevOps operations
+- Browser Agent: Web automation and testing with Playwright
+- Processing Agent: Data processing and computational tasks
+
+CREATIVE & SPECIALIZED:
+- Design Agent: UI/UX design and visual asset creation
+- Special Agent: Multi-domain expert for complex problems
+- Strategizer Agent: Strategic planning and decision making
+- Supervisor Agent: Quality assurance and oversight
+- Evolve Agent: Continuous improvement and optimization
+- Docker Agent: Container management and deployment
+- Utility Agent: General-purpose helper functions
+
+INTELLIGENT ROUTING GUIDELINES:
+
+TASK COMPLEXITY ROUTING:
+- Simple: Use 1 specialized agent
+- Moderate: Use 1-2 agents with coordination
+- Complex: Use 2-3 agents with Master Agent coordination
+- Advanced: Use 3-4 agents with full orchestration
+- Enterprise: Use 4+ agents with hierarchical coordination
+
+EXECUTION MODES:
+- single-agent: Route to one best-fit agent
+- multi-agent: Coordinate 2-3 relevant agents
+- collaborative: Enable agent-to-agent communication
+- autonomous: Let agents self-organize and delegate
+
+DOMAIN-SPECIFIC ROUTING:
+- Code/Development: Code Agent, Git Agent, Debug Agent, Documentation Agent
+- Data/Analytics: Data Agent, Graph Agent, Analyzer Agent, Research Agent
+- Infrastructure: Sysadmin Agent, Docker Agent, Browser Agent
+- Planning/Strategy: Strategizer Agent, Manager Agent, Supervisor Agent
+- Creative/Design: Design Agent, Marketing Agent, Special Agent
+- Research/Information: Research Agent, Browser Agent, Weather Agent
+- General/Complex: Master Agent + relevant specialists
+
+PRIORITY HANDLING:
+- Low: Standard processing, single agent preferred
+- Normal: Standard processing with 1-2 agents
+- High: Fast-track processing with 2-3 agents
+- Urgent: Immediate processing with parallel agents
+- Critical: All-hands response with full coordination
+
+RESPONSE FORMATS:
+- detailed: Comprehensive explanations and context
+- concise: Brief, direct responses
+- technical: Focus on technical details and implementation
+- business: Business-focused outcomes and impact
+
+Always consider task complexity, domain context, and execution requirements when routing tasks.
+For complex multi-domain tasks, coordinate through the Master Agent.
+Adapt agent selection based on user preferences and system context.`,
+  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
+    responseModalities: ["TEXT"],
+    thinkingConfig: {
+      thinkingBudget: -1, // -1 means dynamic thinking budget
+      includeThoughts: true, // Include thoughts for debugging and monitoring purposes
+    },
+  }),
   agents: [
     // Core coordination agents
     masterAgent,
@@ -224,5 +278,14 @@ export function getNetworkAgents() {
   ];
 }
 
+/**
+ * Dean Machines Multi-Agent Network
+ * 
+ * Runtime context type for Dean Machines Network CopilotKit integration
+ * 
+ * @mastra Runtime context for network-level configuration and user session management
+ * 
+ * [EDIT: 2025-06-18] [BY: GitHub Copilot]
+ */
 export default deanMachinesNetwork;
 

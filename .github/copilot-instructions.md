@@ -163,7 +163,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
             // copilot: trace3
             console.log("Process complete", result);
             ```
-        - **`// copilot: trace_** - Stop tracing
+        - **`// copilot: trace_`** - Stop tracing
             ```typescript
             console.log("End of tracing");
             ```
@@ -318,6 +318,18 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     - The coding assistant MUST import agents directly from the index file (e.g., `agentRegistry`) and MUST NOT use a local `AGENT_REGISTRY` object.
     - The coding assistant MUST include `#file:supervisor-agent.ts`.
     - The coding assistant MUST fetch the relevant documentation URLs to understand the correct Mastra patterns before creating the file.
+- When the user specifies `#file:instructions` in conjunction with `#fetch https://mastra.ai/en/reference/networks/agent-network`, analyze both the local instructions file and the fetched documentation to understand the project's agent architecture and how it can be enhanced using Mastra's `AgentNetwork` patterns.
+- When analyzing `#file:instructions` in conjunction with `#fetch https://mastra.ai/en/reference/networks/agent-network`, note that Mastra's `AgentNetwork` is experimental and provides LLM-based routing for dynamic agent selection.
+- When analyzing `#file:instructions` in conjunction with `#fetch https://mastra.ai/en/reference/networks/agent-network`, consider the trade-offs between using `AgentNetwork` (dynamic routing) and predefined workflows (explicit control).
+- When debugging agent execution issues, especially when the "Agent not found" error occurs, ensure that the agent is correctly imported and registered within the agent network configuration.
+- **IMPORTANT:** Ensure consistent naming between the agent's `name` property in the agent definition (e.g., `master-agent.ts`) and how the network references the agent when executing. Use title case with spaces (e.g., "Master Agent").
+- Use `#fetch https://mastra.ai/en/reference/workflows/workflow`, `#fetch https://mastra.ai/en/reference/workflows/map`, `#fetch https://mastra.ai/en/reference/workflows/commit`, `#fetch https://mastra.ai/en/reference/workflows/create-run`, `#fetch https://mastra.ai/en/reference/workflows/snapshots`, `#fetch https://mastra.ai/en/reference/workflows/watch`, `#fetch https://mastra.ai/en/reference/workflows/stream`, and `#fetch https://mastra.ai/en/reference/workflows/execute` when working with workflows.
+- Use `#fetch https://mastra.ai/en/docs/workflows/overview` when working with workflows.
+- When the user specifies `#file:mastraWorkflows.prompt.md` and asks for help with workflows, fetch the key documentation to understand the current workflow patterns and requirements.
+- When the user specifies `#file:research-analysis-workflow.ts` and asks to fix it, fetch the workflow documentation to understand the correct patterns. The following URLs should be fetched: `https://mastra.ai/en/reference/workflows/map`, `https://mastra.ai/en/reference/workflows/commit`, `https://mastra.ai/en/reference/workflows/create-run`, `https://mastra.ai/en/reference/workflows/snapshots`, `https://mastra.ai/en/reference/workflows/watch`, `https://mastra.ai/en/reference/workflows/stream`, `https://mastra.ai/en/reference/workflows/execute`, `https://mastra.ai/en/reference/workflows/resume`, `https://mastra.ai/en/reference/workflows/start`, `https://mastra.ai/en/reference/workflows/step`, `https://mastra.ai/en/reference/workflows/then`, `https://mastra.ai/en/reference/workflows/parallel`, `https://mastra.ai/en/reference/workflows/branch`, `https://mastra.ai/en/reference/workflows/dowhile`, `https://mastra.ai/en/reference/workflows/dountil`, `https://mastra.ai/en/reference/workflows/foreach`.
+- When improving a workflow, check the current errors in the workflow file first, then improve it by removing the unnecessary agents and following the patterns from the documentation and master agents.
+- When improving a workflow, the research agent can browse the web, so the documentation agent is not needed.
+- When improving a workflow, processing agent and master agent should be incorporated to finalize the workflow.
 
 ## CODING STANDARDS
 
@@ -435,41 +447,4 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - If asked to create `delegate-tools.ts`, fetch the relevant documentation URLs to understand the correct Mastra patterns before creating the file.
 - **IMPORTANT**: When creating `delegate-tools.ts`, the coding assistant MUST use tool runtime context, not agent runtime context.
 - **IMPORTANT**: When creating `delegate-tools.ts`, the coding assistant MUST import agents directly from the index file (e.g., `agentRegistry`) and MUST NOT use a local `AGENT_REGISTRY` object.
-- **IMPORTANT**: When creating `delegate-tools.ts`, the coding assistant MUST NOT include master agent, but include `#file:supervisor-agent.ts`.
-- **IMPORTANT**: When creating `delegate-tools.ts`, the coding assistant MUST use both tool runtime context and agent runtime context.
-- **IMPORTANT**: When creating `delegate-tools.ts`, the coding assistant MUST import `RuntimeContext` from `@mastra/core/di`.
-- When asked to ensure all tool runtime contexts are exported in `index.ts`, only add the exports, and do not modify any other files unless instructed.
-- When asked to export all tool runtime contexts in `#file:index.ts`, use semantic search to find all `*RuntimeContext` types in the tools directory and export them.
-- The coding assistant must not modify any files when asked to ensure all tool runtime contexts are exported in `index.ts`, unless instructed.
-- **IMPORTANT**: The coding assistant MUST focus on fixing `#file:delegate-tools.ts` and ensuring it imports and uses its imports like all other tools.
-- When analyzing `#file:rerank-tool.ts`, `#file:graphRAG.ts`, and `#file:vectorQueryTool.ts`, analyze the files to understand the correct tool runtime context pattern, then fix `#file:delegate-tools.ts` to follow the same pattern.
-- **IMPORTANT**: If `delegate-tools.ts` can use both agent and tool runtime contexts, it MUST do so.
-- **IMPORTANT**: The current agent being delegated to should NOT be part of the tool runtime context.
-
-## WORKFLOW & RELEASE RULES
-
-- Ensure all workflows are correctly exported and integrated for use with CopilotKit and UI components.
-- Verify that new workflows or endpoints are registered and exposed correctly.
-- Use Dockerfiles that don't expose hardcoded credentials or run as root.
-- Neo4j passwords and other secrets must not be hardcoded in Dockerfiles. They should be injected at runtime.
-- Preserve all imports and functionality when modifying existing code. Do not break existing working code.
-- **IMPORTANT:** If the `CODECOV_TOKEN` secret has been newly configured in GitHub repository secrets, a new workflow run needs to be triggered to pick up the secret. This can be done by pushing a small change or manually re-running the workflow in the GitHub Actions UI.
-
-## DEBUGGING
-
-- Check for errors in referenced files (`Actions.tsx`, `InteractiveCodeGraph.tsx`, `page.tsx`) to ensure compatibility with exported workflows.
-- Verify consistency of OpenAPI paths (e.g., `/api/mcp/{serverId}/tools/{toolId}/execute`, `/api/mcp/{serverId}/tools`) with the API structure.
-- When debugging `Actions.tsx`, ensure it is using the agent context from the layout to switch endpoints using `setCurrentEndpoint('${MASTRA_URL}/copilotkit/research');`.
-- When analyzing GitHub repositories, ensure the repository is publicly accessible and the path (`owner/repo`) is correct. If access issues arise, inform the user.
-- When debugging Mastra configurations, remember that `apiRoutes` is not a valid property. Instead, create separate Next.js API route files for each CopilotKit endpoint and use `registerCopilotKit` in individual API route handlers.
-- When debugging, use semantic search to thoroughly check files before drawing conclusions. Avoid assumptions and guessing.
-- **Advanced Debugging** now includes systematic mental model application
-- **Interactive Debugging** uses multiple mental models for comprehensive analysis
-- After modifying any file, ALWAYS check for errors.
-
-## FILE NAMING CONVENTIONS
-
-- Follow consistent naming conventions for workflow files (e.g., `code-graph-maker.ts`, `code-graph-maker-advanced.ts`).
-- Use `#file://(playground)` to reference files within the playground directory.
-- Eval metric files in `src/mastra/evals` should be named according to the metric they implement (e.g., `wordInclusion.ts`, `toxicity.ts`, `customEval.ts`).
-- New tool files should
+- **IMPORTANT**: When creating `delegate-tools.ts`, the coding assistant MUST NOT include master agent,

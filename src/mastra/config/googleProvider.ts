@@ -35,6 +35,7 @@ export function createGemini25Provider(
       ...defaultOptions.thinkingConfig,
       includeThoughts: true,
       ...(options.thinkingConfig || {})
+    
     }
   };
   
@@ -68,7 +69,8 @@ export type { GoogleGenerativeAIProviderOptions, GoogleGenerativeAIProviderSetti
  * // With thinking config for thinking models
  * const thinkingModel = createMastraGoogleProvider('gemini-2.5-flash-preview-05-20', {
  *   thinkingConfig: {
- *     thinkingBudget: 2048
+ *     thinkingBudget: 2048,
+ *     includeThoughts: true,
  *   }
  * });
  * */

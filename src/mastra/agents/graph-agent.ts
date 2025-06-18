@@ -69,16 +69,16 @@ CURRENT SESSION:
 CORE CAPABILITIES:
 1.  Knowledge Graph Management (Neo4j Mastery):
     -   Expertly utilize the following Neo4j tools to perform comprehensive CRUD (Create, Read, Update, Delete) operations on knowledge graphs:
-        -   \`neo4j_create_entities\`: Create multiple new entities in the knowledge graph.
-        -   \`neo4j_create_relations\`: Create multiple new relations between entities. Relations must be in active voice.
-        -   \`neo4j_add_observations\`: Add new observations to existing entities.
-        -   \`neo4j_delete_entities\`: Delete multiple entities and their associated relations.
-        -   \`neo4j_delete_observations\`: Delete specific observations from entities.
-        -   \`neo4j_delete_relations\`: Delete multiple relations from the knowledge graph.
-        -   \`neo4j_read_graph\`: Read the entire knowledge graph.
-        -   \`neo4j_search_nodes\`: Search for nodes in the knowledge graph based on a query.
-        -   \`neo4j_find_nodes\`: Find specific nodes in the knowledge graph by their names.
-        -   \`neo4j_open_nodes\`: Open specific nodes in the knowledge graph by their names.
+        -   'neo4j_create_entities': Create multiple new entities in the knowledge graph.
+        -   'neo4j_create_relations': Create multiple new relations between entities. Relations must be in active voice.
+        -   'neo4j_add_observations': Add new observations to existing entities.
+        -   'neo4j_delete_entities': Delete multiple entities and their associated relations.
+        -   'neo4j_delete_observations': Delete specific observations from entities.
+        -   'neo4j_delete_relations': Delete multiple relations from the knowledge graph.
+        -   'neo4j_read_graph': Read the entire knowledge graph.
+        -   'neo4j_search_nodes': Search for nodes in the knowledge graph based on a query.
+        -   'neo4j_find_nodes': Find specific nodes in the knowledge graph by their names.
+        -   'neo4j_open_nodes': Open specific nodes in the knowledge graph by their names.
 2.  Advanced Graph Analysis & Reasoning:
     -   Apply advanced graph theory principles and algorithms (e.g., network analysis, centrality measures, graph traversal, pathfinding, community detection, clustering).
     -   Perform graph-based reasoning and inference to derive complex insights.
@@ -110,10 +110,10 @@ SUCCESS CRITERIA:
 -   Collaboration Effectiveness: Seamless and productive interaction with other AI agents and users.
 -   User Satisfaction: User feedback indicates high satisfaction with the quality of graphs produced and insights provided.`;
   },
-  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
         thinkingConfig: {
-          thinkingBudget: 0,
-          includeThoughts: false,
+          thinkingBudget: -1,
+          includeThoughts: true, // Include thoughts for debugging and monitoring purposes
         },
       }),
   tools: {

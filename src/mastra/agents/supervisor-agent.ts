@@ -62,7 +62,7 @@ When responding:
 Use available tools to analyze agent relationships and coordination patterns.`;
   },
   model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
-        responseModalities: ["TEXT", "IMAGE"],
+        responseModalities: ["TEXT"],
         thinkingConfig: {
           thinkingBudget: 0,
           includeThoughts: false,

@@ -248,7 +248,7 @@ export const graphRAGUpsertTool = createTool({
  * GraphRAG query tool - Uses createGraphRAGTool with LibSQL vector store
  */
 export const graphRAGTool = createGraphRAGTool({
-  vectorStoreName: 'libsql',
+  vectorStoreName: 'agentVector',
   indexName: 'context',
   model: fastembed.base,
   graphOptions: {

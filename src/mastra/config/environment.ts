@@ -35,6 +35,9 @@ const envSchema = z.object({
   SUPABASE_URL: z.string().min(1, "Supabase URL is required"),
   MEM0_API_KEY: z.string().min(1, "Mem0 API key is required"),
   GITHUB_TOKEN: z.string().min(1, "GitHub API key is required"),
+  LANGFUSE_PUBLIC_KEY: z.string().min(1, "Langfuse public key is required"),
+  LANGFUSE_SECRET_KEY: z.string().min(1, "Langfuse secret key is required"),
+  LANGFUSE_HOST: z.string().min(1, "Langfuse host is required"),
 });
 // Validate environment variables
 const validateEnv = () => {

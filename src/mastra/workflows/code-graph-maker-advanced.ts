@@ -29,10 +29,10 @@ const advancedCodeGraphInputSchema = z.object({
   githubRepoUrl: z.string().url({ message: "Invalid GitHub repository URL" }),
   options: z.object({
     analysisDepth: z.enum(['basic', 'detailed', 'comprehensive']).default('detailed'),
-    graphType: z.enum(['dependency', 'call-graph', 'module-hierarchy', 'all']).default('dependency'),
+    graphType: z.enum(['dependency', 'call-graph', 'module-hierarchy', 'all']).default('all'),
     fileTypes: z.array(z.string()).optional(),
     includeTests: z.boolean().default(false),
-    visualStyle: z.enum(['hierarchical', 'circular', 'force-directed', 'tree']).default('hierarchical'),
+    visualStyle: z.enum(['hierarchical', 'circular', 'force-directed', 'tree']).default('circular'),
   }).optional().default({}),
 });
 
@@ -101,7 +101,7 @@ const initializeAdvancedWorkflowStep = createStep({
           content: `Analyze this repository analysis request and determine the optimal processing strategy:
             Repository: ${inputData.githubRepoUrl}
             Analysis Depth: ${inputData.options?.analysisDepth || 'detailed'}
-            Graph Type: ${inputData.options?.graphType || 'dependency'}
+            Graph Type: ${inputData.options?.graphType || 'all'}
             File Types: ${inputData.options?.fileTypes?.join(', ') || 'all'}
             
             Return a strategy recommendation including processing order, parallel vs sequential steps, and expected complexity.` 

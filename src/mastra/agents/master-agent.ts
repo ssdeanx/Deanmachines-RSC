@@ -84,7 +84,7 @@ const masterAgentConfigSchema = z.object({
  * @mastra Enhanced master agent with input/output validation
  */
 export const masterAgent = new Agent({
-  name: "masterAgent",
+  name: "Master Agent",
   instructions: async ({ runtimeContext }) => {
     const userId = runtimeContext?.get("user-id") || "anonymous";
     const sessionId = runtimeContext?.get("session-id") || "default";
@@ -123,11 +123,11 @@ SUCCESS CRITERIA:
 - User Satisfaction: The user's problem is resolved, their question is answered, and they feel effectively supported.`;
   },
 
-  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
-    responseModalities: ["TEXT", "IMAGE"],
+  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17',  {
+    responseModalities: ["TEXT"],
     thinkingConfig: {
-      thinkingBudget: 0,
-      includeThoughts: false,
+      thinkingBudget: -1, // -1 means dynamic thinking budget
+      includeThoughts: true, // Include thoughts for debugging and monitoring purposes
     },
   }),
   tools: {

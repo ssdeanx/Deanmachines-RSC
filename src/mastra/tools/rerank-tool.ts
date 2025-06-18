@@ -2,7 +2,7 @@
 import { createTool, ToolExecutionContext } from '@mastra/core/tools';
 import { RuntimeContext } from '@mastra/core/di';
 import { rerank, type RerankResult } from '@mastra/rag';
-import { google } from '@ai-sdk/google';
+import { createGemini25Provider } from '../config/googleProvider';
 import { CoreMessage, UIMessage } from 'ai';
 import { agentMemory } from '../agentMemory';
 import { PinoLogger } from '@mastra/loggers';
@@ -16,7 +16,7 @@ const logger = new PinoLogger({ name: 'RerankTool', level: 'info' });
 export type RerankRuntimeContext = {
   'user-id'?: string;
   'session-id'?: string;
-  'model-preference'?: 'gemini-2.0-flash-exp' | 'gemini-2.5-preview-05-20' | 'gemini-2.0-flash' | 'gemini-2.0-flash-lite';
+  'model-preference'?: 'gemini-2.0-flash-exp' | 'gemini-2.5-preview-05-20' | 'gemini-2.0-flash' | 'gemini-2.0-flash-lite' | 'gemini-2.5-flash-lite-preview-06-17';
   'semantic-weight'?: number;
   'vector-weight'?: number;
   'position-weight'?: number;
@@ -72,7 +72,7 @@ export const rerankTool = createTool({
       const validatedInput = rerankInputSchema.parse(input);      // Get runtime context values
       const userId = runtimeContext?.get('user-id') || 'anonymous';
       const sessionId = runtimeContext?.get('session-id') || 'default';
-      const modelPreference = (runtimeContext?.get('model-preference') as string) || 'gemini-2.0-flash-exp';
+      const modelPreference = (runtimeContext?.get('model-preference') as string) || 'gemini-2.5-flash-lite-preview-06-17';
       const semanticWeight = Number(runtimeContext?.get('semantic-weight')) || validatedInput.semanticWeight;
       const vectorWeight = Number(runtimeContext?.get('vector-weight')) || validatedInput.vectorWeight;
       const positionWeight = Number(runtimeContext?.get('position-weight')) || validatedInput.positionWeight;
@@ -106,7 +106,7 @@ export const rerankTool = createTool({
 
       // If we have more results than needed, apply reranking
       if (initialResults.messages.length > validatedInput.finalK) {
-        const model = google(modelPreference);
+        const model = createGemini25Provider(modelPreference);
 
         // Convert memory results to the format expected by rerank function
         const queryResults = initialResults.messages.map((msg, index) => ({
@@ -281,8 +281,14 @@ export async function rerankSearchMessages(
 
     // Use Mastra's rerank function with Google model for better relevance
     if (initialResults.messages.length > finalK) {
-      const model = google('gemini-2.0-flash-exp');
-
+      const model = createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
+        responseModalities: ["TEXT"],
+        thinkingConfig: {
+          thinkingBudget: -1, // -1 means dynamic thinking budget
+          includeThoughts: true, // Include thoughts for debugging and monitoring purposes
+        },
+      });
+      
       // Convert memory results to the format expected by rerank function
       const queryResults = initialResults.messages.map((msg, index) => ({
         id: `msg_${index}`,
