@@ -1,13 +1,13 @@
 import { Agent } from "@mastra/core/agent";
 import { agentMemory } from '../agentMemory';
 import { graphRAGTool } from '../tools/graphRAG';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
 import { mem0RememberTool, mem0MemorizeTool } from "../tools/mem0-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { weatherTool } from "../tools/weather-tool";
 import { stockPriceTool } from "../tools/stock-tools";
 import { chunkerTool } from "../tools/chunker-tool";
-import { rerankTool } from "../tools/rerank-tool";
 import {
   ToneConsistencyMetric,
   KeywordCoverageMetric,
@@ -20,6 +20,7 @@ import { mcp } from '../tools/mcp';
 import { z } from 'zod';
 //import { CustomEvalMetric } from "../evals/customEval";
 import { WordInclusionMetric } from "../evals/wordInclusion";
+
 
 /**
  * Runtime context type for the Master Agent
@@ -72,7 +73,8 @@ const masterAgentConfigSchema = z.object({
   model: z.any().describe('Model configuration for the agent'),
   evals: z.record(z.any()).describe('Evaluation metrics for the agent'),
   tools: z.record(z.any()).describe('Available tools for the agent'),
-  memory: z.any().describe('Agent memory configuration')
+  memory: z.any().describe('Agent memory configuration'),
+  workflows: z.record(z.any()).describe('Available workflows for the agent')
 }).strict();
 
 /**
@@ -134,8 +136,6 @@ SUCCESS CRITERIA:
     graphRAGTool,
     mem0RememberTool,
     mem0MemorizeTool,
-    hybridVectorSearchTool,
-    rerankTool,
     chunkerTool,
     vectorQueryTool,
     weatherTool,
@@ -156,19 +156,6 @@ SUCCESS CRITERIA:
       'conversation', 'interaction', 'dialogue', 'exchange', 'communication', 'feedback', 'evaluation',
       'assessment', 'grading', 'score', 'grade', 'mark', 'point', 'rating', 'rank', 'position', 'order',
       'sequence', 'chronology', 'timeline', 'history', 'past', 'present', 'future', 'time', 'date', 'day',
-      'week', 'month', 'year', 'decade', 'century', 'millennium', 'age', 'period', 'duration', 'interval',
-      'window', 'span', 'extent', 'scope', 'boundary', 'limit', 'bound', 'fence', 'barrier', 'wall', 'barrier',
-      'obstacle', 'hindrance', 'impediment', 'blocker', 'hurdle', 'challenge', 'obstacle', 'challenge', 'problem',
-      'issue', 'task', 'job', 'duty', 'responsibility', 'accountability', 'obligation', 'commitment',
-      'expectation', 'requirement', 'specification', 'standard', 'criteria', 'principle', 'rule', 'law',
-      'regulation', 'policy', 'procedure', 'protocol', 'format', 'template', 'scheme', 'design', 'pattern',
-      'model', 'framework', 'tool', 'utility', 'resource', 'asset', 'inventory', 'store', 'database',
-      'repository', 'cache', 'memory', 'buffer', 'pool', 'pool', 'well', 'source', 'origin', 'root', 'base',
-      'foundation', 'core', 'essence', 'heart', 'soul', 'spirit', 'mind', 'intelligence', 'reason', 'logic',
-      'judgment', 'decision', 'choice', 'option', 'alternative', 'variety', 'diversity', 'richness', 'complexity',
-      'depth', 'breadth', 'range', 'scope', 'extent', 'reach', 'impact', 'influence', 'power', 'strength',
-      'weakness', 'vulnerability', 'sensitivity', 'resilience', 'adaptability', 'flexibility', 'agility',
-      'nimbleness', 'swiftness', 'speed', 'velocity', 'dynamics', 'motion', 'flow', 'movement', 'change',
       'transformation', 'evolution', 'progress', 'development']),
     contentSimilarity: new ContentSimilarityMetric(),
     textualDifference: new TextualDifferenceMetric(),
@@ -179,7 +166,8 @@ SUCCESS CRITERIA:
 //        includeThoughts: false,
 //      },
 //    })),
-  }
+  },
+
 });
 
 /**

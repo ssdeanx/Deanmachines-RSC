@@ -13,9 +13,10 @@ import { z } from 'zod';
 import { generateId } from 'ai';
 import { PinoLogger } from '@mastra/loggers';
 import { RuntimeContext } from "@mastra/core/runtime-context";
-import { fastembed } from '@mastra/fastembed';
+
 import { agentVector } from '../agentMemory';
 import { embedMany } from 'ai';
+import { google } from '@ai-sdk/google';
 
 const logger = new PinoLogger({ name: 'GraphRAGTool' });
 
@@ -169,7 +170,7 @@ export const graphRAGUpsertTool = createTool({
       // Create embeddings
       const chunkTexts = chunks.map(chunk => chunk.text);
       const { embeddings } = await embedMany({
-        model: fastembed.base,
+        model: google.textEmbeddingModel('gemini-embedding-exp-03-07'),
         values: chunkTexts
       });
 
@@ -178,7 +179,7 @@ export const graphRAGUpsertTool = createTool({
         try {
           await agentVector.createIndex({
             indexName: validatedInput.indexName,
-            dimension: 768 // fastembed.base dimension
+            dimension: 1536 // fastembed.base dimension
           });
           logger.info('Index created or already exists', { indexName: validatedInput.indexName });
         } catch (error) {
@@ -250,9 +251,9 @@ export const graphRAGUpsertTool = createTool({
 export const graphRAGTool = createGraphRAGTool({
   vectorStoreName: 'agentVector',
   indexName: 'context',
-  model: fastembed.base,
+  model: google.textEmbeddingModel('gemini-embedding-exp-03-07'),
   graphOptions: {
-    dimension: 768,
+    dimension: 1536,
     threshold: 0.7
   }
 });
@@ -387,7 +388,7 @@ graphRAGRuntimeContext.set("indexName", "context");
 graphRAGRuntimeContext.set("topK", 10);
 graphRAGRuntimeContext.set("threshold", 0.7);
 graphRAGRuntimeContext.set("minScore", 0.0);
-graphRAGRuntimeContext.set("dimension", 768);
+graphRAGRuntimeContext.set("dimension", 1536);
 graphRAGRuntimeContext.set("category", "document");
 graphRAGRuntimeContext.set("debug", false);
 

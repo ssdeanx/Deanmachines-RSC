@@ -1,5 +1,6 @@
 import { Mastra } from '@mastra/core/mastra';
 import { PinoLogger } from '@mastra/loggers';
+import { env } from "./config/environment";
 import { weatherWorkflow } from './workflows/weather-workflow';
 import { codeGraphMakerWorkflow } from './workflows/code-graph-maker';
 import { advancedCodeGraphMakerWorkflow } from './workflows/code-graph-maker-advanced';
@@ -51,7 +52,7 @@ export const mastra = new Mastra({
     agents: agentRegistry,
     logger: new PinoLogger({
         name: 'ai',
-        level: 'info',
+        level: env.LOG_LEVEL,
     }),
     telemetry: {
         serviceName: "ai",

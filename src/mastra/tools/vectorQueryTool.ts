@@ -1,4 +1,24 @@
-import { fastembed } from '@mastra/fastembed';
+/**
+ * Vector Query Tools for Dean Machines RSC
+ * 
+ * This module provides tools for querying vector stores with semantic search,
+ * hybrid filtering, and metadata search. It includes a basic vector query tool,
+ * an enhanced tool that integrates with agent memory, and a hybrid search tool
+ * that combines semantic and metadata filtering.
+ * 
+ * Key Features:
+ * - Semantic search using embeddings
+ * - Hybrid filtering based on metadata
+ * - Integration with agent memory for context-aware search
+ * - Runtime context support for personalized search preferences
+ * - Comprehensive validation and error handling
+ * 
+ * @author SSD
+ * @date 2025-06-18
+ * @version 1.0.0
+ * 
+ * [EDIT: 2025-06-18] [BY: SSD]
+ */
 import { createVectorQueryTool } from "@mastra/rag";
 import { createTool, ToolExecutionContext } from '@mastra/core/tools';
 import { RuntimeContext } from '@mastra/core/di';
@@ -55,7 +75,7 @@ const vectorQueryOutputSchema = z.object({
 export const vectorQueryTool = createVectorQueryTool({
   vectorStoreName: "agentVector",
   indexName: "context", 
-  model: fastembed.base,
+  model: google.textEmbeddingModel('gemini-embedding-exp-03-07'),
   enableFilter: true,
   description: "Search for semantically similar content in the vector store using embeddings. Supports filtering, ranking, and context retrieval."
 });

@@ -13,6 +13,30 @@ const logger = new PinoLogger({ name: 'evolveAgent', level: 'info' });
 logger.info('Initializing evolveAgent');
 
 /**
+ * Runtime context for the Evolve Agent
+ * Stores evolution preferences, learning configurations, and improvement tracking
+ * 
+ * @mastra EvolveAgent runtime context interface
+ * [EDIT: 2025-06-18] [BY: SSD]
+ */
+export type EvolveAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Evolution target focus */
+  "evolution-target": "performance" | "capabilities" | "efficiency" | "accuracy" | "adaptability";
+  /** Learning approach preference */
+  "learning-approach": "incremental" | "experimental" | "data-driven" | "feedback-based" | "hybrid";
+  /** Improvement scope */
+  "improvement-scope": "individual" | "team" | "system" | "network" | "platform";
+  /** Change tolerance level */
+  "change-tolerance": "conservative" | "moderate" | "progressive" | "revolutionary";
+  /** Success measurement criteria */
+  "success-criteria": string;
+};
+
+/**
  * Data agent for data analysis, processing, and insights generation
  * Specializes in data manipulation, statistical analysis, and visualization
  */
@@ -70,27 +94,3 @@ Use available tools for data querying, graph analysis, and financial data.`;
   },
   memory: agentMemory
 });
-
-/**
- * Runtime context for the Evolve Agent
- * Stores evolution preferences, learning configurations, and improvement tracking
- * 
- * @mastra EvolveAgent runtime context interface
- * [EDIT: 2025-06-14] [BY: GitHub Copilot]
- */
-export type EvolveAgentRuntimeContext = {
-  /** Unique identifier for the user */
-  "user-id": string;
-  /** Unique identifier for the session */
-  "session-id": string;
-  /** Evolution target focus */
-  "evolution-target": "performance" | "capabilities" | "efficiency" | "accuracy" | "adaptability";
-  /** Learning approach preference */
-  "learning-approach": "incremental" | "experimental" | "data-driven" | "feedback-based" | "hybrid";
-  /** Improvement scope */
-  "improvement-scope": "individual" | "team" | "system" | "network" | "platform";
-  /** Change tolerance level */
-  "change-tolerance": "conservative" | "moderate" | "progressive" | "revolutionary";
-  /** Success measurement criteria */
-  "success-criteria": string;
-};

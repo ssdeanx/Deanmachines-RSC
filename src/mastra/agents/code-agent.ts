@@ -1,4 +1,5 @@
 import { Agent } from "@mastra/core/agent";
+import { z } from "zod";
 import { agentMemory } from '../agentMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
@@ -8,6 +9,7 @@ import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
 import { mem0RememberTool, mem0MemorizeTool } from "../tools/mem0-tool";
+
 /**
  * Runtime context type for the Code Agent
  * Stores development-specific context for code analysis and generation
@@ -33,6 +35,55 @@ export type CodeAgentRuntimeContext = {
   /** Current repository context */
   "repo-context": string;
 };
+
+export const CodeAgentInputSchema = z.object({
+  message: z.string().min(1, "Message cannot be empty"),
+  context: z.string().optional(),
+  codeSnippet: z.string().optional(),
+  language: z.string().optional(),
+  framework: z.string().optional(),
+  analysisType: z.enum(["review", "debug", "optimize", "generate", "refactor"]).optional(),
+}).strict();
+
+export const CodeAgentOutputSchema = z.object({
+  response: z.string(),
+  codeAnalysis: z.object({
+    issues: z.array(z.string()).optional(),
+    suggestions: z.array(z.string()).optional(),
+    optimizations: z.array(z.string()).optional(),
+    securityConcerns: z.array(z.string()).optional(),
+  }).optional(),
+  generatedCode: z.string().optional(),
+  metadata: z.object({
+    language: z.string().optional(),
+    framework: z.string().optional(),
+    qualityScore: z.number().min(0).max(100).optional(),
+    performanceScore: z.number().min(0).max(100).optional(),
+  }).optional(),
+}).strict();
+
+/**
+ * Enhanced Code Agent configuration with Zod validation
+ * Prevents ZodNull errors and ensures type safety
+ */
+const codeAgentConfigSchema = z.object({
+  name: z.string().min(1).describe('Agent name identifier'),
+  instructions: z.string().describe('Detailed instructions for the agent'),
+  runtimeContext: z.object({
+    'user-id': z.string().describe('User identifier'),
+    'session-id': z.string().describe('Session identifier'),
+    'language': z.string().describe('Programming language'),
+    'framework': z.string().describe('Project framework'),
+    'quality-level': z.enum(['strict', 'standard', 'relaxed']).describe('Code quality standard'),
+    'optimize-performance': z.boolean().describe('Performance optimization flag'),
+    'security-scan': z.boolean().describe('Security scanning flag'),
+    'repo-context': z.string().describe('Repository context')
+  }).describe('Runtime context for the agent'),
+  model: z.any().describe('Model configuration for the agent'),
+  tools: z.record(z.any()).describe('Available tools for the agent'),
+  memory: z.any().describe('Agent memory configuration'),
+  workflows: z.record(z.any()).describe('Available workflows for the agent')
+}).strict();
 
 const logger = new PinoLogger({ name: 'codeAgent', level: 'info' });
 logger.info('Initializing codeAgent');
@@ -117,3 +168,51 @@ Success Criteria:
   },
   memory: agentMemory
 });
+
+/**
+ * Validate input data against code agent schema
+ * @param input - Raw input data to validate
+ * @returns Validated input data
+ * @throws ZodError if validation fails
+ */
+export function validateCodeAgentInput(input: unknown): z.infer<typeof CodeAgentInputSchema> {
+  try {
+    return CodeAgentInputSchema.parse(input);
+  } catch (error) {
+    logger.error(`Code agent input validation failed: ${error}`);
+    throw error;
+  }
+}
+
+/**
+ * Validate output data against code agent schema
+ * @param output - Raw output data to validate
+ * @returns Validated output data
+ * @throws ZodError if validation fails
+ */
+export function validateCodeAgentOutput(output: unknown): z.infer<typeof CodeAgentOutputSchema> {
+  try {
+    return CodeAgentOutputSchema.parse(output);
+  } catch (error) {
+    logger.error(`Code agent output validation failed: ${error}`);
+    throw error;
+  }
+}
+
+/**
+ * Validate config data against code agent schema
+ * @param config - Raw config data to validate
+ * @returns Validated config data
+ * @throws ZodError if validation fails
+ */
+export function validateCodeAgentConfig(config: unknown): z.infer<typeof codeAgentConfigSchema> {
+  try {
+    return codeAgentConfigSchema.parse(config);
+  } catch (error) {
+    logger.error(`Code agent config validation failed: ${error}`);
+    throw error;
+  }
+}
+
+// Export schemas for use in other parts of the application
+export { codeAgentConfigSchema };

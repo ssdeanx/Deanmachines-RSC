@@ -249,8 +249,43 @@ export const mcpStdio = new MCPClient({
       args: [
         "-y",
         "@modelcontextprotocol/server-sequential-thinking"
-      ]
-    }
+      ],
+      timeout: 75000,
+      enableServerLogs: true,
+      logger: (logMessage) => {
+        logger.info(`[MCP:sequentialThinking] ${logMessage.message}`, { level: logMessage.level });
+      }
+    },
+    tavily: {
+      command: "npx",
+      args: [
+        "-y",
+        "tavily-mcp@0.2.4"
+      ],
+      env: {
+        TAVILY_API_KEY: process.env.TAVILY_API_KEY! || ""
+      },
+      timeout: 75000,
+      enableServerLogs: true,
+      logger: (logMessage) => {
+        logger.info(`[MCP:tavily] ${logMessage.message}`, { level: logMessage.level });
+      }
+    },
+    nodeCodeSandbox: {
+        command: "cmd",
+        args: ["/c", "npx", "-y", "node-code-sandbox-mcp"],
+        env: {
+          "FILES_DIR": "C:\\Users\\dm\\Documents\\deanmachines-rsc\\data",
+          "SANDBOX_MEMORY_LIMIT": "4g",
+          "SANDBOX_DISK_LIMIT": "2g",
+          "SANDBOX_CPU_LIMIT": "0.75"
+        },
+        timeout: 75000,
+        enableServerLogs: true,
+        logger: (logMessage) => {
+          logger.info(`[MCP:nodeCodeSandbox] ${logMessage.message}`, { level: logMessage.level });
+      }
+      },
 //  terminalController: {
 //    command: "uvx",
 //    args: ["terminal_controller", "C:\\Users\\dm\\Documents\\deanmachines-rsc\\.next\\var"],
@@ -430,7 +465,8 @@ export const mcp = {  /**
    * Get the appropriate client for a server
    */
   getClientForServer(server: string) {
-    const stdioServers = ['filesystem', 'git', 'time', 'fetch', 'puppeteer', 'github', 'memoryGraph', 'ddgsearch', 'neo4j'];
+    const stdioServers = ['filesystem', 'git', 'time', 'fetch', 'puppeteer',
+      'github', 'memoryGraph', 'ddgsearch', 'neo4j', 'tavily', 'nodeCodeSandbox'];
 
 
     if (stdioServers.includes(server)) {

@@ -2,8 +2,8 @@ import { Memory } from "@mastra/memory";
 import { PostgresStore, PgVector } from "@mastra/pg";
 import { PinoLogger } from "@mastra/loggers";
 import { env } from "./config/environment";
-import { fastembed } from '@mastra/fastembed';
-
+import { google } from "@ai-sdk/google";
+import { UIMessage } from 'ai';
 // Initialize logger for memory operations
 const logger = new PinoLogger({ level: env.LOG_LEVEL });
 
@@ -21,7 +21,7 @@ export const memory = new Memory({
     connectionString,
   }),
   vector: new PgVector({ connectionString }),
-  embedder: fastembed.base,
+  embedder: google.textEmbeddingModel('gemini-embedding-exp-03-07'),
   options: {
     lastMessages: 10,
     semanticRecall: {

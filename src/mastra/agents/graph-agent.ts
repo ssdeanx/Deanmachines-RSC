@@ -1,4 +1,5 @@
 import { Agent } from "@mastra/core/agent";
+import { z } from "zod";
 import { agentMemory } from '../agentMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
@@ -7,6 +8,7 @@ import { rerankTool } from "../tools/rerank-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
+
 
 /**
  * Runtime context type for the Graph Agent
@@ -36,6 +38,54 @@ export type GraphAgentRuntimeContext = {
 
 const logger = new PinoLogger({ name: 'graphAgent', level: 'info' });
 logger.info('Initializing graphAgent');
+
+/**
+ * Comprehensive Zod schemas for Graph Agent validation
+ * Prevents Google AI model ZodNull validation errors
+ */
+const GraphAgentInputSchema = z.object({
+  query: z.string().min(1).describe('User query or request for the graph agent'),
+  context: z.record(z.any()).optional().describe('Optional context information'),
+  graphData: z.record(z.any()).optional().describe('Optional graph data for analysis'),
+  analysisType: z.enum(['relationship', 'structure', 'metrics', 'visualization']).optional().describe('Type of graph analysis requested'),
+  metadata: z.record(z.any()).optional().describe('Optional metadata')
+}).strict();
+
+const GraphAgentOutputSchema = z.object({
+  response: z.string().describe('Agent response to the user query'),
+  graphResults: z.object({
+    nodes: z.array(z.record(z.any())).optional().describe('Graph nodes'),
+    relationships: z.array(z.record(z.any())).optional().describe('Graph relationships'),
+    metrics: z.record(z.any()).optional().describe('Graph metrics and analysis'),
+    visualization: z.string().optional().describe('Visualization code or configuration')
+  }).optional().describe('Graph analysis results'),
+  toolsUsed: z.array(z.string()).optional().describe('Tools used during processing'),
+  timestamp: z.string().datetime().describe('Response timestamp')
+}).strict();
+
+/**
+ * Enhanced Graph Agent configuration with Zod validation
+ * Prevents ZodNull errors and ensures type safety
+ */
+const graphAgentConfigSchema = z.object({
+  name: z.string().min(1).describe('Agent name identifier'),
+  instructions: z.string().describe('Detailed instructions for the agent'),
+  runtimeContext: z.object({
+    'user-id': z.string().describe('User identifier'),
+    'session-id': z.string().describe('Session identifier'),
+    'graph-db': z.enum(['neo4j', 'memgraph', 'tigergraph', 'arangodb', 'other']).describe('Graph database type'),
+    'max-depth': z.number().describe('Maximum analysis depth'),
+    'node-types': z.array(z.string()).describe('Node types to include'),
+    'relationship-types': z.array(z.string()).describe('Relationship types to analyze'),
+    'include-metrics': z.boolean().describe('Include graph metrics flag'),
+    'viz-format': z.enum(['d3', 'cytoscape', 'graphviz', 'networkx', 'reactflow', '@xyflow/react', 'other']).describe('Visualization format')
+  }).describe('Runtime context for the agent'),
+  model: z.any().describe('Model configuration for the agent'),
+  tools: z.record(z.any()).describe('Available tools for the agent'),
+  memory: z.any().describe('Agent memory configuration'),
+  workflows: z.record(z.any()).describe('Available workflows for the agent')
+}).strict();
+
 
 /**
  * Graph agent for knowledge graph analysis, relationship mapping, and graph-based reasoning
@@ -126,3 +176,52 @@ SUCCESS CRITERIA:
   },
   memory: agentMemory
 });
+
+
+/**
+ * Validate input data against graph agent schema
+ * @param input - Raw input data to validate
+ * @returns Validated input data
+ * @throws ZodError if validation fails
+ */
+export function validateGraphAgentInput(input: unknown): z.infer<typeof GraphAgentInputSchema> {
+  try {
+    return GraphAgentInputSchema.parse(input);
+  } catch (error) {
+    logger.error(`Graph agent input validation failed: ${error}`);
+    throw error;
+  }
+}
+
+/**
+ * Validate output data against graph agent schema
+ * @param output - Raw output data to validate
+ * @returns Validated output data
+ * @throws ZodError if validation fails
+ */
+export function validateGraphAgentOutput(output: unknown): z.infer<typeof GraphAgentOutputSchema> {
+  try {
+    return GraphAgentOutputSchema.parse(output);
+  } catch (error) {
+    logger.error(`Graph agent output validation failed: ${error}`);
+    throw error;
+  }
+}
+
+/**
+ * Validate config data against graph agent schema
+ * @param config - Raw config data to validate
+ * @returns Validated config data
+ * @throws ZodError if validation fails
+ */
+export function validateGraphAgentConfig(config: unknown): z.infer<typeof graphAgentConfigSchema> {
+  try {
+    return graphAgentConfigSchema.parse(config);
+  } catch (error) {
+    logger.error(`Graph agent config validation failed: ${error}`);
+    throw error;
+  }
+}
+
+// Export schemas for use in other parts of the application
+export { GraphAgentInputSchema, GraphAgentOutputSchema, graphAgentConfigSchema };

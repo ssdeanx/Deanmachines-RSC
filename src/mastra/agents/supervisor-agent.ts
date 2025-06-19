@@ -7,9 +7,77 @@ import { rerankTool } from "../tools/rerank-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
+import { z } from 'zod';
+
+/**
+ * Runtime context type for the Supervisor Agent
+ * Stores agent coordination preferences, delegation rules, and oversight configurations
+ */
+export type SupervisorAgentRuntimeContext = {
+  "user-id": string;
+  "session-id": string;
+  "agent-count": number;
+  "coordination-strategy": "centralized" | "distributed" | "hierarchical" | "collaborative";
+  "qa-level": "basic" | "standard" | "rigorous" | "comprehensive";
+  "delegation-level": "limited" | "moderate" | "extensive" | "full";
+  "escalation-threshold": "low" | "medium" | "high" | "critical-only";
+};
 
 const logger = new PinoLogger({ name: 'supervisorAgent', level: 'info' });
-logger.info('Initializing supervisorAgent');
+logger.info('Supervisor agent initialized');
+
+
+/**
+ * Input validation schema for supervisor agent operations
+ * @mastra SupervisorAgent input validation
+ */
+const supervisorAgentInputSchema = z.object({
+  task: z.string().min(1, "Task description is required"),
+  priority: z.enum(["low", "medium", "high", "urgent"]).default("medium"),
+  agents: z.array(z.string()).min(1, "At least one agent must be specified"),
+  deadline: z.string().optional(),
+  requirements: z.array(z.string()).default([]),
+});
+
+/**
+ * Output validation schema for supervisor agent responses
+ * @mastra SupervisorAgent output validation
+ */
+const supervisorAgentOutputSchema = z.object({
+  result: z.string(),
+  delegations: z.array(z.object({
+    agent: z.string(),
+    task: z.string(),
+    priority: z.string(),
+    status: z.enum(["assigned", "in-progress", "completed", "failed"]),
+  })).default([]),
+  quality_score: z.number().min(0).max(100).optional(),
+  recommendations: z.array(z.string()).default([]),
+});
+
+/**
+ * Configuration schema for supervisor agent instances
+ * @mastra SupervisorAgent configuration schema
+ */
+const supervisorAgentConfigSchema = z.object({
+  name: z.string().min(1).describe('Agent name identifier'),
+  instructions: z.string().describe('Detailed instructions for the agent'),
+  runtimeContext: z.object({
+  "user-id": z.string(),
+  "session-id": z.string(),
+  "agent-count": z.number().int().positive().default(1),
+  "coordination-strategy": z.enum(["centralized", "distributed", "hierarchical", "collaborative"]).default("centralized"),
+  "qa-level": z.enum(["basic", "standard", "rigorous", "comprehensive"]).default("standard"),
+  "delegation-level": z.enum(["limited", "moderate", "extensive", "full"]).default("moderate"),
+  "escalation-threshold": z.enum(["low", "medium", "high", "critical-only"]).default("medium"),
+  }).describe('Runtime context for the agent'),
+  model: z.any().describe('Model configuration for the agent'),
+  evals: z.record(z.any()).describe('Evaluation metrics for the agent'),
+  tools: z.record(z.any()).describe('Available tools for the agent'),
+  memory: z.any().describe('Agent memory configuration'),
+  workflows: z.record(z.any()).describe('Available workflows for the agent')
+}).strict();
+
 
 /**
  * Supervisor agent for agent orchestration, coordination, and quality control
@@ -75,30 +143,39 @@ Use available tools to analyze agent relationships and coordination patterns.`;
     // Using vectorQueryTool for direct vector queries
     vectorQueryTool,
     ...await mcp.getTools(),
-  },
-  memory: agentMemory
+  },  memory: agentMemory
 });
 
 /**
- * Runtime context for the Supervisor Agent
- * Stores agent coordination preferences, delegation rules, and oversight configurations
- * 
- * @mastra SupervisorAgent runtime context interface
- * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ * Validate input data against supervisor agent schema
+ * @param input - Raw input data to validate
+ * @returns Validated input data
+ * @throws ZodError if validation fails
  */
-export type SupervisorAgentRuntimeContext = {
-  /** Unique identifier for the user */
-  "user-id": string;
-  /** Unique identifier for the session */
-  "session-id": string;
-  /** Number of agents under supervision */
-  "agent-count": number;
-  /** Coordination strategy */
-  "coordination-strategy": "centralized" | "distributed" | "hierarchical" | "collaborative";
-  /** Quality assurance level */
-  "qa-level": "basic" | "standard" | "rigorous" | "comprehensive";
-  /** Delegation authority level */
-  "delegation-level": "limited" | "moderate" | "extensive" | "full";
-  /** Escalation threshold */
-  "escalation-threshold": "low" | "medium" | "high" | "critical-only";
-};
+export function validateSupervisorInput(input: unknown): z.infer<typeof supervisorAgentInputSchema> {
+  try {
+    return supervisorAgentInputSchema.parse(input);
+  } catch (error) {
+    logger.error(`Supervisor agent input validation failed: ${error}`);
+    throw error;
+  }
+}
+
+
+/**
+ * Validate output data against supervisor agent schema
+ * @param output - Raw output data to validate
+ * @returns Validated output data
+ * @throws ZodError if validation fails
+ */
+export function validateSupervisorOutput(output: unknown): z.infer<typeof supervisorAgentOutputSchema> {
+  try {
+    return supervisorAgentOutputSchema.parse(output);
+  } catch (error) {
+    logger.error(`Supervisor agent output validation failed: ${error}`);
+    throw error;
+  }
+}
+
+// Export schemas for use in other parts of the application
+export { supervisorAgentInputSchema, supervisorAgentOutputSchema, supervisorAgentConfigSchema };

@@ -38,6 +38,7 @@ const envSchema = z.object({
   LANGFUSE_PUBLIC_KEY: z.string().min(1, "Langfuse public key is required"),
   LANGFUSE_SECRET_KEY: z.string().min(1, "Langfuse secret key is required"),
   LANGFUSE_HOST: z.string().min(1, "Langfuse host is required"),
+  TAVILY_API_KEY: z.string().min(1, "Tavily API key is required"),
 });
 // Validate environment variables
 const validateEnv = () => {

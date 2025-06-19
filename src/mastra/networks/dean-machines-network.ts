@@ -18,7 +18,7 @@
 
 import { AgentNetwork } from '@mastra/core/network';
 import { createGemini25Provider } from '../config/googleProvider';
-
+import { PinoLogger } from "@mastra/loggers";
 // Import all available agents from the registry
 import {
   masterAgent,
@@ -44,6 +44,13 @@ import {
   utilityAgent,
   weatherAgent
 } from '../agents';
+
+const logger = new PinoLogger({ 
+  name: 'deanMachinesNetwork', 
+  level: 'info' 
+});
+
+logger.info('Initializing deanMachinesNetwork with 22+ agents');
 
 /**
  * Runtime context type for Dean Machines Multi-Agent Network
@@ -196,9 +203,15 @@ Adapt agent selection based on user preferences and system context.`,
     // Creative and specialized
     designAgent,
     marketingAgent,
-    specialAgent,
-    evolveAgent
+    specialAgent,    evolveAgent
   ]
+});
+
+logger.info('Dean Machines Network initialized successfully', {
+  agentCount: 22,
+  networkName: 'Dean Machines Multi-Agent Network',
+  modelProvider: 'gemini-2.5-flash-lite-preview-06-17',
+  event: 'network_initialized'
 });
 
 /**
@@ -225,15 +238,41 @@ export async function executeDeanMachinesTask(
     temperature?: number;
   }
 ) {
+  const taskId = Math.random().toString(36).substring(7);
+  const startTime = Date.now();
+  
+  logger.info('Dean Machines Network task initiated', {
+    taskId,
+    messageCount: messages.length,
+    options,
+    event: 'task_started'
+  });
+
   try {
     const response = await deanMachinesNetwork.generate(messages, {
       maxSteps: options?.maxSteps ?? 10,
       temperature: options?.temperature ?? 0.7
     });
     
+    const duration = Date.now() - startTime;
+    logger.info('Dean Machines Network task completed successfully', {
+      taskId,
+      duration,
+      success: true,
+      event: 'task_completed'
+    });
+    
     return response;
   } catch (error) {
-    console.error('Dean Machines Network execution failed:', error);
+    const duration = Date.now() - startTime;
+    logger.error('Dean Machines Network task failed', {
+      taskId,
+      duration,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      success: false,
+      event: 'task_failed'
+    });
+    
     throw new Error(`Network execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }

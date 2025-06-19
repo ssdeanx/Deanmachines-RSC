@@ -1,13 +1,13 @@
 import { Memory } from '@mastra/memory';
 import { LibSQLStore, LibSQLVector } from '@mastra/libsql';
-import { fastembed } from '@mastra/fastembed';
 import { z } from 'zod';
 import { PinoLogger } from '@mastra/loggers';
 import type { CoreMessage } from '@mastra/core';
 import { maskStreamTags } from '@mastra/core/utils';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { MemoryProcessor } from '@mastra/core/memory';
-import { TokenLimiter } from '@mastra/memory/processors';
 import { UIMessage } from 'ai';
+import { google } from '@ai-sdk/google';
 
 const logger = new PinoLogger({ name: 'agentMemory', level: 'info' });
 
@@ -46,7 +46,7 @@ const searchMessagesSchema = z.object({
   authToken: process.env.DATABASE_AUTH_TOKEN || ''
  * - Uses LibSQLVector for semantic search url: process.env.DATABASE_URL,
   authToken: process.env.DATABASE_AUTH_TOKEN || ''
- * - Embeddings powered by fastembed
+ * - Embeddings powered by Gemini
  * - Configured for working memory and semantic recall
  * - Supports custom memory processors for filtering, summarization, etc.
  *
@@ -61,9 +61,9 @@ const searchMessagesSchema = z.object({
 export const agentMemory = new Memory({
   storage: agentStorage,
   vector: agentVector,
-  embedder: fastembed.base,
+  embedder: google.textEmbeddingModel('gemini-embedding-exp-03-07'),
   options: {
-    lastMessages: 1000, // This remains a system-level config for retrieval
+    lastMessages: 500, // This remains a system-level config for retrieval
     semanticRecall: {
       topK: 5,
       messageRange: {
@@ -73,47 +73,10 @@ export const agentMemory = new Memory({
     },
     workingMemory: {
       enabled: true,
-      template: `
----
-# {{agent_name}} WM
-Ctx: S:{{session_id}} U:{{user_id}} Q:"{{user_query_summary}}" Sent:{{sentiment_score}} UnresQ:{{unresolved_questions_count}}
-Hist: {{summarized_history_short}}
-Notes: {{assistant_scratchpad_summary}}
-Plan: CurAct:"{{current_action}}" Next:"{{next_action_preview}}"
-Entities: {{key_entities_list}}
-Goals: {{active_goals_short}}
-Hypo: {{current_hypotheses_brief}}
-Signals: {{critical_signals_list}}
-Flags: Learn:{{is_learning}} Clarify:{{needs_clarification}} Load:{{is_high_load}} Plan:{{is_planning}} Wait:{{is_waiting}} Exec:{{is_executing}}
-Peers: {{collaborating_agents_ids}}
-SharedKB: {{relevant_shared_kb_snippets}}
-LearnEvents: {{recent_learning_highlights}}
----
-      `,
     },
   },
   processors: [
-    new TokenLimiter(1000000),
-    new (class extends MemoryProcessor {
-      private limit: number;
-      constructor(limit: number = 1000000) {
-        super({ name: 'SummarizeProcessor' });
-        this.limit = limit;
-      }
-      process(messages: CoreMessage[]): CoreMessage[] {
-        if (messages.length <= this.limit) {
-          return messages;
-        }
-        const overflowCount = messages.length - this.limit;
-        const recent = messages.slice(-this.limit);
-        // Placeholder summary inserted as system message
-        const summaryMessage: CoreMessage = {
-          role: 'system',
-          content: `Summary of ${overflowCount} earlier messages.`,
-        };
-        return [summaryMessage, ...recent];
-      }
-    })(),
+    
   ],
 });
 
@@ -292,7 +255,7 @@ export async function initializeVectorIndexes(): Promise<void> {
     // Create message embeddings index
     await agentVector.createIndex({
       indexName: 'context',
-      dimension: 768, // Adjust based on your embedding model
+      dimension: 1536, // Adjust based on your embedding model
       metric: 'cosine'
     });
 

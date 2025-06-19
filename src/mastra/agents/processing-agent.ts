@@ -8,8 +8,80 @@ import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
 import { mcp } from '../tools/mcp';
 
+import { z } from "zod";
+
 const logger = new PinoLogger({ name: 'processingAgent', level: 'info' });
 logger.info('Initializing processingAgent');
+
+/**
+ * Runtime context type for the Processing Agent
+ * Stores data processing preferences, workflow configurations, and batch processing settings
+ */
+export type ProcessingAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Data processing type */
+  "processing-type": "batch" | "stream" | "real-time" | "scheduled";
+  /** Data source format */
+  "data-format": "json" | "csv" | "xml" | "parquet" | "avro" | "binary";
+  /** Processing pipeline stage */
+  "pipeline-stage": "extract" | "transform" | "load" | "validate" | "analyze";
+  /** Performance priority */
+  "performance-mode": "speed" | "memory" | "accuracy" | "balanced";
+  /** Error handling strategy */
+  "error-handling": "strict" | "lenient" | "skip" | "retry";
+};
+
+/**
+ * Comprehensive Zod schemas for Processing Agent validation
+ * Prevents Google AI model ZodNull validation errors
+ */
+const processingAgentInputSchema = z.object({
+  query: z.string().min(1).describe('Processing request or data transformation task'),
+  data: z.any().optional().describe('Input data to process'),
+  processingType: z.enum(["batch", "stream", "real-time", "scheduled"]).optional().describe('Type of processing to perform'),
+  context: z.record(z.any()).optional().describe('Optional context information'),
+  requestId: z.string().optional().describe('Optional request identifier'),
+  metadata: z.record(z.any()).optional().describe('Optional metadata')
+}).strict();
+
+const processingAgentOutputSchema = z.object({
+  result: z.string().describe('Processing result and summary'),
+  processedData: z.any().optional().describe('Processed data output'),
+  pipelineSteps: z.array(z.string()).optional().describe('Processing pipeline steps executed'),
+  performance: z.object({
+    duration: z.number().optional(),
+    recordsProcessed: z.number().optional(),
+    throughput: z.number().optional()
+  }).optional().describe('Performance metrics'),
+  toolsUsed: z.array(z.string()).optional().describe('Tools used during processing'),
+  requestId: z.string().describe('Unique request identifier'),
+  timestamp: z.string().datetime().describe('Processing completion timestamp')
+}).strict();
+
+/**
+ * Enhanced Processing Agent configuration with Zod validation
+ * Prevents ZodNull errors and ensures type safety
+ */
+const processingAgentConfigSchema = z.object({
+  name: z.string().min(1).describe('Agent name identifier'),
+  instructions: z.string().describe('Detailed instructions for the agent'),
+  runtimeContext: z.object({
+    'user-id': z.string().describe('User identifier'),
+    'session-id': z.string().describe('Session identifier'),
+    'processing-type': z.enum(["batch", "stream", "real-time", "scheduled"]).describe('Data processing type'),
+    'data-format': z.enum(["json", "csv", "xml", "parquet", "avro", "binary"]).describe('Data source format'),
+    'pipeline-stage': z.enum(["extract", "transform", "load", "validate", "analyze"]).describe('Processing pipeline stage'),
+    'performance-mode': z.enum(["speed", "memory", "accuracy", "balanced"]).describe('Performance priority'),
+    'error-handling': z.enum(["strict", "lenient", "skip", "retry"]).describe('Error handling strategy')
+  }).describe('Runtime context for the agent'),
+  model: z.any().describe('Model configuration for the agent'),
+  tools: z.record(z.any()).describe('Available tools for the agent'),
+  memory: z.any().describe('Agent memory configuration'),
+  workflows: z.record(z.any()).describe('Available workflows for the agent')
+}).strict();
 
 /**
  * Processing agent for data transformation, batch operations, and workflow automation
@@ -75,29 +147,39 @@ Use available tools to analyze data relationships and processing patterns.`;
     vectorQueryTool,
     ...await mcp.getTools(),
   },
+
   memory: agentMemory
 });
 
 /**
- * Runtime context for the Processing Agent
- * Stores data processing preferences, workflow configurations, and batch processing settings
- * 
- * @mastra ProcessingAgent runtime context interface
- * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ * Validate input data against processing agent schema
+ * @param input - Raw input data to validate
+ * @returns Validated input data
+ * @throws ZodError if validation fails
  */
-export type ProcessingAgentRuntimeContext = {
-  /** Unique identifier for the user */
-  "user-id": string;
-  /** Unique identifier for the session */
-  "session-id": string;
-  /** Data processing type */
-  "processing-type": "batch" | "stream" | "real-time" | "scheduled";
-  /** Data source format */
-  "data-format": "json" | "csv" | "xml" | "parquet" | "avro" | "binary";
-  /** Processing pipeline stage */
-  "pipeline-stage": "extract" | "transform" | "load" | "validate" | "analyze";
-  /** Performance priority */
-  "performance-mode": "speed" | "memory" | "accuracy" | "balanced";
-  /** Error handling strategy */
-  "error-handling": "strict" | "lenient" | "skip" | "retry";
-};
+export function validateProcessingAgentInput(input: unknown): z.infer<typeof processingAgentInputSchema> {
+  try {
+    return processingAgentInputSchema.parse(input);
+  } catch (error) {
+    logger.error(`Processing agent input validation failed: ${error}`);
+    throw error;
+  }
+}
+
+/**
+ * Validate output data against processing agent schema
+ * @param output - Raw output data to validate
+ * @returns Validated output data
+ * @throws ZodError if validation fails
+ */
+export function validateProcessingAgentOutput(output: unknown): z.infer<typeof processingAgentOutputSchema> {
+  try {
+    return processingAgentOutputSchema.parse(output);
+  } catch (error) {
+    logger.error(`Processing agent output validation failed: ${error}`);
+    throw error;
+  }
+}
+
+// Export schemas for use in other parts of the application
+export { processingAgentInputSchema, processingAgentOutputSchema, processingAgentConfigSchema };

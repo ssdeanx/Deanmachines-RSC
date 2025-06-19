@@ -20,6 +20,12 @@ import {
   utilityAgent,
 } from '../agents';
 import { generateId } from 'ai';
+import { PinoLogger } from "@mastra/loggers";
+
+const logger = new PinoLogger({ 
+  name: 'fullStackDevelopmentWorkflow', 
+  level: 'info' 
+});
 
 /**
  * @interface FullStackDevelopmentInput
@@ -1245,15 +1251,22 @@ export const fullStackDevelopmentWorkflow = createWorkflow({
   .then(codeGenerationAndDevelopmentStep)
   .then(testingAndDebuggingStep)
   .then(deploymentAndDevOpsStep)
-  .then(documentationAndFinalizationStep)
-  .map(({ inputData }) => {
+  .then(documentationAndFinalizationStep)  .map(({ inputData }) => {
     /**
      * @description Creates the final comprehensive output with all development artifacts,
      * documentation, deployment configuration, and project metadata.
      * [EDIT: June 18, 2025] & [BY: GitHub Copilot]
      */
     const processingTime = (Date.now() - inputData.startTime) / 1000;
-    console.log(`[${inputData.workflowId}] Full-stack development workflow completed in ${processingTime}s. Status: ${inputData.status}`);
+    
+    logger.info('Full-stack development workflow completed', {
+      workflowId: inputData.workflowId,
+      projectName: inputData.projectName,
+      processingTime,
+      status: inputData.status,
+      techStack: inputData.options?.techStack,
+      event: 'workflow_completed'
+    });
 
     // Compile comprehensive project structure
     const projectStructure = {
@@ -1324,9 +1337,15 @@ export const fullStackDevelopmentWorkflow = createWorkflow({
         errorMessage,
         processingTime,
       },
-    };
-  })
+    };  })
   .commit();
+
+logger.info('Full-stack development workflow initialized successfully', {
+  workflowId: 'fullStackDevelopment',
+  phases: ['initialize', 'architecture', 'development', 'testing', 'deployment', 'documentation'],
+  agentCount: 15,
+  event: 'workflow_definition_initialized'
+});
 
 /**
  * @function extractDependencies

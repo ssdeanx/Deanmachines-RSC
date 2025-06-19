@@ -11,6 +11,30 @@ const logger = new PinoLogger({ name: 'utilityAgent', level: 'info' });
 logger.info('Initializing utilityAgent');
 
 /**
+ * Runtime context for the Utility Agent
+ * Stores general utility preferences, task configurations, and helper function settings
+ * 
+ * @mastra UtilityAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type UtilityAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Utility function category */
+  "utility-category": "data" | "file" | "network" | "text" | "math" | "date" | "general";
+  /** Operation complexity preference */
+  "complexity-preference": "simple" | "moderate" | "advanced" | "expert";
+  /** Output format preference */
+  "output-format": "json" | "text" | "csv" | "xml" | "html" | "yaml";
+  /** Error handling approach */
+  "error-handling": "silent" | "warning" | "strict" | "verbose";
+  /** Performance optimization level */
+  "optimization-level": "standard" | "memory" | "speed" | "balanced";
+};
+
+/**
  * Utility agent for general-purpose tasks, helper functions, and common operations
  * Specializes in versatile problem-solving and support functions
  */
@@ -78,26 +102,3 @@ Use available tools to query relevant information and patterns.`;
   memory: agentMemory
 });
 
-/**
- * Runtime context for the Utility Agent
- * Stores general utility preferences, task configurations, and helper function settings
- * 
- * @mastra UtilityAgent runtime context interface
- * [EDIT: 2025-06-14] [BY: GitHub Copilot]
- */
-export type UtilityAgentRuntimeContext = {
-  /** Unique identifier for the user */
-  "user-id": string;
-  /** Unique identifier for the session */
-  "session-id": string;
-  /** Utility function category */
-  "utility-category": "data" | "file" | "network" | "text" | "math" | "date" | "general";
-  /** Operation complexity preference */
-  "complexity-preference": "simple" | "moderate" | "advanced" | "expert";
-  /** Output format preference */
-  "output-format": "json" | "text" | "csv" | "xml" | "html" | "yaml";
-  /** Error handling approach */
-  "error-handling": "silent" | "warning" | "strict" | "verbose";
-  /** Performance optimization level */
-  "optimization-level": "standard" | "memory" | "speed" | "balanced";
-};

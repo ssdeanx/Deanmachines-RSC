@@ -14,6 +14,30 @@ const logger = new PinoLogger({ name: 'specialAgent', level: 'info' });
 logger.info('Initializing specialAgent');
 
 /**
+ * Runtime context for the Special Agent
+ * Stores multi-domain expertise preferences and specialized task configurations
+ * 
+ * @mastra SpecialAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type SpecialAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Primary domain of expertise for current task */
+  "primary-domain": "research" | "analysis" | "creative" | "technical" | "strategic" | "hybrid";
+  /** Task complexity level */
+  "complexity-level": "simple" | "moderate" | "complex" | "expert" | "innovative";
+  /** Cross-domain integration required */
+  "cross-domain": boolean;
+  /** Innovation approach preference */
+  "innovation-mode": "traditional" | "experimental" | "cutting-edge" | "revolutionary";
+  /** Specialization context */
+  "specialization": string;
+};
+
+/**
  * Special agent for unique tasks, complex problem-solving, and multi-domain expertise
  * Specializes in handling edge cases, specialized requirements, and cross-functional challenges
  */
@@ -84,26 +108,3 @@ Use all available tools to provide comprehensive multi-domain analysis.`;
   memory: agentMemory
 });
 
-/**
- * Runtime context for the Special Agent
- * Stores multi-domain expertise preferences and specialized task configurations
- * 
- * @mastra SpecialAgent runtime context interface
- * [EDIT: 2025-06-14] [BY: GitHub Copilot]
- */
-export type SpecialAgentRuntimeContext = {
-  /** Unique identifier for the user */
-  "user-id": string;
-  /** Unique identifier for the session */
-  "session-id": string;
-  /** Primary domain of expertise for current task */
-  "primary-domain": "research" | "analysis" | "creative" | "technical" | "strategic" | "hybrid";
-  /** Task complexity level */
-  "complexity-level": "simple" | "moderate" | "complex" | "expert" | "innovative";
-  /** Cross-domain integration required */
-  "cross-domain": boolean;
-  /** Innovation approach preference */
-  "innovation-mode": "traditional" | "experimental" | "cutting-edge" | "revolutionary";
-  /** Specialization context */
-  "specialization": string;
-};

@@ -11,6 +11,32 @@ const logger = new PinoLogger({ name: 'designAgent', level: 'info' });
 logger.info('Initializing designAgent');
 
 /**
+ * Runtime context type for the Design Agent
+ * Stores design preferences and visual context
+ * 
+ * @mastra DesignAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type DesignAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Design system preference */
+  "design-system": "material" | "chakra" | "antd" | "tailwind" | "custom";
+  /** Color palette theme */
+  "color-theme": "light" | "dark" | "auto" | "custom";
+  /** Target device types */
+  "target-devices": string[];
+  /** Accessibility level */
+  "accessibility-level": "AA" | "AAA" | "standard";
+  /** Brand guidelines */
+  "brand-context": string;
+  /** Animation preferences */
+  "animation-style": "minimal" | "moderate" | "rich" | "none";
+};
+
+/**
  * Design agent for UI/UX design, visual aesthetics, and user experience optimization
  * Specializes in creating intuitive and beautiful user interfaces
  */
@@ -79,29 +105,3 @@ Use available tools to query design patterns and best practices.`;
   },
   memory: agentMemory
 });
-
-/**
- * Runtime context type for the Design Agent
- * Stores design preferences and visual context
- * 
- * @mastra DesignAgent runtime context interface
- * [EDIT: 2025-06-14] [BY: GitHub Copilot]
- */
-export type DesignAgentRuntimeContext = {
-  /** Unique identifier for the user */
-  "user-id": string;
-  /** Unique identifier for the session */
-  "session-id": string;
-  /** Design system preference */
-  "design-system": "material" | "chakra" | "antd" | "tailwind" | "custom";
-  /** Color palette theme */
-  "color-theme": "light" | "dark" | "auto" | "custom";
-  /** Target device types */
-  "target-devices": string[];
-  /** Accessibility level */
-  "accessibility-level": "AA" | "AAA" | "standard";
-  /** Brand guidelines */
-  "brand-context": string;
-  /** Animation preferences */
-  "animation-style": "minimal" | "moderate" | "rich" | "none";
-};

@@ -11,6 +11,32 @@ const logger = new PinoLogger({ name: 'managerAgent', level: 'info' });
 logger.info('Initializing managerAgent');
 
 /**
+ * Runtime context type for the Manager Agent
+ * Stores project management preferences and coordination context
+ * 
+ * @mastra ManagerAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type ManagerAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Project management methodology */
+  "methodology": "agile" | "scrum" | "kanban" | "waterfall" | "hybrid";
+  /** Team size context */
+  "team-size": number;
+  /** Project priority level */
+  "priority-level": "low" | "medium" | "high" | "critical";
+  /** Timeline constraints */
+  "timeline-strict": boolean;
+  /** Resource tracking */
+  "track-resources": boolean;
+  /** Communication frequency */
+  "update-frequency": "daily" | "weekly" | "bi-weekly" | "monthly";
+};
+
+/**
  * Manager agent for project management, task coordination, and resource planning
  * Specializes in agile methodologies, team coordination, and project delivery
  * 
@@ -81,29 +107,3 @@ Use available tools to query project management patterns and best practices.`;
   },
   memory: agentMemory
 });
-
-/**
- * Runtime context type for the Manager Agent
- * Stores project management preferences and coordination context
- * 
- * @mastra ManagerAgent runtime context interface
- * [EDIT: 2025-06-14] [BY: GitHub Copilot]
- */
-export type ManagerAgentRuntimeContext = {
-  /** Unique identifier for the user */
-  "user-id": string;
-  /** Unique identifier for the session */
-  "session-id": string;
-  /** Project management methodology */
-  "methodology": "agile" | "scrum" | "kanban" | "waterfall" | "hybrid";
-  /** Team size context */
-  "team-size": number;
-  /** Project priority level */
-  "priority-level": "low" | "medium" | "high" | "critical";
-  /** Timeline constraints */
-  "timeline-strict": boolean;
-  /** Resource tracking */
-  "track-resources": boolean;
-  /** Communication frequency */
-  "update-frequency": "daily" | "weekly" | "bi-weekly" | "monthly";
-};

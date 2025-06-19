@@ -37,6 +37,29 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - fastembed
 - `@mastra/evals`
 - `@ai-sdk/google`
+- `zod`
+- isolated-vm
+- shelljs
+- isomorphic-git
+- `@isomorphic-git/lightning-fs`
+- jsinspect-plus
+- eslintcc
+- crawlee
+- jsdom
+- marked
+- js-yaml
+- jszip
+- vitest
+- `@xenova/transformers`
+- `@inquirer/prompts`
+- cheerio
+- simple-git
+- papaparse
+- yaml
+- simple-git
+- simple-git
+- ESLint
+- TypeScript compiler
 
 ## PROJECT DOCUMENTATION & CONTEXT SYSTEM
 
@@ -311,7 +334,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     2. Accessing the runtime context within the instructions function using `({ runtimeContext })`.
     3. Using personalized context variables within the instructions.
 - Use `#fetch https://mastra.ai/en/examples/agents/hierarchical-multi-agent` to understand hierarchical multi-agent patterns.
-- Use `#fetch https://mastra.ai/en/reference/agents/createTool`, `#fetch https://mastra.ai/en/reference/tools/create-tool`, `#fetch https://mastra.ai/en/examples/agents/hierarchical-multi-agent`, `#fetch https://mastra.ai/en/examples/agents/using-a-tool`, and `#fetch https://mastra.ai/en/docs/agents/runtime-variables` for understanding agent and tool creation.
+- Use `#fetch https://mastra.ai/en/reference/agents/createTool`, `#fetch https://mastra.ai/en/reference/tools/create-tool`, `#fetch https://mastra.ai/en/examples/agents/hierarchical-multi-agent`, `#fetch https://ai/en/examples/agents/using-a-tool`, and `#fetch https://ai/en/docs/agents/runtime-variables` for understanding agent and tool creation.
 - When the user asks to create `#file:delegate-tools.ts`, use the following guidelines:
     - The coding assistant MUST use both tool runtime context and agent runtime context.
     - The coding assistant MUST import `RuntimeContext` from `@mastra/core/di`.
@@ -330,6 +353,37 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - When improving a workflow, check the current errors in the workflow file first, then improve it by removing the unnecessary agents and following the patterns from the documentation and master agents.
 - When improving a workflow, the research agent can browse the web, so the documentation agent is not needed.
 - When improving a workflow, processing agent and master agent should be incorporated to finalize the workflow.
+- When asked to analyze `#file:code-graph-maker-advanced.ts`, confirm it's using the correct modern Mastra workflow patterns.
+- When creating a full-stack workflow using coding, git, docker, debug, documentation, and other agents:
+    - Utilize all relevant agents from the project.
+    - Follow a structured approach, including strategic planning, architecture design, code generation, testing, deployment, and documentation.
+    - Ensure proper error handling and comprehensive logging.
+    - Update the workflows index file to export the new workflow.
+    - Add the new full-stack development workflow to the main Mastra index, including import and registration.
+- When asked to improve logging in `#file:dean-machines-network.ts` (or any other file) for Langfuse, focus on adding strategic logging points that are valuable for observability and debugging without over-bloating the code. This should include:
+    - Network initialization logging with agent count and configuration details.
+    - Task execution tracking with a unique task ID, start time, structured logging with metadata (taskId, messageCount, duration, event tags, success boolean).
+    - Error handling that preserves context while propagating the original error.
+- I'll add a new section for improving the CopilotKit and playground functionality.
+- When working with the CopilotKit and playground:
+    - Focus on completing the playground functionality with proper CopilotKit integration.
+    - Ensure the multi-agent playground works seamlessly with `dean-machines-network.ts` using the CopilotKit route.
+    - Optimize `route.ts` for better performance and runtime context, including better error handling and context management.
+    - Create reusable components for testing and visualization (agent tester, tool executor, workflow visualizer).
+    - Ensure proper integration between Mastra, AGUI, CopilotKit, and the user, following the flow: Mastra -> AGUI -> CopilotKit -> User.
+    - Properly integrate the Dean Machines Network with the runtime context types.
+    - Enhance the CopilotKit route (`route.ts`) with better AGUI integration.
+    - Optimize agent registration and context handling in the Mastra index.
+    - Aim for full functionality in the multi-agent playground with network routing.
+    - Use shared components across all playground sections for reusability.
+    - The flow is Mastra (Backend AI Framework) → AGUI → CopilotKit → User (Frontend).
+- When building a dual-memory system with Upstash and Supabase:
+  - Use `#file:upstashMemory.ts` for the Upstash backend implementation.
+  - Ensure the system can switch between backends.
+  - Implement comprehensive error handling and logging.
+  - Create tasks for testing and validation.
+  - Update environment configuration to support dual-memory requirements.
+- When encountering "used before declaration" errors, especially in `upstashMemory.ts`, ensure that class declarations are placed before their instantiation or usage.
 
 ## CODING STANDARDS
 
@@ -418,33 +472,3 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - When configuring the `evals` property in agent configurations, use actual `Metric` instances (e.g., `new ToneConsistencyMetric()`) instead of test data objects. Do not use configuration objects with properties like `reference`, `input`, or `output` directly in the `evals` configuration.
 - When importing evaluation metrics, import the actual metric classes directly from `@mastra/evals/nlp` (e.g., `import { ToneConsistencyMetric } from '@mastra/evals/nlp';`) instead of importing evaluation functions.
 - When fixing the error "Cannot create an instance of an abstract class" in eval files:
-    - Remove the abstract class instantiation from the evals configuration.
-    - Keep only the concrete metric implementations that can be instantiated directly.
-    - Remember that abstract classes are meant to be base classes for creating custom judges, not used directly.
-- When enhancing tools, fetch the relevant Mastra documentation URLs to understand best practices.
-- When enhancing tools, analyze the current tools and enhance them to work flawlessly with `agentMemory.ts`.
-- When fixing errors, check the current state of the file to see what errors need fixing, then fetch any relevant documentation.
-- When enhancing tools, consider adding runtime context to allow the front end to interact with them better, similar to how agents have runtime contexts. Use `#fetch https://mastra.ai/en/docs/tools-mcp/dynamic-context` to understand how to put runtime context on tools.
-- When enhancing a tool, the old function should be removed.
-- When creating a chunk tool for all formats, use the Mastra documentation patterns.
-- When creating a new tool (e.g., `chunker-tool.ts`), ensure it includes:
-    - Multi-format support (Text, HTML, Markdown, JSON, LaTeX, CSV, XML).
-    - Multiple chunking strategies (recursive, sentence, paragraph, fixed, semantic).
-    - Runtime context integration for dynamic configuration via headers and user/session-specific settings.
-    - Comprehensive validation with strict Zod schemas, type-safe interfaces, and error handling.
-    - Integration with `agentMemory.ts` for LibSQL storage patterns and metadata handling.
-- **IMPORTANT:** If the coding assistant is asked to fix or enhance tools, it must follow ALL given instructions.
-- **IMPORTANT**: The coding assistant MUST focus on COMPLETING the requested tasks and MUST NOT leave them unfinished.
-- **IMPORTANT**: The coding assistant MUST NOT introduce index files.
-- **IMPORTANT**: When using runtime context, the coding assistant MUST import `RuntimeContext` from `@mastra/core/runtime`.
-- When implementing tools, the tool's `execute` function should use `context` instead of `input` when runtime context is implemented.
-- **IMPORTANT**: When asked to ensure that each agent's instructions are actually using runtime context, the coding assistant MUST follow the pattern in `#file:master-agent.ts` where the agent has runtime context at the top and uses it in the agent's logic. This pattern MUST be replicated in each agent's instructions.
-- All agents should now follow the `master-agent.ts` runtime context pattern:
-    1. Define the runtime context type at the top of the file.
-    2. Use instructions as an async function that uses `({ runtimeContext })` to access context.
-    3. Use personalized context variables within the instructions.
-- **IMPORTANT**: The coding assistant MUST NOT create a `delegate-tool.ts` file.
-- If asked to create `delegate-tools.ts`, fetch the relevant documentation URLs to understand the correct Mastra patterns before creating the file.
-- **IMPORTANT**: When creating `delegate-tools.ts`, the coding assistant MUST use tool runtime context, not agent runtime context.
-- **IMPORTANT**: When creating `delegate-tools.ts`, the coding assistant MUST import agents directly from the index file (e.g., `agentRegistry`) and MUST NOT use a local `AGENT_REGISTRY` object.
-- **IMPORTANT**: When creating `delegate-tools.ts`, the coding assistant MUST NOT include master agent,

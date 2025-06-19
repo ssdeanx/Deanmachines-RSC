@@ -6,13 +6,14 @@ import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
 import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
+import { z } from "zod";
 
 /**
  * Runtime context type for the Git Agent
  * Stores version control preferences and repository context
  * 
  * @mastra GitAgent runtime context interface
- * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ * [EDIT: 2025-06-18] [BY: SSD]
  */
 export type GitAgentRuntimeContext = {
   /** Unique identifier for the user */
@@ -37,9 +38,56 @@ const logger = new PinoLogger({ name: 'gitAgent', level: 'info' });
 logger.info('Initializing gitAgent');
 
 /**
+ * Comprehensive Zod schemas for Git Agent validation
+ * Prevents Google AI model ZodNull validation errors
+ */
+const GitAgentInputSchema = z.object({
+  query: z.string().min(1).describe('User query or request for the git agent'),
+  context: z.record(z.any()).optional().describe('Optional context information'),
+  gitOperation: z.enum(['commit', 'branch', 'merge', 'push', 'pull', 'status', 'log', 'diff']).optional().describe('Type of git operation requested'),
+  repoPath: z.string().optional().describe('Repository path for git operations'),
+  metadata: z.record(z.any()).optional().describe('Optional metadata')
+}).strict();
+
+const GitAgentOutputSchema = z.object({
+  response: z.string().describe('Agent response to the user query'),
+  gitResults: z.object({
+    command: z.string().optional().describe('Git command executed'),
+    output: z.string().optional().describe('Command output'),
+    status: z.enum(['success', 'error', 'warning']).optional().describe('Operation status'),
+    suggestions: z.array(z.string()).optional().describe('Workflow suggestions')
+  }).optional().describe('Git operation results'),
+  toolsUsed: z.array(z.string()).optional().describe('Tools used during processing'),
+  timestamp: z.string().datetime().describe('Response timestamp')
+}).strict();
+
+/**
+ * Enhanced Git Agent configuration with Zod validation
+ * Prevents ZodNull errors and ensures type safety
+ */
+const gitAgentConfigSchema = z.object({
+  name: z.string().min(1).describe('Agent name identifier'),
+  instructions: z.string().describe('Detailed instructions for the agent'),
+  runtimeContext: z.object({
+    'user-id': z.string().describe('User identifier'),
+    'session-id': z.string().describe('Session identifier'),
+    'repo-path': z.string().describe('Repository path'),
+    'branching-strategy': z.enum(['gitflow', 'github-flow', 'gitlab-flow', 'custom']).describe('Git branching strategy'),
+    'default-branch': z.string().describe('Default branch name'),
+    'commit-format': z.enum(['conventional', 'standard', 'custom']).describe('Commit message format'),
+    'use-hooks': z.boolean().describe('Use git hooks flag'),
+    'hosting-service': z.enum(['github', 'gitlab', 'bitbucket', 'other']).describe('Repository hosting service')
+  }).describe('Runtime context for the agent'),
+  model: z.any().describe('Model configuration for the agent'),
+  tools: z.record(z.any()).describe('Available tools for the agent'),
+  memory: z.any().describe('Agent memory configuration'),
+  workflows: z.record(z.any()).describe('Available workflows for the agent')
+}).strict();
+
+/**
  * Git agent for version control operations, workflow optimization, and repository management
  * Specializes in Git best practices, branching strategies, and collaboration workflows
- * [EDIT: 2025-06-16] [BY: ss]
+ * [EDIT: 2025-06-16] [BY: SSD]
  */
 export const gitAgent = new Agent({  name: "Git Agent",
   instructions: async ({ runtimeContext }) => {
@@ -114,3 +162,51 @@ Success Criteria:
   },
   memory: agentMemory
 });
+
+/**
+ * Validate input data against git agent schema
+ * @param input - Raw input data to validate
+ * @returns Validated input data
+ * @throws ZodError if validation fails
+ */
+export function validateGitAgentInput(input: unknown): z.infer<typeof GitAgentInputSchema> {
+  try {
+    return GitAgentInputSchema.parse(input);
+  } catch (error) {
+    logger.error(`Git agent input validation failed: ${error}`);
+    throw error;
+  }
+}
+
+/**
+ * Validate output data against git agent schema
+ * @param output - Raw output data to validate
+ * @returns Validated output data
+ * @throws ZodError if validation fails
+ */
+export function validateGitAgentOutput(output: unknown): z.infer<typeof GitAgentOutputSchema> {
+  try {
+    return GitAgentOutputSchema.parse(output);
+  } catch (error) {
+    logger.error(`Git agent output validation failed: ${error}`);
+    throw error;
+  }
+}
+
+/**
+ * Validate config data against git agent schema
+ * @param config - Raw config data to validate
+ * @returns Validated config data
+ * @throws ZodError if validation fails
+ */
+export function validateGitAgentConfig(config: unknown): z.infer<typeof gitAgentConfigSchema> {
+  try {
+    return gitAgentConfigSchema.parse(config);
+  } catch (error) {
+    logger.error(`Git agent config validation failed: ${error}`);
+    throw error;
+  }
+}
+
+// Export schemas for use in other parts of the application
+export { GitAgentInputSchema, GitAgentOutputSchema, gitAgentConfigSchema };

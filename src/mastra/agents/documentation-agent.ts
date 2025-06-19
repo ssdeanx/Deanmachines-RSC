@@ -8,8 +8,75 @@ import { mcp } from '../tools/mcp';
 import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
 
+import { z } from "zod";
+
 const logger = new PinoLogger({ name: 'documentationAgent', level: 'info' });
 logger.info('Initializing documentationAgent');
+
+/**
+ * Runtime context type for the Documentation Agent
+ * Stores documentation preferences, target audience, and content formatting settings
+ */
+export type DocumentationAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Documentation type being created */
+  "doc-type": "api" | "user-guide" | "technical" | "tutorial" | "reference" | "readme";
+  /** Target audience level */
+  "audience-level": "beginner" | "intermediate" | "advanced" | "expert";
+  /** Documentation format preference */
+  "format": "markdown" | "html" | "pdf" | "wiki" | "docx";
+  /** Code documentation standard */
+  "code-style": "jsdoc" | "tsdoc" | "sphinx" | "javadoc" | "rustdoc";
+  /** Project or product being documented */
+  "project-name": string;
+};
+
+/**
+ * Comprehensive Zod schemas for Documentation Agent validation
+ * Prevents Google AI model ZodNull validation errors
+ */
+const documentationAgentInputSchema = z.object({
+  query: z.string().min(1).describe('Documentation request or task for the documentation agent'),
+  docType: z.enum(["api", "user-guide", "technical", "tutorial", "reference", "readme"]).optional().describe('Type of documentation to create'),
+  content: z.string().optional().describe('Existing content to improve or update'),
+  context: z.record(z.any()).optional().describe('Optional context information'),
+  requestId: z.string().optional().describe('Optional request identifier'),
+  metadata: z.record(z.any()).optional().describe('Optional metadata')
+}).strict();
+
+const documentationAgentOutputSchema = z.object({
+  documentation: z.string().describe('Generated or improved documentation content'),
+  format: z.string().describe('Documentation format used'),
+  sections: z.array(z.string()).optional().describe('Documentation sections created'),
+  toolsUsed: z.array(z.string()).optional().describe('Tools used during documentation creation'),
+  requestId: z.string().describe('Unique request identifier'),
+  timestamp: z.string().datetime().describe('Documentation creation timestamp')
+}).strict();
+
+/**
+ * Enhanced Documentation Agent configuration with Zod validation
+ * Prevents ZodNull errors and ensures type safety
+ */
+const documentationAgentConfigSchema = z.object({
+  name: z.string().min(1).describe('Agent name identifier'),
+  instructions: z.string().describe('Detailed instructions for the agent'),
+  runtimeContext: z.object({
+    'user-id': z.string().describe('User identifier'),
+    'session-id': z.string().describe('Session identifier'),
+    'doc-type': z.enum(["api", "user-guide", "technical", "tutorial", "reference", "readme"]).describe('Documentation type being created'),
+    'audience-level': z.enum(["beginner", "intermediate", "advanced", "expert"]).describe('Target audience level'),
+    'format': z.enum(["markdown", "html", "pdf", "wiki", "docx"]).describe('Documentation format preference'),
+    'code-style': z.enum(["jsdoc", "tsdoc", "sphinx", "javadoc", "rustdoc"]).describe('Code documentation standard'),
+    'project-name': z.string().describe('Project or product being documented')
+  }).describe('Runtime context for the agent'),
+  model: z.any().describe('Model configuration for the agent'),
+  tools: z.record(z.any()).describe('Available tools for the agent'),
+  memory: z.any().describe('Agent memory configuration'),
+  workflows: z.record(z.any()).describe('Available workflows for the agent')
+}).strict();
 
 /**
  * Documentation agent for creating, maintaining, and organizing technical documentation
@@ -82,25 +149,34 @@ Use available tools to analyze existing documentation and gather relevant inform
 });
 
 /**
- * Runtime context for the Documentation Agent
- * Stores documentation preferences, target audience, and content formatting settings
- * 
- * @mastra DocumentationAgent runtime context interface
- * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ * Validate input data against documentation agent schema
+ * @param input - Raw input data to validate
+ * @returns Validated input data
+ * @throws ZodError if validation fails
  */
-export type DocumentationAgentRuntimeContext = {
-  /** Unique identifier for the user */
-  "user-id": string;
-  /** Unique identifier for the session */
-  "session-id": string;
-  /** Documentation type being created */
-  "doc-type": "api" | "user-guide" | "technical" | "tutorial" | "reference" | "readme";
-  /** Target audience level */
-  "audience-level": "beginner" | "intermediate" | "advanced" | "expert";
-  /** Documentation format preference */
-  "format": "markdown" | "html" | "pdf" | "wiki" | "docx";
-  /** Code documentation standard */
-  "code-style": "jsdoc" | "tsdoc" | "sphinx" | "javadoc" | "rustdoc";
-  /** Project or product being documented */
-  "project-name": string;
-};
+export function validateDocumentationAgentInput(input: unknown): z.infer<typeof documentationAgentInputSchema> {
+  try {
+    return documentationAgentInputSchema.parse(input);
+  } catch (error) {
+    logger.error(`Documentation agent input validation failed: ${error}`);
+    throw error;
+  }
+}
+
+/**
+ * Validate output data against documentation agent schema
+ * @param output - Raw output data to validate
+ * @returns Validated output data
+ * @throws ZodError if validation fails
+ */
+export function validateDocumentationAgentOutput(output: unknown): z.infer<typeof documentationAgentOutputSchema> {
+  try {
+    return documentationAgentOutputSchema.parse(output);
+  } catch (error) {
+    logger.error(`Documentation agent output validation failed: ${error}`);
+    throw error;
+  }
+}
+
+// Export schemas for use in other parts of the application
+export { documentationAgentInputSchema, documentationAgentOutputSchema, documentationAgentConfigSchema };

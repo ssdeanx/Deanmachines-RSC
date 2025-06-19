@@ -11,6 +11,30 @@ const logger = new PinoLogger({ name: 'sysadminAgent', level: 'info' });
 logger.info('Initializing sysadminAgent');
 
 /**
+ * Runtime context for the Sysadmin Agent
+ * Stores system administration preferences, infrastructure context, and operational settings
+ * 
+ * @mastra SysadminAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type SysadminAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Target infrastructure environment */
+  "infrastructure-env": "on-premise" | "cloud" | "hybrid" | "edge" | "multi-cloud";
+  /** Operating system preference */
+  "os-preference": "linux" | "windows" | "macos" | "container" | "serverless";
+  /** Automation level preference */
+  "automation-level": "manual" | "semi-automated" | "fully-automated" | "intelligent";
+  /** Security posture requirement */
+  "security-posture": "basic" | "standard" | "hardened" | "zero-trust" | "compliance";
+  /** Monitoring and alerting level */
+  "monitoring-level": "basic" | "comprehensive" | "proactive" | "predictive";
+};
+
+/**
  * System administration agent for infrastructure management, monitoring, and operations
  * Specializes in DevOps practices, system monitoring, and infrastructure automation
  */
@@ -77,26 +101,3 @@ Use available tools to query system administration patterns and best practices.`
   memory: agentMemory
 });
 
-/**
- * Runtime context for the Sysadmin Agent
- * Stores system administration preferences, infrastructure context, and operational settings
- * 
- * @mastra SysadminAgent runtime context interface
- * [EDIT: 2025-06-14] [BY: GitHub Copilot]
- */
-export type SysadminAgentRuntimeContext = {
-  /** Unique identifier for the user */
-  "user-id": string;
-  /** Unique identifier for the session */
-  "session-id": string;
-  /** Target infrastructure environment */
-  "infrastructure-env": "on-premise" | "cloud" | "hybrid" | "edge" | "multi-cloud";
-  /** Operating system preference */
-  "os-preference": "linux" | "windows" | "macos" | "container" | "serverless";
-  /** Automation level preference */
-  "automation-level": "manual" | "semi-automated" | "fully-automated" | "intelligent";
-  /** Security posture requirement */
-  "security-posture": "basic" | "standard" | "hardened" | "zero-trust" | "compliance";
-  /** Monitoring and alerting level */
-  "monitoring-level": "basic" | "comprehensive" | "proactive" | "predictive";
-};

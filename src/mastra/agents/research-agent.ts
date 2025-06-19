@@ -3,12 +3,79 @@ import { agentMemory } from '../agentMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
-import { rerankTool } from "../tools/rerank-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { mcp } from '../tools/mcp';
+import { z } from 'zod';
+
+
+/**
+ * Runtime context type for the Research Agent
+ * Stores research preferences and source filtering context
+ * 
+ * @mastra ResearchAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type ResearchAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Research depth level */
+  "research-depth": "surface" | "detailed" | "comprehensive";
+  /** Source types to include */
+  "source-types": string[];
+  /** Maximum sources to gather */
+  "max-sources": number;
+  /** Include academic sources */
+  "include-academic": boolean;
+  /** Language preferences for sources */
+  "language-filter": string[];
+  /** Research focus area */
+  "focus-area": string;
+};
 
 const logger = new PinoLogger({ name: 'researchAgent', level: 'info' });
+
+const researchAgentInputSchema = z.object({
+  query: z.string().min(1).describe("Research query or topic"),
+  depth: z.enum(["surface", "detailed", "comprehensive"]).optional(),
+  sources: z.array(z.string()).optional(),
+  maxResults: z.number().positive().optional(),
+});
+
+const researchAgentOutputSchema = z.object({
+  findings: z.string().describe("Research findings and insights"),
+  sources: z.array(z.string()).describe("Sources used in research"),
+  confidence: z.number().min(0).max(1).describe("Confidence score"),
+  methodology: z.string().describe("Research methodology used"),
+});
+
+/**
+ * Enhanced Research Agent configuration with Zod validation
+ * Prevents ZodNull errors and ensures type safety
+ */
+const researchAgentConfigSchema = z.object({
+  name: z.string().min(1).describe('Agent name identifier'),
+  instructions: z.string().describe('Detailed instructions for the agent'),
+  runtimeContext: z.object({
+    'user-id': z.string().describe('User identifier'),
+    'session-id': z.string().describe('Session identifier'),
+    'research-depth': z.enum(["surface", "detailed", "comprehensive"]).describe('Research depth level'),
+    'source-types': z.array(z.string()).describe('Source types to include'),
+    'max-sources': z.number().positive().describe('Maximum sources to gather'),
+    'include-academic': z.boolean().describe('Include academic sources'),
+    'language-filter': z.array(z.string()).describe('Language preferences for sources'),
+    'focus-area': z.string().describe('Research focus area')
+  }).describe('Runtime context for the agent'),
+  model: z.any().describe('Model configuration for the agent'),
+  evals: z.record(z.any()).describe('Evaluation metrics for the agent'),
+  tools: z.record(z.any()).describe('Available tools for the agent'),
+  memory: z.any().describe('Agent memory configuration'),
+  workflows: z.record(z.any()).describe('Available workflows for the agent')
+}).strict();
+
+
 logger.info('Initializing researchAgent');
 
 /**
@@ -62,43 +129,51 @@ When responding:
 
 Use available tools to access knowledge graphs and perform comprehensive searches.`;
   },
-  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
-        thinkingConfig: {
-          thinkingBudget: 0,
-          includeThoughts: false,
-        },
-      }),  tools: {
+  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17',  {
+    responseModalities: ["TEXT"],
+    thinkingConfig: {
+      thinkingBudget: 512, // -1 means dynamic thinking budget
+      includeThoughts: false, // Include thoughts for debugging and monitoring purposes
+    },
+  }),  
+  tools: {
     graphRAGTool,
     vectorQueryTool,
     chunkerTool,
-    rerankTool,
     ...await mcp.getTools(),
-  },
+  }, 
   memory: agentMemory
 });
 
 /**
- * Runtime context type for the Research Agent
- * Stores research preferences and source filtering context
- * 
- * @mastra ResearchAgent runtime context interface
- * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ * Validation functions for research agent operations
+ * @mastra ResearchAgent validation functions with error handling
  */
-export type ResearchAgentRuntimeContext = {
-  /** Unique identifier for the user */
-  "user-id": string;
-  /** Unique identifier for the session */
-  "session-id": string;
-  /** Research depth level */
-  "research-depth": "surface" | "detailed" | "comprehensive";
-  /** Source types to include */
-  "source-types": string[];
-  /** Maximum sources to gather */
-  "max-sources": number;
-  /** Include academic sources */
-  "include-academic": boolean;
-  /** Language preferences for sources */
-  "language-filter": string[];
-  /** Research focus area */
-  "focus-area": string;
-};
+export function validateResearchInput(input: unknown): z.infer<typeof researchAgentInputSchema> {
+  try {
+    return researchAgentInputSchema.parse(input);
+  } catch (error) {
+    logger.error('Invalid research agent input', { error });
+    throw error;
+  }
+}
+
+export function validateResearchOutput(output: unknown): z.infer<typeof researchAgentOutputSchema> {
+  try {
+    return researchAgentOutputSchema.parse(output);
+  } catch (error) {
+    logger.error('Invalid research agent output', { error });
+    throw error;
+  }
+}
+
+function validateResearchAgentConfig(config: unknown): z.infer<typeof researchAgentConfigSchema> {
+  try {
+    return researchAgentConfigSchema.parse(config);
+  } catch (error) {
+    logger.error('Invalid research agent config', { error });
+    throw error;
+  }
+}
+
+export { researchAgentInputSchema, researchAgentOutputSchema, researchAgentConfigSchema, validateResearchAgentConfig };

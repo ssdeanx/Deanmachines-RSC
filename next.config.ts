@@ -41,7 +41,8 @@ const nextConfig: NextConfig = {
     'quick-lru',
     'langfuse-vercel',
     '@mastra/agui',
-    '@inquirer/prompts'
+    '@inquirer/prompts',
+    'simple-git'
   ],
   experimental: {
     optimizeCss: true,

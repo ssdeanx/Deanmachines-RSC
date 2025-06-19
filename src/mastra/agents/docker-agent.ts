@@ -11,6 +11,30 @@ const logger = new PinoLogger({ name: 'dockerAgent', level: 'info' });
 logger.info('Initializing dockerAgent');
 
 /**
+ * Runtime context for the Docker Agent
+ * Stores containerization preferences, deployment targets, and Docker configuration
+ * 
+ * @mastra DockerAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
+ */
+export type DockerAgentRuntimeContext = {
+  /** Unique identifier for the user */
+  "user-id": string;
+  /** Unique identifier for the session */
+  "session-id": string;
+  /** Target deployment environment */
+  "deployment-env": "development" | "staging" | "production" | "testing";
+  /** Container orchestration platform */
+  "orchestration": "docker-compose" | "kubernetes" | "swarm" | "standalone";
+  /** Base image preference */
+  "base-image": string;
+  /** Resource limits for containers */
+  "resource-limits": "small" | "medium" | "large" | "custom";
+  /** Registry for image storage */
+  "registry": "docker-hub" | "ecr" | "gcr" | "acr" | "private";
+};
+
+/**
  * Docker agent for containerization, orchestration, and deployment
  * Specializes in Docker containers, Kubernetes, and cloud deployment strategies
  */
@@ -78,26 +102,3 @@ Use available tools to query containerization patterns and deployment strategies
   memory: agentMemory
 });
 
-/**
- * Runtime context for the Docker Agent
- * Stores containerization preferences, deployment targets, and Docker configuration
- * 
- * @mastra DockerAgent runtime context interface
- * [EDIT: 2025-06-14] [BY: GitHub Copilot]
- */
-export type DockerAgentRuntimeContext = {
-  /** Unique identifier for the user */
-  "user-id": string;
-  /** Unique identifier for the session */
-  "session-id": string;
-  /** Target deployment environment */
-  "deployment-env": "development" | "staging" | "production" | "testing";
-  /** Container orchestration platform */
-  "orchestration": "docker-compose" | "kubernetes" | "swarm" | "standalone";
-  /** Base image preference */
-  "base-image": string;
-  /** Resource limits for containers */
-  "resource-limits": "small" | "medium" | "large" | "custom";
-  /** Registry for image storage */
-  "registry": "docker-hub" | "ecr" | "gcr" | "acr" | "private";
-};

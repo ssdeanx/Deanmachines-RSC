@@ -2,6 +2,12 @@ import { google } from '@ai-sdk/google';
 import { Agent } from '@mastra/core/agent';
 import { createStep, createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
+import { PinoLogger } from "@mastra/loggers";
+
+const logger = new PinoLogger({ 
+  name: 'weatherWorkflow', 
+  level: 'info' 
+});
 
 const llm = google('gemini-2.5-flash-lite-preview-06-17');
 
@@ -92,49 +98,87 @@ const fetchWeather = createStep({
   }),
   outputSchema: forecastSchema,
   execute: async ({ inputData }) => {
+    const stepId = Math.random().toString(36).substring(7);
+    const startTime = Date.now();
+    
+    logger.info('Weather fetch step initiated', {
+      stepId,
+      city: inputData?.city,
+      event: 'fetch_weather_started'
+    });
+
     if (!inputData) {
+      logger.error('Weather fetch step failed - no input data', {
+        stepId,
+        event: 'fetch_weather_failed'
+      });
       throw new Error('Input data not found');
     }
 
-    const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(inputData.city)}&count=1`;
-    const geocodingResponse = await fetch(geocodingUrl);
-    const geocodingData = (await geocodingResponse.json()) as {
-      results: { latitude: number; longitude: number; name: string }[];
-    };
+    try {
+      const geocodingUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(inputData.city)}&count=1`;
+      const geocodingResponse = await fetch(geocodingUrl);
+      const geocodingData = (await geocodingResponse.json()) as {
+        results: { latitude: number; longitude: number; name: string }[];
+      };
 
-    if (!geocodingData.results?.[0]) {
-      throw new Error(`Location '${inputData.city}' not found`);
+      if (!geocodingData.results?.[0]) {
+        logger.error('Location not found', {
+          stepId,
+          city: inputData.city,
+          event: 'location_not_found'
+        });
+        throw new Error(`Location '${inputData.city}' not found`);
+      }
+
+      const { latitude, longitude, name } = geocodingData.results[0];
+
+      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=precipitation,weathercode&timezone=auto,&hourly=precipitation_probability,temperature_2m`;
+      const response = await fetch(weatherUrl);
+      const data = (await response.json()) as {
+        current: {
+          time: string;
+          precipitation: number;
+          weathercode: number;
+        };
+        hourly: {
+          precipitation_probability: number[];
+          temperature_2m: number[];
+        };
+      };
+
+      const forecast = {
+        date: new Date().toISOString(),
+        maxTemp: Math.max(...data.hourly.temperature_2m),
+        minTemp: Math.min(...data.hourly.temperature_2m),
+        condition: getWeatherCondition(data.current.weathercode),
+        precipitationChance: data.hourly.precipitation_probability.reduce(
+          (acc, curr) => Math.max(acc, curr),
+          0,
+        ),
+        location: name,
+      };
+
+      const duration = Date.now() - startTime;
+      logger.info('Weather fetch step completed successfully', {
+        stepId,
+        duration,
+        location: name,
+        condition: forecast.condition,
+        event: 'fetch_weather_completed'
+      });
+
+      return forecast;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      logger.error('Weather fetch step failed', {
+        stepId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        event: 'fetch_weather_failed'
+      });
+      throw error;
     }
-
-    const { latitude, longitude, name } = geocodingData.results[0];
-
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=precipitation,weathercode&timezone=auto,&hourly=precipitation_probability,temperature_2m`;
-    const response = await fetch(weatherUrl);
-    const data = (await response.json()) as {
-      current: {
-        time: string;
-        precipitation: number;
-        weathercode: number;
-      };
-      hourly: {
-        precipitation_probability: number[];
-        temperature_2m: number[];
-      };
-    };
-
-    const forecast = {
-      date: new Date().toISOString(),
-      maxTemp: Math.max(...data.hourly.temperature_2m),
-      minTemp: Math.min(...data.hourly.temperature_2m),
-      condition: getWeatherCondition(data.current.weathercode),
-      precipitationChance: data.hourly.precipitation_probability.reduce(
-        (acc, curr) => Math.max(acc, curr),
-        0,
-      ),
-      location: name,
-    };
-
-    return forecast;
   },
 });
 
@@ -146,33 +190,66 @@ const planActivities = createStep({
     activities: z.string(),
   }),
   execute: async ({ inputData }) => {
+    const stepId = Math.random().toString(36).substring(7);
+    const startTime = Date.now();
     const forecast = inputData;
 
+    logger.info('Activity planning step initiated', {
+      stepId,
+      location: forecast?.location,
+      condition: forecast?.condition,
+      event: 'plan_activities_started'
+    });
+
     if (!forecast) {
+      logger.error('Activity planning step failed - no forecast data', {
+        stepId,
+        event: 'plan_activities_failed'
+      });
       throw new Error('Forecast data not found');
     }
 
-    const prompt = `Based on the following weather forecast for ${forecast.location}, suggest appropriate activities:
-      ${JSON.stringify(forecast, null, 2)}
-      `;
+    try {
+      const prompt = `Based on the following weather forecast for ${forecast.location}, suggest appropriate activities:
+        ${JSON.stringify(forecast, null, 2)}
+        `;
 
-    const response = await agent.stream([
-      {
-        role: 'user',
-        content: prompt,
-      },
-    ]);
+      const response = await agent.stream([
+        {
+          role: 'user',
+          content: prompt,
+        },
+      ]);
 
-    let activitiesText = '';
+      let activitiesText = '';
 
-    for await (const chunk of response.textStream) {
-      process.stdout.write(chunk);
-      activitiesText += chunk;
+      for await (const chunk of response.textStream) {
+        process.stdout.write(chunk);
+        activitiesText += chunk;
+      }
+
+      const duration = Date.now() - startTime;
+      logger.info('Activity planning step completed successfully', {
+        stepId,
+        duration,
+        location: forecast.location,
+        activitiesLength: activitiesText.length,
+        event: 'plan_activities_completed'
+      });
+
+      return {
+        activities: activitiesText,
+      };
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      logger.error('Activity planning step failed', {
+        stepId,
+        duration,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        event: 'plan_activities_failed'
+      });
+      throw error;
     }
-
-    return {
-      activities: activitiesText,
-    };
   },
 });
 
@@ -189,5 +266,11 @@ const weatherWorkflow = createWorkflow({
   .then(planActivities);
 
 weatherWorkflow.commit();
+
+logger.info('Weather workflow initialized successfully', {
+  workflowId: 'weather-workflow',
+  steps: ['fetch-weather', 'plan-activities'],
+  event: 'workflow_initialized'
+});
 
 export { weatherWorkflow };
