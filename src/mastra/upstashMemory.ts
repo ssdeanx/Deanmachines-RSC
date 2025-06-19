@@ -447,7 +447,7 @@ export const upstashMemory = new Memory({
     semanticRecall: {
       topK: 5,
       messageRange: {
-        before: 4,
+        before: 3,
         after: 1,
       },
     },
@@ -457,11 +457,11 @@ export const upstashMemory = new Memory({
   },
   processors: [
     new AttentionGuidedMemoryProcessor({
-      maxMessages: 100,
-      similarityThreshold: 0.8,
+      maxMessages: 50,
+      similarityThreshold: 0.85,
       importanceKeywords: ['urgent', 'important', 'critical'],
       verboseMessageThreshold: 500,
-      contextPreservationRatio: 0.4,
+      contextPreservationRatio: 0.3,
     }),
     new ContextualRelevanceProcessor({
         topicContinuityThreshold: 0.7,
@@ -469,7 +469,7 @@ export const upstashMemory = new Memory({
     }),
     new TokenLimiter(1000000),
     new ToolCallFilter({
-      exclude: ['mcp'], // Exclude internal calls
+      exclude: [], // Exclude internal calls if none are set then all are filtered
 
     }),
     // Add custom processors as needed

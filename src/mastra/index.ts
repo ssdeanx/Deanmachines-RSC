@@ -9,6 +9,7 @@ import { researchAnalysisWorkflow } from './workflows/research-analysis-workflow
 import { agentRegistry } from './agents';
 import { registerCopilotKit } from "@mastra/agui";
 import { deanMachinesNetwork, DeanMachinesNetworkRuntimeContext } from './networks/dean-machines-network';
+import { baseNetwork, BaseNetworkRuntimeContext } from './networks/base-network';
 import { 
   MasterAgentRuntimeContext,
   WeatherAgentRuntimeContext,
@@ -48,7 +49,7 @@ export const mastra = new Mastra({
         fullStackDevelopmentWorkflow,
         researchAnalysisWorkflow
     },
-    networks: {deanMachinesNetwork},
+    networks: {deanMachinesNetwork, baseNetwork},
     agents: agentRegistry,
     logger: new PinoLogger({
         name: 'ai',
@@ -456,6 +457,24 @@ export const mastra = new Mastra({
             registerCopilotKit<DeanMachinesNetworkRuntimeContext>({
                 path: "/copilotkit/dean-machines-network",
                 resourceId: "dean-machines-network",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                    runtimeContext.set("task-complexity", (c.req.header("X-Task-Complexity") as "simple" | "moderate" | "complex" | "advanced" | "enterprise") || "moderate");
+                    runtimeContext.set("execution-mode", (c.req.header("X-Execution-Mode") as "single-agent" | "multi-agent" | "collaborative" | "autonomous") || "multi-agent");
+                    runtimeContext.set("priority-level", (c.req.header("X-Priority-Level") as "low" | "normal" | "high" | "urgent" | "critical") || "normal");
+                    runtimeContext.set("domain-context", c.req.header("X-Domain-Context") || "general");
+                    runtimeContext.set("preferred-agents", (c.req.header("X-Preferred-Agents") || "").split(",").filter(Boolean));
+                    runtimeContext.set("max-agents", parseInt(c.req.header("X-Max-Agents") || "3"));
+                    runtimeContext.set("routing-strategy", (c.req.header("X-Routing-Strategy") as "auto" | "manual" | "hybrid" | "intelligent") || "intelligent");
+                    runtimeContext.set("debug-mode", c.req.header("X-Debug-Mode") === "true");
+                    runtimeContext.set("trace-execution", c.req.header("X-Trace-Execution") === "true");
+                    runtimeContext.set("response-format", (c.req.header("X-Response-Format") as "detailed" | "concise" | "technical" | "business") || "detailed");
+                }
+            }),
+            registerCopilotKit<BaseNetworkRuntimeContext>({
+                path: "/copilotkit/base-network",
+                resourceId: "base-network",
                 setContext: (c, runtimeContext) => {
                     runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
                     runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
