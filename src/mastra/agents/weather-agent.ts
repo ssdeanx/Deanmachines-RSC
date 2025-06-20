@@ -3,8 +3,10 @@ import { createGemini25Provider } from '../config/googleProvider';
 import { weatherTool } from '../tools/weather-tool';
 import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { agentMemory } from '../agentMemory';
-import { mcp } from '../tools/mcp';
+import { upstashMemory } from '../upstashMemory';
+import { getMCPToolsByServer } from '../tools/mcp';
 
 /**
  * Runtime context type for the Weather Agent
@@ -78,7 +80,7 @@ Use the weatherTool to fetch current weather data.`;
     weatherTool,
     chunkerTool,
     rerankTool,
-    ...await mcp.getTools(),
+    ...await getMCPToolsByServer('filesystem'),
   },
-  memory: agentMemory
+  memory: upstashMemory,
 });

@@ -1,9 +1,11 @@
 import { Agent } from "@mastra/core/agent";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { agentMemory } from '../agentMemory';
+import { upstashMemory } from '../upstashMemory';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
-import { mcp } from '../tools/mcp';
+import { getMCPToolsByServer } from '../tools/mcp';
 import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
 
@@ -97,8 +99,8 @@ Use available tools to query containerization patterns and deployment strategies
     chunkerTool,
     rerankTool,
     vectorQueryTool,
-    ...await mcp.getTools(),
+    ...await getMCPToolsByServer('docker'),
   },
-  memory: agentMemory
+  memory: upstashMemory,
 });
 

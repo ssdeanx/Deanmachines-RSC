@@ -1,5 +1,7 @@
 import { Agent } from "@mastra/core/agent";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { agentMemory } from '../agentMemory';
+import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
@@ -7,7 +9,7 @@ import { stockPriceTool } from "../tools/stock-tools";
 import { mem0RememberTool, mem0MemorizeTool } from "../tools/mem0-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
-import { mcp } from '../tools/mcp';
+import { getMCPToolsByServer } from '../tools/mcp';
 
 const logger = new PinoLogger({ name: 'strategizerAgent', level: 'info' });
 logger.info('Initializing strategizerAgent');
@@ -105,7 +107,7 @@ SUCCESS CRITERIA:
     vectorQueryTool,
     hybridVectorSearchTool,
     stockPriceTool,
-    ...await mcp.getTools(),
+    ...await getMCPToolsByServer('filesystem'),
   },
-  memory: agentMemory
+  memory: upstashMemory,
 });

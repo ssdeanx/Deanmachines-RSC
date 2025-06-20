@@ -1,11 +1,13 @@
 import { Agent } from "@mastra/core/agent";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { agentMemory } from '../agentMemory';
+import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
-import { mcp } from '../tools/mcp';
+import { getMCPToolsByServer } from '../tools/mcp';
 import { z } from 'zod';
 
 
@@ -140,9 +142,9 @@ Use available tools to access knowledge graphs and perform comprehensive searche
     graphRAGTool,
     vectorQueryTool,
     chunkerTool,
-    ...await mcp.getTools(),
+    ...await getMCPToolsByServer('filesystem'),
   }, 
-  memory: agentMemory
+  memory: upstashMemory,
 });
 
 /**

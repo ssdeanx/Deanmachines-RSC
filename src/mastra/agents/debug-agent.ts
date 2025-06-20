@@ -1,12 +1,14 @@
 import { Agent } from "@mastra/core/agent";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { agentMemory } from '../agentMemory';
+import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
-import { mcp } from '../tools/mcp';
+import { getMCPToolsByServer } from '../tools/mcp';
 
 const logger = new PinoLogger({ name: 'debugAgent', level: 'info' });
 logger.info('Initializing debugAgent');
@@ -104,8 +106,8 @@ Use available tools to analyze system relationships and query relevant informati
     vectorQueryTool,
     chunkerTool,
     rerankTool,
-    ...await mcp.getTools(),
+    ...await getMCPToolsByServer('filesystem'),
   },
-  memory: agentMemory
+  memory: upstashMemory,
 });
 

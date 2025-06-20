@@ -548,7 +548,8 @@ export const mcp = {  /**
     },
 
     getClientForServer(server: string) {
-      const stdioServers = ['filesystem', 'docker'];
+      const stdioServers = ['filesystem', 'git', 'time', 'fetch', 'puppeteer',
+        'github', 'memoryGraph', 'ddgsearch', 'neo4j', 'tavily', 'nodeCodeSandbox'];
 
       if (stdioServers.includes(server)) {
         return mcpStdio;
@@ -835,6 +836,32 @@ export const listTracedMCPTools = async (server: string): Promise<{ name: string
     }
   );
 };
+/**
+ * Get MCP tools for a specific server as Mastra-compatible tools
+ * @param serverName - Name of the MCP server
+ * @returns Tools from the specified server formatted for Mastra
+ */
+export async function getMCPToolsByServer(serverName: string): Promise<Record<string, unknown>> {
+  try {
+    const tools = await mcp.listTools(serverName);
+    const serverTools: Record<string, unknown> = {};
+
+    for (const tool of tools) {
+      if (tool.name) {
+        serverTools[tool.name] = async (args: Record<string, unknown>) => {
+          return await mcp.callTool(serverName, tool.name, args);
+        };
+      }
+    }
+
+    logger.info(`Loaded ${Object.keys(serverTools).length} tools from MCP server '${serverName}'`);
+    return serverTools;
+  } catch (error) {
+    logger.warn(`Failed to load tools from MCP server '${serverName}':`, error as Record<string, unknown>);
+    return {};
+  }
+}
+
 /**
  * Traced MCP server resources listing
  *

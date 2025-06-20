@@ -1,5 +1,7 @@
 import { Agent } from "@mastra/core/agent";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { agentMemory } from '../agentMemory';
+import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
@@ -16,7 +18,7 @@ import {
   TextualDifferenceMetric                       
 } from '@mastra/evals/nlp';
 import { createGemini25Provider } from '../config/googleProvider';
-import { mcp } from '../tools/mcp';
+import { getMCPToolsByServer } from '../tools/mcp';
 import { z } from 'zod';
 //import { CustomEvalMetric } from "../evals/customEval";
 import { WordInclusionMetric } from "../evals/wordInclusion";
@@ -140,9 +142,20 @@ SUCCESS CRITERIA:
     vectorQueryTool,
     weatherTool,
     stockPriceTool,
-    ...await mcp.getTools(),
+    // MCP Tools by individual servers
+    ...await getMCPToolsByServer('filesystem'),
+    ...await getMCPToolsByServer('git'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('puppeteer'),
+    ...await getMCPToolsByServer('github'),
+    ...await getMCPToolsByServer('memoryGraph'),
+    ...await getMCPToolsByServer('ddgsearch'),
+    ...await getMCPToolsByServer('neo4j'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily'),
+    ...await getMCPToolsByServer('nodeCodeSandbox'),
   },  
-  memory: agentMemory,
+  memory: upstashMemory,
   evals: {  
     toneConsistency: new ToneConsistencyMetric(),
     keywordCoverage: new KeywordCoverageMetric(),

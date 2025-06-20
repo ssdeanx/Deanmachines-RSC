@@ -28,6 +28,7 @@ export { specialAgent } from './special-agent';
 export { supervisorAgent } from './supervisor-agent';
 export { sysadminAgent } from './sysadmin-agent';
 export { utilityAgent } from './utility-agent';
+export { reactAgent } from './react-enhanced-agent';
 
 // Import agents for registry
 import { masterAgent } from './master-agent';
@@ -52,11 +53,13 @@ import { utilityAgent } from './utility-agent';
 import { analyzerAgent } from './analyzer-agent';
 import { strategizerAgent } from './strategizer-agent';
 import { evolveAgent } from './evolve-agent';
+import { reactAgent } from './react-enhanced-agent';
 
 // Additional exports for workflow usage
 export { analyzerAgent } from './analyzer-agent';
 export { strategizerAgent } from './strategizer-agent';
 export { evolveAgent } from './evolve-agent';
+
 
 // Runtime Context Types - Export all agent-specific runtime contexts
 export type { MasterAgentRuntimeContext } from './master-agent';
@@ -81,6 +84,7 @@ export type { EvolveAgentRuntimeContext } from './evolve-agent';
 export type { AnalyzerAgentRuntimeContext } from './analyzer-agent';
 export type { SysadminAgentRuntimeContext } from './sysadmin-agent';
 export type { UtilityAgentRuntimeContext } from './utility-agent';
+export type { ReactAgentRuntimeContext } from './react-enhanced-agent';
 
 /**
  * Agent registry object for easy access and management
@@ -112,6 +116,7 @@ export const agentRegistry = {
   sysadmin: sysadminAgent,
   utility: utilityAgent,
   weather: weatherAgent,
+  react: reactAgent,
 } as const;
 
 /**
@@ -119,7 +124,7 @@ export const agentRegistry = {
  * Groups agents by their primary domain expertise
  */
 export const agentCategories = {
-  core: ['master', 'supervisor', 'analyzer', 'strategizer', 'evolve'] as const,
+  core: ['master', 'supervisor', 'analyzer', 'strategizer', 'evolve', 'react'] as const,
   development: ['code', 'git', 'docker', 'debug'] as const,
   data: ['data', 'graph', 'processing', 'research', 'weather'] as const,
   management: ['manager', 'supervisor', 'marketing'] as const,
@@ -189,4 +194,5 @@ export const agentMetadata = {
   special: { description: 'Multi-domain expert for unique and complex tasks', tags: ['special', 'multi-domain', 'innovation'] },
   sysadmin: { description: 'System administration and DevOps expert', tags: ['sysadmin', 'devops', 'infrastructure'] },
   utility: { description: 'General-purpose utility and helper functions', tags: ['utility', 'general', 'helper'] },
+  react: { description: 'ReAct agent for reasoning and reflection', tags: ['react', 'reasoning', 'reflection'] },
 } as const;

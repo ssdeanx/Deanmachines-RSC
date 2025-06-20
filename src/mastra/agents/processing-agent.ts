@@ -1,12 +1,14 @@
 import { Agent } from "@mastra/core/agent";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { agentMemory } from '../agentMemory';
+import { upstashMemory } from '../upstashMemory';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { graphRAGTool } from '../tools/graphRAG';
 import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
-import { mcp } from '../tools/mcp';
+import { getMCPToolsByServer } from '../tools/mcp';
 
 import { z } from "zod";
 
@@ -145,10 +147,10 @@ Use available tools to analyze data relationships and processing patterns.`;
     rerankTool,
     graphRAGTool,
     vectorQueryTool,
-    ...await mcp.getTools(),
+    ...await getMCPToolsByServer('filesystem'),
   },
 
-  memory: agentMemory
+  memory: upstashMemory,
 });
 
 /**

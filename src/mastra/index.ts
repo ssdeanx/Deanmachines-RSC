@@ -32,7 +32,8 @@ import {
   EvolveAgentRuntimeContext,
   AnalyzerAgentRuntimeContext,
   SysadminAgentRuntimeContext,
-  UtilityAgentRuntimeContext
+  UtilityAgentRuntimeContext,
+  ReactAgentRuntimeContext
 } from './agents';
 import { LangfuseExporter } from "langfuse-vercel";
 
@@ -385,6 +386,20 @@ export const mastra = new Mastra({
                     runtimeContext.set("format", (c.req.header("X-Format") as "markdown" | "html" | "pdf" | "wiki" | "docx") || "markdown");
                     runtimeContext.set("code-style", (c.req.header("X-Code-Style") as "jsdoc" | "tsdoc" | "sphinx" | "javadoc" | "rustdoc") || "tsdoc");
                     runtimeContext.set("project-name", c.req.header("X-Project-Name") || "");
+                }
+            }),
+            // React Agent - Reasoning and reflection
+            registerCopilotKit<ReactAgentRuntimeContext>({
+                path: "/copilotkit/react",
+                resourceId: "react",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                    runtimeContext.set("reasoning-depth", (c.req.header("X-Reasoning-Depth") as "shallow" | "moderate" | "deep") || "moderate");
+                    runtimeContext.set("action-confidence", (c.req.header("X-Action-Confidence") as "low" | "medium" | "high") || "medium");
+                    runtimeContext.set("reflection-enabled", c.req.header("X-Reflection-Enabled") === "true");
+                    runtimeContext.set("max-reasoning-cycles", parseInt(c.req.header("X-Max-Reasoning-Cycles") || "5"));
+                    runtimeContext.set("domain-focus", c.req.header("X-Domain-Focus") || "");
                 }
             }),
 

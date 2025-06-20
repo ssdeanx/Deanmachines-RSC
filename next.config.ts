@@ -43,7 +43,13 @@ const nextConfig: NextConfig = {
     'langfuse-vercel',
     '@mastra/agui',
     '@inquirer/prompts',
-    'simple-git'
+    'simple-git',
+    'papaparse',
+    'yaml',
+    'eslint',
+    'typescript',
+    '@typescript-eslint/eslint-plugin',
+    '@typescript-eslint/parser'
   ],
   experimental: {
     optimizeCss: true,

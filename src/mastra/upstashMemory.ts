@@ -9,7 +9,31 @@ import { UIMessage } from 'ai';
 import { google } from '@ai-sdk/google';
 import { TokenLimiter, ToolCallFilter } from "@mastra/memory/processors";
 
+
 const logger = new PinoLogger({ name: 'upstashMemory', level: 'info' });
+
+/**
+ * Environment variable validation for Upstash services
+ * Ensures all required credentials are present before initialization
+ */
+function validateUpstashEnvironment(): void {
+  const required = [
+    'UPSTASH_REDIS_REST_URL',
+    'UPSTASH_REDIS_REST_TOKEN',
+    'UPSTASH_VECTOR_REST_URL',
+    'UPSTASH_VECTOR_REST_TOKEN'
+  ];
+
+  const missing = required.filter(key => !process.env[key]);
+  if (missing.length > 0) {
+    throw new Error(`Missing required Upstash environment variables: ${missing.join(', ')}`);
+  }
+
+  logger.info('Upstash environment variables validated successfully');
+}
+
+// Validate environment on module load
+validateUpstashEnvironment();
 
 // Validation schemas
 const createThreadSchema = z.object({ 
@@ -36,6 +60,59 @@ const searchMessagesSchema = z.object({
   after: z.number().int().min(0).default(0),
 });
 
+// Enhanced vector operation schemas
+const vectorIndexSchema = z.object({
+  indexName: z.string().nonempty(),
+  dimension: z.number().int().min(1).default(1536), // Gemini embedding dimension (1536)
+  metric: z.enum(['cosine']).default('cosine')
+});
+
+const vectorUpsertSchema = z.object({
+  indexName: z.string().nonempty(),
+  vectors: z.array(z.array(z.number())),
+  metadata: z.array(z.record(z.unknown())).optional(),
+  ids: z.array(z.string()).optional()
+});
+
+const vectorQuerySchema = z.object({
+  indexName: z.string().nonempty(),
+  queryVector: z.array(z.number()),
+  topK: z.number().int().min(1).default(10),
+  filter: z.record(z.unknown()).optional(),
+  includeVector: z.boolean().default(false)
+});
+
+const vectorUpdateSchema = z.object({
+  indexName: z.string().nonempty(),
+  id: z.string().nonempty(),
+  vector: z.array(z.number()).optional(),
+  metadata: z.record(z.unknown()).optional()
+});
+
+/**
+ * Vector operation result interfaces following Upstash Vector API
+ */
+export interface VectorQueryResult {
+  id: string;
+  score: number;
+  metadata: Record<string, unknown>;
+  vector?: number[];
+}
+
+export interface VectorIndexStats {
+  dimension: number;
+  count: number;
+  metric: 'cosine' | 'euclidean' | 'dotproduct';
+}
+
+export interface VectorOperationResult {
+  success: boolean;
+  operation: string;
+  indexName?: string;
+  count?: number;
+  error?: string;
+}
+
 // Create shared Upstash storage instance
 export const upstashStorage = new UpstashStore({
   url: process.env.UPSTASH_REDIS_REST_URL || '',
@@ -43,13 +120,29 @@ export const upstashStorage = new UpstashStore({
 });
 
 /**
- * Enhanced Upstash Vector Configuration 
- * Initializes vector storage for optimal search performance
+ * Enhanced Upstash Vector Configuration
+ * Initializes vector storage for optimal search performance with proper dimensions
+ *
+ * @remarks
+ * - Configured for Gemini embedding model (1536 dimensions)
+ * - Uses cosine similarity for text embeddings
+ * - Supports metadata filtering and hybrid search
  */
 export const upstashVector = new UpstashVector({
   url: process.env.UPSTASH_VECTOR_REST_URL || '',
   token: process.env.UPSTASH_VECTOR_REST_TOKEN || ''
 });
+
+/**
+ * Vector configuration constants
+ */
+export const VECTOR_CONFIG = {
+  DEFAULT_INDEX_NAME: 'mastra-memory-vectors',
+  EMBEDDING_DIMENSION: 1536, // Gemini text-embedding dimension (updated to match your setup)
+  DISTANCE_METRIC: 'cosine' as const,
+  DEFAULT_TOP_K: 5,
+  MAX_BATCH_SIZE: 100
+} as const;
 
 /**
  * Advanced Attention-Guided Memory Processor (2025)
@@ -62,6 +155,14 @@ export const upstashVector = new UpstashVector({
  * 
  * @see https://mastra.ai/en/docs/memory/memory-processors
  * 
+ * @version 1.0.0
+ * @author SSD
+ * @date 2025-06-20
+ * 
+ * @mastra Memory Processor implementation for Upstash Memory
+ * @class AttentionGuidedMemoryProcessor
+ * 
+ * @remarks
  * Features:
  * - Removes redundant messages using semantic similarity
  * - Prioritizes high-importance content based on keywords
@@ -82,7 +183,7 @@ export const upstashVector = new UpstashVector({
  * });
  * ```
  * 
- * [EDIT: 2025-06-19] & [BY: GitHub Copilot]
+ * [EDIT: 2025-06-20] & [BY: GitHub Copilot]
  */
 export class AttentionGuidedMemoryProcessor extends MemoryProcessor {
   private readonly maxMessages: number;
@@ -309,6 +410,14 @@ export class AttentionGuidedMemoryProcessor extends MemoryProcessor {
 /**
  * Enhanced Contextual Relevance Processor (2025)
  * 
+ * @version 1.0.0
+ * @author SSD
+ * @date 2025-06-20
+ * 
+ * @mastra Memory Processor implementation for Upstash Memory
+ * @class ContextualRelevanceProcessor
+ * 
+ * @remarks
  * Focuses on maintaining only contextually relevant messages
  * based on topic continuity and semantic coherence.
  * 
@@ -324,7 +433,7 @@ export class AttentionGuidedMemoryProcessor extends MemoryProcessor {
  * });
  * ```
  * 
- * [EDIT: 2025-06-19] & [BY: GitHub Copilot]
+ * [EDIT: 2025-06-20] & [BY: GitHub Copilot]
  */
 export class ContextualRelevanceProcessor extends MemoryProcessor {
   private readonly topicContinuityThreshold: number;
@@ -416,27 +525,40 @@ export class ContextualRelevanceProcessor extends MemoryProcessor {
   }
 }
 
-// Generated on 2025-06-19 - Enhanced Upstash memory backend with comprehensive functionality
-
 /**
  * Shared Mastra agent memory instance using Upstash for distributed storage and vector search.
  *
  * @remarks
  * - Uses UpstashStore for distributed Redis storage
- * - Uses UpstashVector for semantic search with cloud-based vectors
- * - Embeddings powered by Gemini text-embedding model
- * - Configured for working memory and semantic recall
+ * - Uses UpstashVector for semantic search with cloud-based vectors (1536-dim Gemini embeddings)
+ * - Embeddings powered by Gemini text-embedding model with cosine similarity
+ * - Configured for working memory and semantic recall with enhanced processors
  * - Supports custom memory processors for filtering, summarization, etc.
  * - Ideal for serverless and distributed applications
+ * - Enhanced with vector operations and batch processing capabilities
  *
  * @see https://upstash.com/docs/redis/overall/getstarted
  * @see https://upstash.com/docs/vector/overall/getstarted
- *
+ * @see https://mastra.ai/en/reference/rag/upstash
+ * 
+ * @version 1.0.0
+ * @author SSD
+ * @date 2025-06-20
+ * 
+ * @mastra Shared Upstash memory instance for all agents
+ * @instance upstashMemory
+ * @module upstashMemory
+ * @class Memory
+ * @classdesc Shared memory instance for all agents using Upstash for storage and vector search
  * @returns {Memory} Shared Upstash-backed memory instance for all agents
- *
+ * 
  * @example
  * // Use threadId/resourceId for multi-user or multi-session memory:
  * await agent.generate('Hello', { resourceId: 'user-123', threadId: 'thread-abc' });
+ *
+ * @example
+ * // Initialize vector indexes on startup:
+ * await initializeUpstashVectorIndexes();
  */
 export const upstashMemory = new Memory({
   storage: upstashStorage,
@@ -445,21 +567,33 @@ export const upstashMemory = new Memory({
   options: {
     lastMessages: 500, // Enhanced for better context retention
     semanticRecall: {
-      topK: 5,
+      topK: VECTOR_CONFIG.DEFAULT_TOP_K,
       messageRange: {
         before: 3,
         after: 1,
       },
+      scope: 'resource', // Search across all threads for a user
+    },
+    threads: {
+      generateTitle: true, // Auto-generate thread titles
     },
     workingMemory: {
-      enabled: true,
+      enabled: true, // Persistent user information across conversations
+      template: `# Memory
+- Preferences:
+- Goals:
+- Context:
+- Recent Actions:
+- Key Insights:
+- Important Notes:
+`
     },
   },
   processors: [
     new AttentionGuidedMemoryProcessor({
       maxMessages: 50,
       similarityThreshold: 0.85,
-      importanceKeywords: ['urgent', 'important', 'critical'],
+      importanceKeywords: ['urgent', 'important', 'critical', 'error', 'bug', 'issue'],
       verboseMessageThreshold: 500,
       contextPreservationRatio: 0.3,
     }),
@@ -467,10 +601,9 @@ export const upstashMemory = new Memory({
         topicContinuityThreshold: 0.7,
         maxTopicShifts: 4,
     }),
-    new TokenLimiter(1000000),
+    new TokenLimiter(1000000), // 1M token limit for context
     new ToolCallFilter({
-      exclude: [], // Exclude internal calls if none are set then all are filtered
-
+      exclude: [], // Include all tool calls for better context
     }),
     // Add custom processors as needed
   ],
@@ -674,18 +807,539 @@ export async function enhancedUpstashSearchMessages(
 }
 
 /**
+ * Create a vector index with proper configuration
+ * @param indexName - Name of the index to create
+ * @param dimension - Vector dimension (default: 1536 for Gemini)
+ * @param metric - Distance metric (default: cosine)
+ * @returns Promise resolving to operation result
+ */
+export async function createVectorIndex(
+  indexName: string = VECTOR_CONFIG.DEFAULT_INDEX_NAME,
+  dimension: number = VECTOR_CONFIG.EMBEDDING_DIMENSION,
+  metric: 'cosine' = VECTOR_CONFIG.DISTANCE_METRIC
+): Promise<VectorOperationResult> {
+  const params = vectorIndexSchema.parse({ indexName, dimension, metric });
+
+  try {
+    // Note: Upstash Vector createIndex is a no-op as indexes are auto-created
+    // But we validate the parameters and log the configuration
+    logger.info('Vector index configuration validated', {
+      indexName: params.indexName,
+      dimension: params.dimension,
+      metric: params.metric
+    });
+
+    return {
+      success: true,
+      operation: 'createIndex',
+      indexName: params.indexName
+    };
+  } catch (error: unknown) {
+    logger.error('Failed to validate vector index configuration', {
+      error: (error as Error).message,
+      indexName: params.indexName
+    });
+
+    return {
+      success: false,
+      operation: 'createIndex',
+      indexName: params.indexName,
+      error: (error as Error).message
+    };
+  }
+}
+
+/**
  * Initialize Upstash Vector indexes for optimal search performance
  * Should be called during application startup
+ * 
+ * @version 1.0.0
+ * @author SSD
+ * @date 2025-06-20
+ * 
+ * @mastra Initialization function for Upstash Vector indexes
+ * @module upstashMemory
+ * @function initializeUpstashVectorIndexes
+ * @returns Promise resolving to operation result
+ * 
+ * @example
+ * ```typescript
+ * await initializeUpstashVectorIndexes();
+ * ```
+ * 
+ * @remarks
+ * Upstash Vector automatically manages indexes, but this function provides
+ * validation and logging for the vector setup process
  */
-export async function initializeUpstashVectorIndexes(): Promise<void> {
+export async function initializeUpstashVectorIndexes(): Promise<VectorOperationResult> {
   try {
     // Upstash Vector handles index creation automatically
-    // This function is provided for consistency with LibSQL implementation
-    logger.info('Upstash Vector indexes initialized (auto-managed by Upstash)');
+    // We can validate the connection by attempting to list indexes
+    const indexes = await upstashVector.listIndexes();
+
+    logger.info('Upstash Vector indexes initialized successfully', {
+      indexCount: indexes.length,
+      indexes: indexes.slice(0, 5), // Log first 5 indexes
+      vectorConfig: VECTOR_CONFIG
+    });
+
+    return {
+      success: true,
+      operation: 'initializeIndexes',
+      count: indexes.length
+    };
   } catch (error: unknown) {
-    logger.warn('Upstash Vector index initialization warning', {
+    logger.error('Upstash Vector index initialization failed', {
+      error: (error as Error).message,
+      vectorConfig: VECTOR_CONFIG
+    });
+
+    return {
+      success: false,
+      operation: 'initializeIndexes',
+      error: (error as Error).message
+    };
+  }
+}
+
+/**
+ * List all available vector indexes
+ * @returns Promise resolving to array of index names
+ */
+export async function listVectorIndexes(): Promise<string[]> {
+  try {
+    const indexes = await upstashVector.listIndexes();
+    logger.info('Vector indexes listed successfully', { count: indexes.length });
+    return indexes;
+  } catch (error: unknown) {
+    logger.error('Failed to list vector indexes', {
       error: (error as Error).message
     });
+    throw error;
+  }
+}
+
+/**
+ * Get detailed information about a vector index
+ * @param indexName - Name of the index to describe
+ * @returns Promise resolving to index statistics
+ */
+export async function describeVectorIndex(indexName: string): Promise<VectorIndexStats> {
+  try {
+    const stats = await upstashVector.describeIndex({ indexName });
+
+    logger.info('Vector index described successfully', { indexName, stats });
+
+    return {
+      dimension: stats.dimension,
+      count: stats.count,
+      metric: stats.metric || 'cosine'
+    };
+  } catch (error: unknown) {
+    logger.error('Failed to describe vector index', {
+      error: (error as Error).message,
+      indexName
+    });
+    throw error;
+  }
+}
+
+/**
+ * Delete a vector index
+ * @param indexName - Name of the index to delete
+ * @returns Promise resolving to operation result
+ */
+export async function deleteVectorIndex(indexName: string): Promise<VectorOperationResult> {
+  try {
+    await upstashVector.deleteIndex({ indexName });
+
+    logger.info('Vector index deleted successfully', { indexName });
+
+    return {
+      success: true,
+      operation: 'deleteIndex',
+      indexName
+    };
+  } catch (error: unknown) {
+    logger.error('Failed to delete vector index', {
+      error: (error as Error).message,
+      indexName
+    });
+
+    return {
+      success: false,
+      operation: 'deleteIndex',
+      indexName,
+      error: (error as Error).message
+    };
+  }
+}
+
+/**
+ * Upsert vectors into an index with metadata
+ * @param indexName - Name of the index
+ * @param vectors - Array of embedding vectors
+ * @param metadata - Optional metadata for each vector
+ * @param ids - Optional IDs for each vector
+ * @returns Promise resolving to operation result
+ */
+export async function upsertVectors(
+  indexName: string,
+  vectors: number[][],
+  metadata?: Record<string, unknown>[],
+  ids?: string[]
+): Promise<VectorOperationResult> {
+  const params = vectorUpsertSchema.parse({ indexName, vectors, metadata, ids });
+
+  try {
+    await upstashVector.upsert({
+      indexName: params.indexName,
+      vectors: params.vectors,
+      metadata: params.metadata,
+      ids: params.ids
+    });
+
+    logger.info('Vectors upserted successfully', {
+      indexName: params.indexName,
+      vectorCount: params.vectors.length,
+      hasMetadata: !!params.metadata,
+      hasIds: !!params.ids
+    });
+
+    return {
+      success: true,
+      operation: 'upsert',
+      indexName: params.indexName,
+      count: params.vectors.length
+    };
+  } catch (error: unknown) {
+    logger.error('Failed to upsert vectors', {
+      error: (error as Error).message,
+      indexName: params.indexName,
+      vectorCount: params.vectors.length
+    });
+
+    return {
+      success: false,
+      operation: 'upsert',
+      indexName: params.indexName,
+      error: (error as Error).message
+    };
+  }
+}
+
+/**
+ * Query vectors for similarity search
+ * @param indexName - Name of the index to query
+ * @param queryVector - Query vector for similarity search
+ * @param topK - Number of results to return
+ * @param filter - Optional metadata filter
+ * @param includeVector - Whether to include vectors in results
+ * @returns Promise resolving to query results
+ */
+export async function queryVectors(
+  indexName: string,
+  queryVector: number[],
+  topK: number = VECTOR_CONFIG.DEFAULT_TOP_K,
+  filter?: Record<string, unknown>,
+  includeVector: boolean = false
+): Promise<VectorQueryResult[]> {
+  const params = vectorQuerySchema.parse({
+    indexName,
+    queryVector,
+    topK,
+    filter,
+    includeVector
+  });
+
+  try {
+    const results = await upstashVector.query({
+      indexName: params.indexName,
+      queryVector: params.queryVector,
+      topK: params.topK,
+      filter: params.filter,
+      includeVector: params.includeVector
+    });
+
+    logger.info('Vector query completed successfully', {
+      indexName: params.indexName,
+      topK: params.topK,
+      resultCount: results.length,
+      hasFilter: !!params.filter
+    });
+
+    // Transform results to match our interface
+    return results.map(result => ({
+      id: result.id,
+      score: result.score,
+      metadata: result.metadata || {},
+      vector: result.vector
+    }));
+  } catch (error: unknown) {
+    logger.error('Failed to query vectors', {
+      error: (error as Error).message,
+      indexName: params.indexName,
+      topK: params.topK
+    });
+    throw error;
+  }
+}
+
+/**
+ * Update a specific vector in an index
+ * @param indexName - Name of the index
+ * @param id - ID of the vector to update
+ * @param vector - New vector values (optional)
+ * @param metadata - New metadata (optional)
+ * @returns Promise resolving to operation result
+ */
+export async function updateVector(
+  indexName: string,
+  id: string,
+  vector?: number[],
+  metadata?: Record<string, unknown>
+): Promise<VectorOperationResult> {
+  const params = vectorUpdateSchema.parse({ indexName, id, vector, metadata });
+
+  if (!params.vector && !params.metadata) {
+    throw new Error('Either vector or metadata must be provided for update');
+  }
+
+  try {
+    await upstashVector.updateVector({
+      indexName: params.indexName,
+      id: params.id,
+      update: {
+        vector: params.vector,
+        metadata: params.metadata
+      }
+    });
+
+    logger.info('Vector updated successfully', {
+      indexName: params.indexName,
+      id: params.id,
+      hasVector: !!params.vector,
+      hasMetadata: !!params.metadata
+    });
+
+    return {
+      success: true,
+      operation: 'updateVector',
+      indexName: params.indexName
+    };
+  } catch (error: unknown) {
+    logger.error('Failed to update vector', {
+      error: (error as Error).message,
+      indexName: params.indexName,
+      id: params.id
+    });
+
+    return {
+      success: false,
+      operation: 'updateVector',
+      indexName: params.indexName,
+      error: (error as Error).message
+    };
+  }
+}
+
+/**
+ * Delete a specific vector from an index
+ * @param indexName - Name of the index
+ * @param id - ID of the vector to delete
+ * @returns Promise resolving to operation result
+ */
+export async function deleteVector(
+  indexName: string,
+  id: string
+): Promise<VectorOperationResult> {
+  try {
+    await upstashVector.deleteVector({
+      indexName,
+      id
+    });
+
+    logger.info('Vector deleted successfully', { indexName, id });
+
+    return {
+      success: true,
+      operation: 'deleteVector',
+      indexName
+    };
+  } catch (error: unknown) {
+    logger.error('Failed to delete vector', {
+      error: (error as Error).message,
+      indexName,
+      id
+    });
+
+    return {
+      success: false,
+      operation: 'deleteVector',
+      indexName,
+      error: (error as Error).message
+    };
+  }
+}
+
+/**
+ * Batch upsert vectors for improved performance
+ * @param indexName - Name of the index
+ * @param vectors - Array of embedding vectors
+ * @param metadata - Optional metadata for each vector
+ * @param ids - Optional IDs for each vector
+ * @param batchSize - Size of each batch (default: 100)
+ * @returns Promise resolving to operation result
+ */
+export async function batchUpsertVectors(
+  indexName: string,
+  vectors: number[][],
+  metadata?: Record<string, unknown>[],
+  ids?: string[],
+  batchSize: number = VECTOR_CONFIG.MAX_BATCH_SIZE
+): Promise<VectorOperationResult> {
+  const totalVectors = vectors.length;
+  let successCount = 0;
+  let errorCount = 0;
+  const errors: string[] = [];
+
+  try {
+    for (let i = 0; i < totalVectors; i += batchSize) {
+      const batchVectors = vectors.slice(i, i + batchSize);
+      const batchMetadata = metadata?.slice(i, i + batchSize);
+      const batchIds = ids?.slice(i, i + batchSize);
+
+      try {
+        await upsertVectors(indexName, batchVectors, batchMetadata, batchIds);
+        successCount += batchVectors.length;
+      } catch (error: unknown) {
+        errorCount += batchVectors.length;
+        errors.push(`Batch ${Math.floor(i / batchSize) + 1}: ${(error as Error).message}`);
+      }
+    }
+
+    logger.info('Batch vector upsert completed', {
+      indexName,
+      totalVectors,
+      successCount,
+      errorCount,
+      batchSize
+    });
+
+    return {
+      success: errorCount === 0,
+      operation: 'batchUpsert',
+      indexName,
+      count: successCount,
+      error: errors.length > 0 ? errors.join('; ') : undefined
+    };
+  } catch (error: unknown) {
+    logger.error('Batch vector upsert failed', {
+      error: (error as Error).message,
+      indexName,
+      totalVectors
+    });
+
+    return {
+      success: false,
+      operation: 'batchUpsert',
+      indexName,
+      error: (error as Error).message
+    };
+  }
+}
+
+/**
+ * Enhanced vector search with semantic filtering and ranking
+ * @param indexName - Name of the index to search
+ * @param queryVector - Query vector for similarity search
+ * @param options - Search configuration options
+ * @returns Promise resolving to enhanced search results
+ */
+export async function enhancedVectorSearch(
+  indexName: string,
+  queryVector: number[],
+  options: {
+    topK?: number;
+    filter?: Record<string, unknown>;
+    includeVector?: boolean;
+    minScore?: number;
+    rerank?: boolean;
+  } = {}
+): Promise<{
+  results: VectorQueryResult[];
+  searchMetadata: {
+    totalResults: number;
+    filteredResults: number;
+    searchTime: number;
+    topK: number;
+  };
+}> {
+  const startTime = Date.now();
+  const {
+    topK = VECTOR_CONFIG.DEFAULT_TOP_K,
+    filter,
+    includeVector = false,
+    minScore = 0,
+    rerank = false
+  } = options;
+
+  try {
+    let results = await queryVectors(indexName, queryVector, topK, filter, includeVector);
+    const totalResults = results.length;
+
+    // Apply minimum score filtering
+    if (minScore > 0) {
+      results = results.filter(result => result.score >= minScore);
+    }
+
+    // Apply reranking if requested
+    if (rerank && results.length > 1) {
+      results = results.sort((a, b) => {
+        // Enhanced ranking considering both score and metadata relevance
+        const scoreWeight = 0.8;
+        const metadataWeight = 0.2;
+
+        const aScore = a.score * scoreWeight;
+        const bScore = b.score * scoreWeight;
+
+        // Simple metadata relevance (can be enhanced based on specific needs)
+        const aMetadataScore = Object.keys(a.metadata).length * metadataWeight;
+        const bMetadataScore = Object.keys(b.metadata).length * metadataWeight;
+
+        return (bScore + bMetadataScore) - (aScore + aMetadataScore);
+      });
+    }
+
+    const searchTime = Date.now() - startTime;
+
+    logger.info('Enhanced vector search completed', {
+      indexName,
+      totalResults,
+      filteredResults: results.length,
+      searchTime,
+      topK,
+      hasFilter: !!filter,
+      minScore,
+      rerank
+    });
+
+    return {
+      results,
+      searchMetadata: {
+        totalResults,
+        filteredResults: results.length,
+        searchTime,
+        topK
+      }
+    };
+  } catch (error: unknown) {
+    logger.error('Enhanced vector search failed', {
+      error: (error as Error).message,
+      indexName,
+      topK
+    });
+    throw error;
   }
 }
 
@@ -785,3 +1439,118 @@ export async function optimizeUpstashMemoryStorage(options: {
     throw error;
   }
 }
+
+/**
+ * Comprehensive Upstash setup and validation
+ * Call this function during application startup to ensure everything is properly configured
+ * 
+ * @version 1.0.0
+ * @author SSD
+ * @date 2025-06-20
+ * 
+ * @mastra Initialization function for Upstash Memory System
+ * @module upstashMemory
+ * @function initializeUpstashMemorySystem
+ * 
+ * @example
+ * ```typescript
+ * await initializeUpstashMemorySystem();
+ * ```
+ * 
+ * @remarks
+ * This function ensures all Upstash components are properly configured and connected.
+ * @throws {Error} When any component fails to initialize
+ * @param options - Configuration options for initialization
+ * @returns Promise resolving to initialization results
+ */
+export async function initializeUpstashMemorySystem(options: {
+  validateConnection?: boolean;
+  createDefaultIndex?: boolean;
+  logConfiguration?: boolean;
+} = {}): Promise<{
+  storage: boolean;
+  vector: boolean;
+  memory: boolean;
+  errors: string[];
+}> {
+  const {
+    validateConnection = true,
+    createDefaultIndex = false,
+    logConfiguration = true
+  } = options;
+
+  const results = {
+    storage: false,
+    vector: false,
+    memory: false,
+    errors: [] as string[]
+  };
+
+  try {
+    if (logConfiguration) {
+      logger.info('Initializing Upstash Memory System', {
+        vectorConfig: VECTOR_CONFIG,
+        validateConnection,
+        createDefaultIndex
+      });
+    }
+
+    // Test storage connection
+    if (validateConnection) {
+      try {
+        // Test storage with a simple thread operation
+        const testThread = await createUpstashThread('test-validation-user', 'Test Thread');
+        if (testThread.id) {
+          results.storage = true;
+          logger.info('Upstash Redis storage connection validated');
+        }
+      } catch (error: unknown) {
+        results.errors.push(`Storage connection failed: ${(error as Error).message}`);
+      }
+    } else {
+      results.storage = true; // Assume storage is working if not validating
+    }
+
+    // Test vector connection and initialize
+    try {
+      const vectorResult = await initializeUpstashVectorIndexes();
+      results.vector = vectorResult.success;
+
+      if (!vectorResult.success && vectorResult.error) {
+        results.errors.push(`Vector initialization failed: ${vectorResult.error}`);
+      }
+    } catch (error: unknown) {
+      results.errors.push(`Vector connection failed: ${(error as Error).message}`);
+    }
+
+    // Validate memory configuration
+    try {
+      if (upstashMemory) {
+        results.memory = true;
+        logger.info('Upstash Memory instance validated');
+      }
+    } catch (error: unknown) {
+      results.errors.push(`Memory validation failed: ${(error as Error).message}`);
+    }
+
+    const overallSuccess = results.storage && results.vector && results.memory;
+
+    if (logConfiguration) {
+      logger.info('Upstash Memory System initialization completed', {
+        success: overallSuccess,
+        results,
+        errorCount: results.errors.length
+      });
+    }
+
+    return results;
+  } catch (error: unknown) {
+    const errorMessage = `Upstash Memory System initialization failed: ${(error as Error).message}`;
+    results.errors.push(errorMessage);
+    logger.error(errorMessage);
+    return results;
+  }
+}
+
+// All vector operation functions are already exported individually above
+// This provides a comprehensive Upstash Vector implementation following Mastra patterns

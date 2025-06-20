@@ -1,13 +1,15 @@
 import { Agent } from "@mastra/core/agent";
 import { z } from "zod";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { agentMemory } from '../agentMemory';
+import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
-import { mcp } from '../tools/mcp';
+import { getMCPToolsByServer } from '../tools/mcp';
 import { mem0RememberTool, mem0MemorizeTool } from "../tools/mem0-tool";
 
 /**
@@ -164,9 +166,9 @@ Success Criteria:
     mem0RememberTool,
     mem0MemorizeTool,
     vectorQueryTool,
-    ...await mcp.getTools(),
+    ...await getMCPToolsByServer('filesystem'),
   },
-  memory: agentMemory
+  memory: upstashMemory,
 });
 
 /**
