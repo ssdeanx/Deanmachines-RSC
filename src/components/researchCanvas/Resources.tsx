@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
+import Image from "next/image";
 import { Resource } from "@/lib/types";
 import { truncateUrl } from "@/lib/utils";
 
@@ -70,11 +71,12 @@ export function Resources({
                 >
                   {resource.description && (
                     <>
-                      <img
+                      <Image
                         src={`https://www.google.com/s2/favicons?domain=${resource.url}`}
                         alt="favicon"
+                        width={16}
+                        height={16}
                         className="inline-block mr-2"
-                        style={{ width: "16px", height: "16px" }}
                       />
                       {truncateUrl(resource.url)}
                     </>

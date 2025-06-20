@@ -41,7 +41,7 @@ import {
  * @property {object} metadata - Additional metadata about the node
  *
  * @author Dean Machines Team
- * @date 2025-01-13
+ * @date 2025-06-13
  * @version 1.0.0
  */
 interface CodeGraphNodeData extends Record<string, unknown> {
@@ -66,7 +66,7 @@ type CodeGraphEdge = Edge;
  * @property {function} onNodeSelect - Callback when a node is selected
  *
  * @author Dean Machines Team
- * @date 2025-01-13
+ * @date 2025-06-13
  */
 interface InteractiveCodeGraphProps {
     graphData: string;
@@ -104,7 +104,7 @@ interface InteractiveCodeGraphProps {
  * ```
  *
  * @author Dean Machines Team
- * @date 2025-01-13
+ * @date 2025-06-13
  * @version 1.0.0
  * @model Claude Sonnet 4
  */

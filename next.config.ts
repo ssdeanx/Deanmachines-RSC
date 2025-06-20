@@ -10,6 +10,7 @@ import rehypeSlug from 'rehype-slug';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
+//import remarkExternalLinks from 'remark-external-links';
 
 const nextConfig: NextConfig = {
   // Configure pageExtensions to include MDX files
@@ -124,7 +125,10 @@ const withMDX = createMDX({
       // Frontmatter support
       remarkFrontmatter,
       // Table of contents generation
-      remarkToc
+      remarkToc,
+      // External links support
+     // remarkExternalLinks,
+
     ],
     rehypePlugins: [
       // Auto-generate heading IDs for linking

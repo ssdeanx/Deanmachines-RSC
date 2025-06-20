@@ -42,7 +42,7 @@ interface ComponentItem {
   preview: React.ReactNode;
   code: string;
   // copilot: fix
-  props: Record<string, any>;
+  props: Record<string, string | number | boolean | undefined>;
   popularity: number;
   isNew?: boolean;
   isPremium?: boolean;
@@ -76,6 +76,7 @@ export function ComponentLibrary({
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedComponent, setSelectedComponent] = useState<ComponentItem | null>(null);
+  const [activeTab, setActiveTab] = useState<'library' | 'details' | 'export'>('library');
 
   // Sample component library data
   const components: ComponentItem[] = useMemo(() => [
@@ -369,6 +370,25 @@ export function ComponentLibrary({
           </h2>
           <div className="flex items-center gap-2">
             <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (selectedComponent) {
+                  const blob = new Blob([selectedComponent.code], { type: 'text/plain' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `${selectedComponent.name.toLowerCase().replace(/\s+/g, '-')}.tsx`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }
+              }}
+              disabled={!selectedComponent}
+            >
+              <FiDownload className="w-4 h-4 mr-2" />
+              Export
+            </Button>
+            <Button
               variant={viewMode === 'grid' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewMode('grid')}
@@ -397,49 +417,119 @@ export function ComponentLibrary({
         </div>
       </div>
 
-      {/* Categories */}
-      <div className="p-4 border-b border-primary/20">
-        <ScrollArea className="w-full">
-          <div className="flex gap-2">
-            {categories.map(category => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setSelectedCategory(category.id)}
-                className="flex items-center gap-2 whitespace-nowrap"
-              >
-                {category.icon}
-                {category.name}
-              </Button>
-            ))}
-          </div>
-        </ScrollArea>
-      </div>
+      {/* Main Content with Tabs */}
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'library' | 'details' | 'export')} className="flex-1 flex flex-col">
+        <TabsList className="grid grid-cols-3 bg-muted/20 glass-effect border-b border-primary/20 rounded-none">
+          <TabsTrigger value="library">Library</TabsTrigger>
+          <TabsTrigger value="details">Details</TabsTrigger>
+          <TabsTrigger value="export">Export</TabsTrigger>
+        </TabsList>
 
-      {/* Components Grid/List */}
-      <ScrollArea className="flex-1">
-        <div className="p-4">
-          <div className={cn(
-            "gap-4",
-            viewMode === 'grid'
-              ? "grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-              : "space-y-4"
-          )}>
-            {filteredComponents.map(renderComponentItem)}
+        <TabsContent value="library" className="flex-1 flex flex-col m-0">
+          {/* Categories */}
+          <div className="p-4 border-b border-primary/20">
+            <ScrollArea className="w-full">
+              <div className="flex gap-2">
+                {categories.map(category => (
+                  <Button
+                    key={category.id}
+                    variant={selectedCategory === category.id ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSelectedCategory(category.id)}
+                    className="flex items-center gap-2 whitespace-nowrap"
+                  >
+                    {category.icon}
+                    {category.name}
+                  </Button>
+                ))}
+              </div>
+            </ScrollArea>
           </div>
 
-          {filteredComponents.length === 0 && (
-            <div className="text-center py-12">
-              <FiSearch className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-foreground mb-2">No components found</h3>
-              <p className="text-muted-foreground">
-                Try adjusting your search or category filter
-              </p>
+          {/* Components Grid/List */}
+          <ScrollArea className="flex-1">
+            <div className="p-4">
+              <div className={cn(
+                "gap-4",
+                viewMode === 'grid'
+                  ? "grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                  : "space-y-4"
+              )}>
+                {filteredComponents.map(renderComponentItem)}
+              </div>
+
+              {filteredComponents.length === 0 && (
+                <div className="text-center py-12">
+                  <FiSearch className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-foreground mb-2">No components found</h3>
+                  <p className="text-muted-foreground">
+                    Try adjusting your search or category filter
+                  </p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="details" className="flex-1 m-0">
+          {selectedComponent ? (
+            <div className="p-4">
+              <Card className="glass-effect border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {selectedComponent.name}
+                    {selectedComponent.isNew && <Badge variant="secondary">New</Badge>}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-muted-foreground">{selectedComponent.description}</p>
+                  <div className="space-y-2">
+                    <h4 className="font-medium">Properties:</h4>
+                    <pre className="text-xs bg-muted p-2 rounded">
+                      {JSON.stringify(selectedComponent.props, null, 2)}
+                    </pre>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-medium">Tags:</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedComponent.tags.map(tag => (
+                        <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          ) : (
+            <div className="flex-1 flex items-center justify-center">
+              <p className="text-muted-foreground">Select a component to view details</p>
             </div>
           )}
-        </div>
-      </ScrollArea>
+        </TabsContent>
+
+        <TabsContent value="export" className="flex-1 m-0">
+          <div className="p-4">
+            <Card className="glass-effect border-primary/20">
+              <CardHeader>
+                <CardTitle>Export Options</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground">Export components for use in your projects</p>
+                <div className="space-y-2">
+                  <Button className="w-full" disabled={!selectedComponent}>
+                    <FiDownload className="w-4 h-4 mr-2" />
+                    Export Selected Component
+                  </Button>
+                  <Button variant="outline" className="w-full">
+                    <FiDownload className="w-4 h-4 mr-2" />
+                    Export All Components
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

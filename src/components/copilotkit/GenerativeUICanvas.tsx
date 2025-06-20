@@ -41,7 +41,7 @@ interface UIComponent {
   height: number;
   rotation: number;
   opacity: number;
-  props: Record<string, any>;
+  props: Record<string, string | number | boolean | undefined>;
   children?: UIComponent[];
 }
 
@@ -77,6 +77,8 @@ export function GenerativeUICanvas({
   const [showGrid, setShowGrid] = useState(true);
   // copilot: IMPLEMENT
   const [isDragging, setIsDragging] = useState(false);
+  const [showLayers, setShowLayers] = useState(false);
+  const [snapToGrid, setSnapToGrid] = useState(true);
   const canvasRef = useRef<HTMLDivElement>(null);
 
   // Handle component selection
@@ -267,10 +269,10 @@ export function GenerativeUICanvas({
         {/* Component content based on type */}
         {component.type === 'button' && (
           <Button
-            variant={component.props.variant || 'default'}
+            variant={(component.props.variant as "default" | "secondary" | "outline" | "destructive" | "ghost" | "link") || 'default'}
             className="w-full h-full"
           >
-            {component.props.text || 'Button'}
+            {String(component.props.text || 'Button')}
           </Button>
         )}
 
@@ -287,14 +289,14 @@ export function GenerativeUICanvas({
 
         {component.type === 'input' && (
           <Input
-            placeholder={component.props.placeholder || 'Input'}
+            placeholder={String(component.props.placeholder || 'Input')}
             className="w-full h-full"
           />
         )}
 
         {component.type === 'text' && (
           <div className="w-full h-full flex items-center justify-center text-sm font-medium">
-            {component.props.text || 'Text'}
+            {String(component.props.text || 'Text')}
           </div>
         )}
 
@@ -307,6 +309,35 @@ export function GenerativeUICanvas({
         {/* Selection handles */}
         {isSelected && (
           <div className="absolute -top-8 left-0 flex gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-6 w-6 p-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                // Move component
+                updateComponent(component.id, {
+                  x: component.x + 10,
+                  y: component.y + 10
+                });
+              }}
+            >
+              <FiMove className="w-3 h-3" />
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-6 w-6 p-0"
+              onClick={(e) => {
+                e.stopPropagation();
+                // Rotate component
+                updateComponent(component.id, {
+                  rotation: (component.rotation + 15) % 360
+                });
+              }}
+            >
+              <FiRotateCw className="w-3 h-3" />
+            </Button>
             <Button
               size="sm"
               variant="outline"
@@ -356,6 +387,25 @@ export function GenerativeUICanvas({
           >
             <FiGrid className="w-4 h-4" />
           </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowLayers(!showLayers)}
+            className="glass-effect"
+          >
+            <FiLayers className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              // Maximize canvas view
+              setCanvasZoom(100);
+            }}
+            className="glass-effect"
+          >
+            <FiMaximize2 className="w-4 h-4" />
+          </Button>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -378,6 +428,43 @@ export function GenerativeUICanvas({
             </Button>
           </div>
         </div>
+
+        {/* Settings Panel */}
+        {showLayers && (
+          <div className="absolute top-4 right-4 z-10 w-64">
+            <Card className="glass-effect border-primary/20">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <HiSparkles className="w-4 h-4" />
+                  Canvas Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">Snap to Grid</Label>
+                  <Switch
+                    checked={snapToGrid}
+                    onCheckedChange={setSnapToGrid}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">Show Grid</Label>
+                  <Switch
+                    checked={showGrid}
+                    onCheckedChange={setShowGrid}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">Dragging Mode</Label>
+                  <Switch
+                    checked={isDragging}
+                    onCheckedChange={setIsDragging}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Canvas area */}
         <div
@@ -483,7 +570,7 @@ export function GenerativeUICanvas({
                 <div className="space-y-2">
                   <Label className="text-xs font-medium">Button Text</Label>
                   <Input
-                    value={selectedComp.props.text || ''}
+                    value={String(selectedComp.props.text || '')}
                     onChange={(e) => updateComponent(selectedComp.id, {
                       props: { ...selectedComp.props, text: e.target.value }
                     })}

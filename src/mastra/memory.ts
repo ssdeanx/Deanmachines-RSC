@@ -3,6 +3,7 @@ import { PostgresStore, PgVector } from "@mastra/pg";
 import { PinoLogger } from "@mastra/loggers";
 import { env } from "./config/environment";
 import { google } from "@ai-sdk/google";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { UIMessage } from 'ai';
 // Initialize logger for memory operations
 const logger = new PinoLogger({ level: env.LOG_LEVEL });

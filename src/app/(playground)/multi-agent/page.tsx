@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { useCopilotReadable, useCopilotAction } from "@copilotkit/react-core";
 // copilot: IMPLEMENT
 import { CopilotChat, CopilotPopup, CopilotSidebar } from "@copilotkit/react-ui";
+
+const MASTRA_URL = process.env.NEXT_PUBLIC_COPILOTKIT_RUNTIME_URL || "http://localhost:4111";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -97,13 +99,13 @@ export default function MultiAgentPage() {
 
             const task = agentTasks.find(t => t.id === taskId);
             if (task) {
-                // Switch to the appropriate agent endpoint
-                setCurrentEndpoint(`http://localhost:4111/copilotkit/${task.agent}`);
+                // Switch to the base-network for intelligent agent routing
+                setCurrentEndpoint(`${MASTRA_URL}/copilotkit/base-network`);
 
-                const logEntry = `[${new Date().toISOString()}] Executing task ${taskId} with ${task.agent} agent`;
+                const logEntry = `[${new Date().toISOString()}] Executing task ${taskId} with ${task.agent} agent via Base Network`;
                 setCoordinationLog(prev => prev ? `${prev}\n${logEntry}` : logEntry);
 
-                return `Executing task with ${task.agent} agent. Switched to ${task.agent} endpoint.`;
+                return `Executing task with ${task.agent} agent via Base Network intelligent routing. Switched to base-network endpoint.`;
             }
             return `Task ${taskId} not found`;
         },
@@ -432,6 +434,18 @@ export default function MultiAgentPage() {
                                 />
                             </CardContent>
                         </Card>
+
+                        {/* Agent Status Sidebar */}
+                        <div className="mt-4">
+                            <CopilotSidebar
+                                labels={{
+                                    title: "Agent Network Status",
+                                    initial: "Connected to Base Network with 17+ specialized agents. Current status:\n\n• Master Agent: Ready\n• Code Agent: Ready\n• Data Agent: Ready\n• Research Agent: Ready\n\nSwitch agents or create multi-agent workflows here.",
+                                }}
+                                className="h-[400px]"
+                                defaultOpen={false}
+                            />
+                        </div>
                     </div>
                 </div>
 

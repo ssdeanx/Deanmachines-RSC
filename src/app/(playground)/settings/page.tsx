@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useCopilotReadable, useCopilotAction } from "@copilotkit/react-core";
+
+const MASTRA_URL = process.env.NEXT_PUBLIC_COPILOTKIT_RUNTIME_URL || "http://localhost:4111";
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PlaygroundNav } from '../components/playground-nav';
+
 import { useAgent } from '../layout';
 import { Settings, Server, Palette, Shield, Zap } from 'lucide-react';
 
@@ -104,7 +106,6 @@ export default function SettingsPage() {
 
             {/* Main Content */}
             <div className="container mx-auto px-4 py-6">
-                <PlaygroundNav />
 
                 <Tabs defaultValue="general" className="w-full">
                     <TabsList className="grid w-full grid-cols-4">
@@ -203,6 +204,29 @@ export default function SettingsPage() {
                                     <div className="flex items-center gap-2 mt-1">
                                         <Input value={currentEndpoint} readOnly className="font-mono text-sm" />
                                         <Badge variant="outline">Active</Badge>
+                                    </div>
+                                    <div className="flex gap-2 mt-2">
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => setCurrentEndpoint(`${MASTRA_URL}/copilotkit/base-network`)}
+                                        >
+                                            Base Network
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => setCurrentEndpoint(`${MASTRA_URL}/copilotkit/master`)}
+                                        >
+                                            Master Agent
+                                        </Button>
+                                        <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() => setCurrentEndpoint(`${MASTRA_URL}/copilotkit/code`)}
+                                        >
+                                            Code Agent
+                                        </Button>
                                     </div>
                                 </div>
                                 <Separator />

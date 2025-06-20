@@ -384,6 +384,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
   - Create tasks for testing and validation.
   - Update environment configuration to support dual-memory requirements.
 - When encountering "used before declaration" errors, especially in `upstashMemory.ts`, ensure that class declarations are placed before their instantiation or usage.
+- Use `#file://base-network.ts` to reference the base network file.
 
 ## CODING STANDARDS
 
@@ -471,4 +472,3 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - When a configuration error related to `reference` not existing on the `Metric` type occurs, ensure that the evaluation configuration uses the correct properties (`input` and `expected` instead of `reference` and `output`).
 - When configuring the `evals` property in agent configurations, use actual `Metric` instances (e.g., `new ToneConsistencyMetric()`) instead of test data objects. Do not use configuration objects with properties like `reference`, `input`, or `output` directly in the `evals` configuration.
 - When importing evaluation metrics, import the actual metric classes directly from `@mastra/evals/nlp` (e.g., `import { ToneConsistencyMetric } from '@mastra/evals/nlp';`) instead of importing evaluation functions.
-- When fixing the error "Cannot create an instance of an abstract class" in eval files:

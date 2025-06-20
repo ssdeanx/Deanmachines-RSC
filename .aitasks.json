@@ -1,0 +1,283 @@
+[
+  {
+    "id": "code-execution-tool",
+    "title": "🔒 Code Execution Tool",
+    "description": "Single-file tool for safe JavaScript/TypeScript execution using isolated-vm with shelljs, linting, and system access",
+    "priority": "high",
+    "status": "pending",
+    "created": "2025-06-19",
+    "estimatedHours": 6,
+    "dependencies": [],
+    "tags": ["isolated-vm", "shelljs", "eslint", "typescript"],
+    "files": [
+      "src/mastra/tools/code-execution-tool.ts"
+    ],
+    "packages": ["isolated-vm", "shelljs", "typescript", "eslint", "zod"]
+  },
+  {
+    "id": "git-operations-tool",
+    "title": "🌿 Git Operations Tool",
+    "description": "Single-file tool for Git operations using isomorphic-git and simple-git",
+    "priority": "high", 
+    "status": "pending",
+    "created": "2025-06-19",
+    "estimatedHours": 4,
+    "dependencies": [],
+    "tags": ["isomorphic-git", "simple-git", "version-control"],
+    "files": [
+      "src/mastra/tools/git-operations-tool.ts"
+    ],
+    "packages": ["isomorphic-git", "@isomorphic-git/lightning-fs", "simple-git", "zod"]
+  },
+  {
+    "id": "web-scraper-tool",
+    "title": "🕷️ Web Scraper Tool",
+    "description": "Single-file tool for web scraping using crawlee and cheerio",
+    "priority": "medium",
+    "status": "pending",
+    "created": "2025-06-19", 
+    "estimatedHours": 4,
+    "dependencies": [],
+    "tags": ["crawlee", "cheerio", "scraping"],
+    "files": [
+      "src/mastra/tools/web-scraper-tool.ts"
+    ],
+    "packages": ["crawlee", "cheerio", "zod"]
+  },
+  {
+    "id": "document-processor-tool",
+    "title": "� Document Processor Tool",
+    "description": "Single-file tool for processing markdown, YAML, and document formats",
+    "priority": "medium",
+    "status": "pending",
+    "created": "2025-06-19",
+    "estimatedHours": 3,
+    "dependencies": [],
+    "tags": ["marked", "js-yaml", "papaparse"],
+    "files": [
+      "src/mastra/tools/document-processor-tool.ts"
+    ],
+    "packages": ["marked", "js-yaml", "yaml", "papaparse", "zod"]
+  },
+  {
+    "id": "code-analysis-tool",
+    "title": "�🔍 Code Analysis Tool",
+    "description": "Single-file tool for code quality analysis using jsinspect-plus and TypeScript compiler",
+    "priority": "medium",
+    "status": "pending", 
+    "created": "2025-06-19",
+    "estimatedHours": 4,
+    "dependencies": [],
+    "tags": ["jsinspect-plus", "typescript", "analysis"],
+    "files": [
+      "src/mastra/tools/code-analysis-tool.ts"
+    ],
+    "packages": ["jsinspect-plus", "typescript", "zod"]
+  },
+  {
+    "id": "sysinfo-tool",
+    "title": "� System Information Tool",
+    "description": "Single-file tool for gathering system information using Node.js APIs and shelljs",
+    "priority": "medium",
+    "status": "pending",
+    "created": "2025-06-19",
+    "estimatedHours": 3,
+    "dependencies": [],
+    "tags": ["system", "shelljs", "node"],
+    "files": [
+      "src/mastra/tools/sysinfo-tool.ts"
+    ],
+    "packages": ["shelljs", "zod"]
+  },
+  {
+    "id": "ai-transformer-tool",
+    "title": "🤖 AI Transformer Tool",
+    "description": "Single-file tool for local AI processing using @xenova/transformers",
+    "priority": "low",
+    "status": "pending",
+    "created": "2025-06-19",
+    "estimatedHours": 5,
+    "dependencies": [],
+    "tags": ["transformers", "ai", "local"],
+    "files": [
+      "src/mastra/tools/ai-transformer-tool.ts"
+    ],
+    "packages": ["@xenova/transformers", "zod"]
+  },
+  {
+    "id": "copilotkit-playground-enhancement",
+    "title": "🎮 CopilotKit Playground Enhancement",
+    "description": "Complete the playground functionality with proper CopilotKit integration, component improvements, and full Mastra connectivity",
+    "priority": "high",
+    "status": "pending",
+    "created": "2025-06-19",
+    "estimatedHours": 8,
+    "dependencies": [],
+    "tags": ["copilotkit", "playground", "components", "integration"],
+    "files": [
+      "src/app/(playground)/components/*",
+      "src/components/copilotkit/*",
+      "src/app/(playground)/*/page.tsx"
+    ],
+    "packages": ["@copilotkit/react-core", "@copilotkit/react-ui", "@copilotkit/react-textarea", "zod"]
+  },
+  {
+    "id": "multi-agent-copilotkit-integration",
+    "title": "🤖 Multi-Agent CopilotKit Integration", 
+    "description": "Complete the multi-agent playground to work seamlessly with dean-machines-network and CopilotKit routing",
+    "priority": "high",
+    "status": "pending",
+    "created": "2025-06-19",
+    "estimatedHours": 6,
+    "dependencies": [],
+    "tags": ["multi-agent", "dean-machines-network", "copilotkit", "routing"],
+    "files": [
+      "src/app/(playground)/multi-agent/page.tsx",
+      "src/components/copilotkit/MultiAgentInterface.tsx"
+    ],
+    "packages": ["@copilotkit/react-core", "@copilotkit/react-ui", "zod"]
+  },
+  {
+    "id": "mastra-route-optimization",
+    "title": "⚡ Mastra Route Optimization",
+    "description": "Optimize the CopilotKit route.ts for better performance, error handling, and runtime context management",
+    "priority": "medium",
+    "status": "pending",
+    "created": "2025-06-19",
+    "estimatedHours": 4,
+    "dependencies": [],
+    "tags": ["route", "optimization", "runtime-context", "performance"],
+    "files": [
+      "src/app/api/copilotkit/route.ts",
+      "src/mastra/index.ts"
+    ],
+    "packages": ["@copilotkit/runtime", "@mastra/agui", "zod"]
+  },  {
+    "id": "playground-component-library",
+    "title": "🧩 Playground Component Library",
+    "description": "Create reusable playground components for agent testing, tool execution, and workflow visualization",
+    "priority": "medium",
+    "status": "pending",
+    "created": "2025-06-19",
+    "estimatedHours": 5,
+    "dependencies": ["copilotkit-playground-enhancement"],
+    "tags": ["components", "playground", "visualization", "testing"],
+    "files": [
+      "src/components/copilotkit/AgentTester.tsx",
+      "src/components/copilotkit/ToolExecutor.tsx", 
+      "src/components/copilotkit/WorkflowVisualizer.tsx"
+    ],
+    "packages": ["@copilotkit/react-core", "@copilotkit/react-ui", "lucide-react", "zod"]
+  },  {
+    "id": "mastra-agui-copilotkit-flow",
+    "title": "🔄 Mastra → AGUI → CopilotKit Flow Integration",
+    "description": "Ensure proper integration flow: Mastra backend → AGUI middleware → CopilotKit frontend → User interface with correct runtime context passing",
+    "priority": "high",
+    "status": "pending",
+    "created": "2025-06-19",
+    "estimatedHours": 6,
+    "dependencies": ["mastra-route-optimization"],
+    "tags": ["integration", "flow", "runtime-context", "agui", "mastra"],
+    "files": [
+      "src/mastra/index.ts",
+      "src/app/api/copilotkit/route.ts",
+      "src/components/copilotkit/Actions.tsx",
+      "src/components/providers.tsx"
+    ],
+    "packages": ["@mastra/agui", "@copilotkit/runtime", "@copilotkit/react-core", "@mastra/core", "zod"]
+  },
+  {
+    "id": "dual-memory-system",
+    "title": "🧠 Dual-Memory System (Supabase + Upstash/LibSQL)",
+    "description": "Extend memory.ts to support both Supabase (PostgreSQL) and Upstash (Redis) or LibSQL/Turso backends with runtime switching and fallback mechanisms",
+    "priority": "high",
+    "status": "pending",
+    "created": "2025-06-19",
+    "estimatedHours": 8,
+    "dependencies": [],
+    "tags": ["memory", "supabase", "upstash", "libsql", "turso", "dual-backend"],
+    "files": [
+      "src/mastra/memory.ts",
+      "src/mastra/config/memory-config.ts",
+      "src/mastra/utility/memory-factory.ts"
+    ],
+    "packages": ["@mastra/memory", "@mastra/pg", "@mastra/libsql", "@mastra/upstash", "@mastra/fastembed", "zod"],
+    "requirements": [
+      "Create MemoryFactory class for backend selection",
+      "Support runtime switching between Supabase and Upstash/LibSQL",
+      "Implement failover/fallback mechanisms",
+      "Add memory backend health checks",
+      "Support both vector and traditional storage modes",
+      "Maintain backward compatibility with existing agentMemory.ts",
+      "Add comprehensive error handling and logging",
+      "Support environment-based backend selection"
+    ]
+  },
+  {
+    "id": "environment-dual-memory-config",
+    "title": "⚙️ Environment Configuration for Dual-Memory",
+    "description": "Extend environment.ts to support dual-memory backend configuration with proper validation and defaults",
+    "priority": "medium",
+    "status": "pending",
+    "created": "2025-06-19",
+    "estimatedHours": 2,
+    "dependencies": ["dual-memory-system"],
+    "tags": ["environment", "configuration", "memory", "backends"],
+    "files": [
+      "src/mastra/config/environment.ts"
+    ],
+    "packages": ["zod"],
+    "requirements": [
+      "Add MEMORY_BACKEND environment variable (supabase|upstash|libsql)",
+      "Add Upstash Redis configuration (UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN)",
+      "Extend LibSQL/Turso configuration validation",
+      "Add memory backend health check endpoints",
+      "Support memory backend priority/fallback order",
+      "Add memory performance configuration (connection pools, timeouts)",
+      "Maintain backward compatibility with current Supabase setup"
+    ]
+  },
+  {
+    "id": "local-tools-agent-memory-integration",
+    "title": "🧠 Local Tools + Agent Memory Integration",
+    "description": "Ensure all new local tools work seamlessly with agentMemory.ts for persistent storage and vector search capabilities",
+    "priority": "medium",
+    "status": "pending",
+    "created": "2025-06-19",
+    "estimatedHours": 4,
+    "dependencies": ["code-execution-tool", "git-operations-tool", "web-scraper-tool"],
+    "tags": ["agent-memory", "integration", "persistence", "vector-search"],
+    "files": [
+      "src/mastra/agentMemory.ts",
+      "src/mastra/tools/*.ts"
+    ],
+    "packages": ["@mastra/libsql", "@mastra/fastembed", "@mastra/memory", "zod"]
+  },
+  {
+    "id": "dual-memory-testing-validation",
+    "title": "🧪 Dual-Memory System Testing & Validation",
+    "description": "Comprehensive testing suite for dual-memory system with backend switching, failover scenarios, and performance benchmarks",
+    "priority": "medium",
+    "status": "pending",
+    "created": "2025-06-19",
+    "estimatedHours": 6,
+    "dependencies": ["dual-memory-system", "environment-dual-memory-config"],
+    "tags": ["testing", "validation", "performance", "failover"],
+    "files": [
+      "src/mastra/tests/memory-system.test.ts",
+      "src/mastra/tests/memory-performance.test.ts",
+      "src/mastra/tests/memory-failover.test.ts"
+    ],
+    "packages": ["vitest", "@mastra/memory", "@mastra/pg", "@mastra/libsql", "@mastra/upstash", "zod"],
+    "requirements": [
+      "Test backend switching without data loss",
+      "Validate vector search consistency across backends",
+      "Test failover mechanisms and recovery",
+      "Performance benchmarks for each backend",
+      "Integration tests with existing agent workflows",
+      "Test memory persistence during backend switches",
+      "Validate environment configuration edge cases",
+      "Test concurrent access patterns"
+    ]
+  }
+]

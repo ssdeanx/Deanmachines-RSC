@@ -88,6 +88,8 @@ export function AICodeGenerator({
   const [generatedCodes, setGeneratedCodes] = useState<GeneratedCode[]>([]);
   const [selectedCode, setSelectedCode] = useState<GeneratedCode | null>(null);
   const [generationProgress, setGenerationProgress] = useState(0);
+  const [showSettings, setShowSettings] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Handle generation
   const handleGenerate = useCallback(async () => {
@@ -416,10 +418,58 @@ export function Generated${prompt.replace(/\s+/g, '')}Component() {
           {/* Generated History */}
           <div className="flex-1 border-t border-primary/20">
             <div className="p-4">
-              <h3 className="text-sm font-medium mb-3">Generated Components</h3>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-medium">Generated Components</h3>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowSettings(!showSettings)}
+                >
+                  <FiSettings className="w-4 h-4" />
+                </Button>
+              </div>
+
+              {/* Search Input */}
+              <div className="mb-3">
+                <Input
+                  placeholder="Search generated components..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-8"
+                />
+              </div>
+
+              {/* Settings Panel */}
+              {showSettings && (
+                <Card className="mb-4 glass-effect border-primary/20">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Generator Settings</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span>Auto-save generated code</span>
+                      <input type="checkbox" defaultChecked />
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span>Include TypeScript types</span>
+                      <input type="checkbox" defaultChecked />
+                    </div>
+                    <div className="flex items-center justify-between text-xs">
+                      <span>Generate tests</span>
+                      <input type="checkbox" />
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               <ScrollArea className="h-[300px]">
                 <div className="space-y-2">
-                  {generatedCodes.map(code => (
+                  {generatedCodes
+                    .filter(code =>
+                      searchQuery === '' ||
+                      code.component.toLowerCase().includes(searchQuery.toLowerCase())
+                    )
+                    .map(code => (
                     <motion.div
                       key={code.id}
                       className={cn(
