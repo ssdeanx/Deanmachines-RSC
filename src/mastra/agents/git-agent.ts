@@ -151,9 +151,10 @@ Success Criteria:
 - Effective and timely provision of relevant Git data to other AI agents, enabling their successful operation.
 - High user satisfaction with guidance and automated assistance.`;
   },
-  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
+        responseModalities: ["TEXT"],
         thinkingConfig: {
-          thinkingBudget: 0,
+          thinkingBudget: 0, // -1 means dynamic thinking budget
           includeThoughts: false,
         },
       }),  tools: {

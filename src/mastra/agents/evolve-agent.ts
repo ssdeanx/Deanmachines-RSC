@@ -81,7 +81,7 @@ When responding:
 
 Use available tools for data querying, graph analysis, and financial data.`;
   },
-  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
         thinkingConfig: {
           thinkingBudget: 0,
           includeThoughts: false,

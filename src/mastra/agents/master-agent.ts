@@ -18,6 +18,8 @@ import {
   TextualDifferenceMetric                       
 } from '@mastra/evals/nlp';
 import { createGemini25Provider } from '../config/googleProvider';
+// Langfuse tracing is automatically enabled via Mastra's telemetry configuration
+// All agent operations will be traced with detailed metadata
 import { getMCPToolsByServer } from '../tools/mcp';
 import { z } from 'zod';
 //import { CustomEvalMetric } from "../evals/customEval";
@@ -127,12 +129,122 @@ SUCCESS CRITERIA:
 - User Satisfaction: The user's problem is resolved, their question is answered, and they feel effectively supported.`;
   },
 
-  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17',  {
-    responseModalities: ["TEXT"],
+  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
+    // Response modalities - what types of content the model can generate
+    responseModalities: ["TEXT"], // Can also include "IMAGE" for image generation
+
+    // Thinking configuration for enhanced reasoning
     thinkingConfig: {
-      thinkingBudget: -1, // -1 means dynamic thinking budget
-      includeThoughts: true, // Include thoughts for debugging and monitoring purposes
+      thinkingBudget: -1, // -1 = dynamic budget, 0 = disabled, 1-24576 = fixed budget
+      includeThoughts: true, // Include reasoning process in response for debugging
     },
+
+    // Search grounding for real-time information access
+    useSearchGrounding: true, // Enable Google Search integration for current events
+
+    // Dynamic retrieval configuration
+    dynamicRetrieval: true, // Let model decide when to use search grounding
+
+    // Safety settings level
+    safetyLevel: 'OFF', // Options: 'STRICT', 'MODERATE', 'PERMISSIVE', 'OFF'
+
+    // Structured outputs for better tool integration
+    structuredOutputs: true, // Enable structured JSON responses
+
+    // Cached content for cost optimization (if you have cached content)
+    // cachedContent: 'your-cache-id', // Uncomment if using explicit caching
+
+    // Langfuse tracing configuration
+    agentName: 'master',
+    tags: [
+      // Agent Classification
+      'master-agent',
+      'orchestrator',
+      'problem-solver',
+      'enterprise-agent',
+
+      // Capabilities
+      'multi-tool',
+      'mcp-enabled',
+      'graph-rag',
+      'vector-search',
+      'memory-management',
+      'weather-data',
+      'stock-data',
+      'file-operations',
+      'git-operations',
+      'web-automation',
+      'database-operations',
+
+      // Model Features
+      'thinking-enabled',
+      'search-grounding',
+      'dynamic-retrieval',
+      'safety-off',
+      'structured-outputs',
+
+      // Scale & Scope
+      '50-plus-tools',
+      '11-mcp-servers',
+      'full-stack-capable',
+      'enterprise-scale'
+    ],
+    metadata: {
+      agentType: 'master',
+      capabilities: [
+        // Core Mastra Tools
+        'graph-rag',
+        'vector-search',
+        'hybrid-vector-search',
+        'memory-management',
+        'mem0-remember',
+        'mem0-memorize',
+        'chunker-tool',
+        'weather-data',
+        'stock-prices',
+
+        // MCP Server Capabilities (50+ tools across 11 servers)
+        'file-operations',      // filesystem MCP
+        'git-operations',       // git MCP
+        'web-fetch',           // fetch MCP
+        'browser-automation',   // puppeteer MCP
+        'github-integration',   // github MCP
+        'memory-graph',        // memoryGraph MCP
+        'web-search',          // ddgsearch MCP
+        'neo4j-database',      // neo4j MCP
+        'sequential-thinking', // sequentialThinking MCP
+        'tavily-search',       // tavily MCP
+        'code-sandbox'         // nodeCodeSandbox MCP
+      ],
+      toolCount: '50+', // Actual count with all MCP tools
+      coreTools: 8,     // Direct Mastra tools
+      mcpServers: 11,   // MCP server count
+      mcpServerList: [
+        'filesystem',
+        'git',
+        'fetch',
+        'puppeteer',
+        'github',
+        'memoryGraph',
+        'ddgsearch',
+        'neo4j',
+        'sequentialThinking',
+        'tavily',
+        'nodeCodeSandbox'
+      ],
+      modelConfig: {
+        thinkingBudget: 'dynamic',
+        safetyLevel: 'OFF',
+        searchGrounding: true,
+        dynamicRetrieval: true,
+        structuredOutputs: true,
+        responseModalities: ['TEXT']
+      },
+      complexity: 'enterprise',
+      domain: 'general',
+      scope: 'full-stack-development-and-operations'
+    },
+    traceName: 'master-agent-operations'
   }),
   tools: {
     graphRAGTool,
@@ -184,9 +296,134 @@ SUCCESS CRITERIA:
 });
 
 /**
+ * Example: How to use the Master Agent with advanced Gemini 2.5 features
+ *
+ * @example Basic usage with thinking:
+ * ```typescript
+ * const result = await masterAgent.generate('Analyze this complex problem...', {
+ *   resourceId: 'user-123',
+ *   threadId: 'thread-456'
+ * });
+ * ```
+ *
+ * @example Using correct AI SDK pattern for thinking config:
+ * ```typescript
+ * import { generateText } from 'ai';
+ * import { createGemini25Provider } from '../config/googleProvider';
+ *
+ * const result = await generateText({
+ *   model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17'),
+ *   providerOptions: {
+ *     google: {
+ *       // Thinking configuration (correct AI SDK pattern)
+ *       thinkingConfig: {
+ *         thinkingBudget: 2048 // 0=disabled, -1=dynamic, 1-24576=fixed
+ *       },
+ *       // Response modalities
+ *       responseModalities: ['TEXT', 'IMAGE']
+ *     }
+ *   },
+ *   prompt: 'Think step by step about quantum computing...'
+ * });
+ * ```
+ *
+ * @example With search grounding and caching:
+ * ```typescript
+ * const result = await generateText({
+ *   model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
+ *     useSearchGrounding: true,
+ *     dynamicRetrieval: true,
+ *     cachedContent: 'your-cache-id',
+ *     safetyLevel: 'PERMISSIVE' // Less restrictive for research
+ *   }),
+ *   providerOptions: {
+ *     google: {
+ *       thinkingConfig: { thinkingBudget: 4096 }
+ *     }
+ *   },
+ *   prompt: 'What are the latest developments in AI this week?'
+ * });
+ * ```
+ *
+ * @example Using Langfuse tracing (automatic via Mastra telemetry):
+ * ```typescript
+ * // Tracing is automatically enabled via Mastra's telemetry configuration
+ * // All agent operations will be traced to Langfuse with detailed metadata
+ *
+ * // For custom tracing metadata, you can use:
+ * import { createTracedGoogleModel, createTracedAgentMetadata } from '../config/langfuseProvider';
+ *
+ * const tracedModel = createTracedGoogleModel('gemini-2.5-flash-lite-preview-06-17', {
+ *   traceName: 'master-agent-complex-reasoning',
+ *   tags: ['master', 'reasoning', 'complex', 'multi-step'],
+ *   metadata: {
+ *     userId: 'user-123',
+ *     sessionId: 'session-456',
+ *     complexity: 'high',
+ *     domain: 'general'
+ *   },
+ *   thinkingConfig: { thinkingBudget: 8192, includeThoughts: true },
+ *   useSearchGrounding: true,
+ *   safetyLevel: 'MODERATE'
+ * });
+ *
+ * // Agent metadata for detailed tracing
+ * const agentMetadata = createTracedAgentMetadata('master', 'generate', {
+ *   userId: 'user-123',
+ *   sessionId: 'session-456',
+ *   modelId: 'gemini-2.5-flash-lite-preview-06-17',
+ *   toolsUsed: ['mcp-tool-1', 'mcp-tool-2']
+ * });
+ * ```
+ *
+ * @example Safety levels configuration:
+ * ```typescript
+ * // STRICT: Blocks low-level harmful content and above
+ * const strictModel = createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
+ *   safetyLevel: 'STRICT'
+ * });
+ *
+ * // MODERATE: Blocks medium-level harmful content and above (default)
+ * const moderateModel = createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
+ *   safetyLevel: 'MODERATE'
+ * });
+ *
+ * // PERMISSIVE: Only blocks high-level harmful content
+ * const permissiveModel = createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
+ *   safetyLevel: 'PERMISSIVE'
+ * });
+ *
+ * // OFF: Disables all safety filters (use with caution!)
+ * const unrestrictedModel = createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
+ *   safetyLevel: 'OFF' // ⚠️ No content filtering - use responsibly
+ * });
+ * ```
+ *
+ * @example File input support:
+ * ```typescript
+ * const result = await generateText({
+ *   model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17'),
+ *   messages: [{
+ *     role: 'user',
+ *     content: [
+ *       { type: 'text', text: 'Analyze this document:' },
+ *       {
+ *         type: 'file',
+ *         data: fs.readFileSync('./document.pdf'),
+ *         mimeType: 'application/pdf'
+ *       }
+ *     ]
+ *   }]
+ * });
+ * ```
+ */
 
-
- * Validate input data against master agent schema * @param input - Raw input data to validate * @returns Validated input data * @throws ZodError if validation fails */
+/**
+ * Validate input data against master agent schema
+ * @param input - Raw input data to validate
+ * @returns Validated input data
+ * @throws ZodError if validation fails
+ */
 export function validateMasterAgentInput(input: unknown): z.infer<typeof masterAgentInputSchema> {
   try {
     return masterAgentInputSchema.parse(input);
