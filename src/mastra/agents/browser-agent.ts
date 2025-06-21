@@ -1,13 +1,10 @@
 import { Agent } from "@mastra/core/agent";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
 import { chunkerTool } from "../tools/chunker-tool";
-import { rerankTool } from "../tools/rerank-tool";
 
 const logger = new PinoLogger({ name: 'browserAgent', level: 'info' });
 logger.info('Initializing browserAgent');
@@ -82,7 +79,7 @@ When responding:
 
 Use available tools to perform web-related queries and analysis.`;
   },
-  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
         thinkingConfig: {
           thinkingBudget: 0,
           includeThoughts: false,
@@ -91,8 +88,12 @@ Use available tools to perform web-related queries and analysis.`;
   tools: {
     vectorQueryTool,
     chunkerTool,
-    rerankTool,
     ...await getMCPToolsByServer('puppeteer'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily'),
+    ...await getMCPToolsByServer('nodeCodeSandbox'),
+
   },
   memory: upstashMemory,
 });

@@ -2,11 +2,11 @@ import { Agent } from '@mastra/core/agent';
 import { createGemini25Provider } from '../config/googleProvider';
 import { weatherTool } from '../tools/weather-tool';
 import { chunkerTool } from "../tools/chunker-tool";
-import { rerankTool } from "../tools/rerank-tool";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
 import { getMCPToolsByServer } from '../tools/mcp';
+import { vectorQueryTool, hybridVectorSearchTool, enhancedVectorQueryTool } from "../tools/vectorQueryTool";
+import { graphRAGTool, graphRAGUpsertTool } from "../tools/graphRAG";
+
 
 /**
  * Runtime context type for the Weather Agent
@@ -70,7 +70,7 @@ ${includeAlerts ? "- Include weather alerts and warnings when available" : ""}
 
 Use the weatherTool to fetch current weather data.`;
   },
-  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
         thinkingConfig: {
           thinkingBudget: 0,
           includeThoughts: false,
@@ -79,8 +79,16 @@ Use the weatherTool to fetch current weather data.`;
   tools: { 
     weatherTool,
     chunkerTool,
-    rerankTool,
+    vectorQueryTool,
+    hybridVectorSearchTool,
+    enhancedVectorQueryTool,
+    graphRAGTool,
+    graphRAGUpsertTool,
     ...await getMCPToolsByServer('filesystem'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('puppeteer'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily')
   },
   memory: upstashMemory,
 });

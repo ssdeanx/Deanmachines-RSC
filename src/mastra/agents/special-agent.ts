@@ -1,13 +1,10 @@
 import { Agent } from "@mastra/core/agent";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { stockPriceTool } from "../tools/stock-tools";
 import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
-import { weatherTool } from "../tools/weather-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
@@ -104,8 +101,13 @@ Use all available tools to provide comprehensive multi-domain analysis.`;
     chunkerTool,
     rerankTool,
     stockPriceTool,
-    weatherTool,
     ...await getMCPToolsByServer('filesystem'),
+    ...await getMCPToolsByServer('git'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('memoryGraph'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily'),
+    ...await getMCPToolsByServer('nodeCodeSandbox'),
   },
   memory: upstashMemory,
 });

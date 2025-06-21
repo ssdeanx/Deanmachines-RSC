@@ -146,6 +146,11 @@ Use available tools to analyze existing documentation and gather relevant inform
     chunkerTool,
     rerankTool,
     ...await getMCPToolsByServer('filesystem'),
+    ...await getMCPToolsByServer('git'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily'),
+    ...await getMCPToolsByServer('memoryGraph'),
   },
   memory: upstashMemory,
 });

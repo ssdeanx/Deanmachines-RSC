@@ -287,7 +287,7 @@ export class AttentionGuidedMemoryProcessor extends MemoryProcessor {
     this.similarityThreshold = options.similarityThreshold ?? 0.85;
     this.importanceKeywords = options.importanceKeywords ?? [
       'error', 'critical', 'urgent', 'important', 'warning', 'issue', 
-      'problem', 'fix', 'solution', 'bug', 'security', 'performance'
+      'problem', 'fix', 'solution', 'bug', 'security', 'performance', 'update', 'correct'
     ];
     this.verboseMessageThreshold = options.verboseMessageThreshold ?? 500;
     this.contextPreservationRatio = options.contextPreservationRatio ?? 0.3;

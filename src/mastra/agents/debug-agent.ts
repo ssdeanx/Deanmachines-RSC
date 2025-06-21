@@ -1,9 +1,7 @@
 import { Agent } from "@mastra/core/agent";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
-import { graphRAGTool } from '../tools/graphRAG';
-import { vectorQueryTool } from "../tools/vectorQueryTool";
+import { graphRAGTool, graphRAGUpsertTool } from '../tools/graphRAG';
+import { vectorQueryTool, hybridVectorSearchTool, enhancedVectorQueryTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
 import { PinoLogger } from "@mastra/loggers";
@@ -96,17 +94,28 @@ ${monitorPerformance ? "- Include performance metrics in debugging analysis" : "
 
 Use available tools to analyze system relationships and query relevant information.`;
   },
-  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
         thinkingConfig: {
           thinkingBudget: 0,
           includeThoughts: false,
         },
-      }),  tools: {
+      }),  
+  tools: {
     graphRAGTool,
     vectorQueryTool,
     chunkerTool,
     rerankTool,
+    hybridVectorSearchTool,
+    enhancedVectorQueryTool,
+    graphRAGUpsertTool,
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily'),
+    ...await getMCPToolsByServer('nodeCodeSandbox'),
     ...await getMCPToolsByServer('filesystem'),
+    ...await getMCPToolsByServer('git'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('puppeteer'),
+    ...await getMCPToolsByServer('github')
   },
   memory: upstashMemory,
 });

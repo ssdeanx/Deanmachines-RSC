@@ -6,8 +6,7 @@ import { codeGraphMakerWorkflow } from './workflows/code-graph-maker';
 import { advancedCodeGraphMakerWorkflow } from './workflows/code-graph-maker-advanced';
 import { fullStackDevelopmentWorkflow } from './workflows/full-stack-development-workflow';
 import { researchAnalysisWorkflow } from './workflows/research-analysis-workflow';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { agentRegistry, agentMetadata } from './agents';
+import { agentRegistry } from './agents';
 import { registerCopilotKit } from "@mastra/agui";
 import { deanMachinesNetwork, DeanMachinesNetworkRuntimeContext } from './networks/dean-machines-network';
 import { baseNetwork, BaseNetworkRuntimeContext } from './networks/base-network';
@@ -92,6 +91,10 @@ export const mastra = new Mastra({
                     runtimeContext.set("project-context", c.req.header("X-Project-Context") || "");
                     runtimeContext.set("model-version", c.req.header("X-Model-Version") || "gemini-2.5-flash-lite-preview-06-17");
                     runtimeContext.set("model-provider", c.req.header("X-Model-Provider") || "google");
+                    runtimeContext.set("tool-selection", c.req.header("X-Tool-Selection") || "all");
+                    runtimeContext.set("plan-mode", c.req.header("X-Plan-Mode") === "true");
+                    runtimeContext.set("tasks", c.req.header("X-Tasks") || "");
+                    runtimeContext.set("actions", c.req.header("X-Actions") || "");
                     runtimeContext.set("debug-mode", c.req.header("X-Debug-Mode") === "true");
                 }
             }),

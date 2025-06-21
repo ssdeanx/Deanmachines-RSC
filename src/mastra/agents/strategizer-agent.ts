@@ -1,6 +1,4 @@
 import { Agent } from "@mastra/core/agent";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
@@ -18,7 +16,7 @@ logger.info('Initializing strategizerAgent');
  * Runtime context for the Strategizer Agent
  * Stores strategic planning preferences, business context, and goal-setting configurations
  * 
- * @mastra StrategizerAgent runtime context interface
+ * @mastra StrategizerAgent runtime context interface 
  * [EDIT: 2025-06-14] [BY: GitHub Copilot]
  */
 export type StrategizerAgentRuntimeContext = {
@@ -108,6 +106,12 @@ SUCCESS CRITERIA:
     hybridVectorSearchTool,
     stockPriceTool,
     ...await getMCPToolsByServer('filesystem'),
+    ...await getMCPToolsByServer('git'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('memoryGraph'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily'),
+    ...await getMCPToolsByServer('nodeCodeSandbox'),
   },
   memory: upstashMemory,
 });

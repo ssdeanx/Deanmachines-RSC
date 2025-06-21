@@ -1,6 +1,4 @@
 import { Agent } from "@mastra/core/agent";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
@@ -256,8 +254,10 @@ Use available tools to analyze data relationships and processing patterns.`;
     ...await getMCPToolsByServer('filesystem'),
     ...await getMCPToolsByServer('git'),
     ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('memoryGraph'),
     ...await getMCPToolsByServer('sequentialThinking'),
     ...await getMCPToolsByServer('tavily'),
+
   },
   memory: upstashMemory,
 });

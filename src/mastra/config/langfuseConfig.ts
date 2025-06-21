@@ -41,6 +41,7 @@ export interface LangfuseTraceConfig {
 }
 
 export interface LangfuseGenerationConfig {
+  [x: string]: unknown;
   name?: string;
   input?: Record<string, unknown>;
   output?: Record<string, unknown>;
@@ -158,6 +159,15 @@ export const createLangfuseClient = (): Langfuse | null => {
  * Singleton Langfuse client instance
  */
 export const langfuseClient = createLangfuseClient();
+
+/**
+ * Langfuse Vercel Exporter configured for Mastra
+ */
+export const langfuseExporter = new LangfuseExporter({
+  publicKey: langfuseConfig.publicKey,
+  secretKey: langfuseConfig.secretKey,
+  baseUrl: langfuseConfig.baseUrl
+});
 
 /**
  * Check if Langfuse is properly configured

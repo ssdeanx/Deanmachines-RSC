@@ -1,10 +1,7 @@
 import { Agent } from "@mastra/core/agent";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
-import { graphRAGTool } from '../tools/graphRAG';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
+import { graphRAGTool, graphRAGUpsertTool } from '../tools/graphRAG';
+import { vectorQueryTool, hybridVectorSearchTool, enhancedVectorQueryTool } from "../tools/vectorQueryTool";
 import { mem0RememberTool, mem0MemorizeTool } from "../tools/mem0-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { weatherTool } from "../tools/weather-tool";
@@ -36,6 +33,10 @@ export type MasterAgentRuntimeContext = {
   "project-context": string;
   "model-version": string;
   "model-provider": string;
+  "plan-mode": boolean;
+  "tasks": string;
+  "actions": string;
+  "tool-selection": string;
   "debug-mode": boolean;
 };
 
@@ -74,6 +75,10 @@ const masterAgentConfigSchema = z.object({
     'user-id': z.string().describe('User identifier'),
     'session-id': z.string().describe('Session identifier'),
     'project-context': z.string().describe('Project context'),
+    'plan-mode': z.boolean().describe('Plan mode flag'),
+    'tasks': z.string().describe('Tasks for the agent'),
+    'actions': z.string().describe('Actions for the agent'),
+    'tool-selection': z.string().describe('Tool selection'),
     'debug-mode': z.boolean().describe('Debug mode flag')
   }).describe('Runtime context for the agent'),
   model: z.any().describe('Model configuration for the agent'),
@@ -120,7 +125,11 @@ export const masterAgent = new Agent({
     const projectContext = runtimeContext?.get("project-context") || "";
     const modelVersion = runtimeContext?.get("model-version") || "gemini-2.5-flash-lite-preview-06-17";
     const modelProvider = runtimeContext?.get("model-provider") || "google";
+    const toolSelection = runtimeContext?.get("tool-selection") || "all";
     const debugMode = runtimeContext?.get("debug-mode") || false;
+    const planMode = runtimeContext?.get("plan-mode") || false;
+    const tasks = runtimeContext?.get("tasks") || "";
+    const actions = runtimeContext?.get("actions") || "";
 
     return `You are the Master Agent - an Advanced AI Problem-Solver and Technical Assistant. You are extremely flexible and can handle any task by leveraging your comprehensive knowledge and specialized tools.
 
@@ -130,7 +139,11 @@ CURRENT SESSION:
 ${projectContext ? `- Project: ${projectContext}` : ""}
 - Model Version: ${modelVersion}
 - Model Provider: ${modelProvider}
+${toolSelection ? `- Tool Selection: ${toolSelection}` : ""}
 ${debugMode ? "- Debug Mode: ENABLED" : ""}
+${planMode ? "- Plan Mode: ENABLED" : ""}
+${tasks ? `- Tasks: ${tasks}` : ""}
+${actions ? `- Actions: ${actions}` : ""}
 
 CORE CAPABILITIES:
 - Information Retrieval & Analysis: Utilize graph-based knowledge retrieval and vector similarity search across documents to provide comprehensive and contextually relevant information.
@@ -222,7 +235,6 @@ SUCCESS CRITERIA:
         'chunker-tool',
         'weather-data',
         'stock-prices',
-
         // MCP Server Capabilities (50+ tools across 11 servers)
         'file-operations',      // filesystem MCP
         'git-operations',       // git MCP
@@ -268,10 +280,13 @@ SUCCESS CRITERIA:
   }),
   tools: {
     graphRAGTool,
+    graphRAGUpsertTool,
     mem0RememberTool,
     mem0MemorizeTool,
     chunkerTool,
+    enhancedVectorQueryTool,
     vectorQueryTool,
+    hybridVectorSearchTool,
     weatherTool,
     stockPriceTool,
     // MCP Tools by individual servers (selective assignment)
@@ -281,7 +296,6 @@ SUCCESS CRITERIA:
     ...await getMCPToolsByServer('puppeteer'),
     ...await getMCPToolsByServer('github'),
     ...await getMCPToolsByServer('memoryGraph'),
-    ...await getMCPToolsByServer('ddgsearch'),
     ...await getMCPToolsByServer('neo4j'),
     ...await getMCPToolsByServer('sequentialThinking'),
     ...await getMCPToolsByServer('tavily'),

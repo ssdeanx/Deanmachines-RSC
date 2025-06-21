@@ -1,13 +1,13 @@
 import { Agent } from "@mastra/core/agent";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
-import { vectorQueryTool } from "../tools/vectorQueryTool";
+import { enhancedVectorQueryTool, hybridVectorSearchTool, vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
 import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
+import { graphRAGTool, graphRAGUpsertTool } from "../tools/graphRAG";
+import { mem0RememberTool, mem0MemorizeTool } from "../tools/mem0-tool";
 
 const logger = new PinoLogger({ name: 'utilityAgent', level: 'info' });
 logger.info('Initializing utilityAgent');
@@ -90,16 +90,31 @@ When responding:
 
 Use available tools to query relevant information and patterns.`;
   },
-  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
         thinkingConfig: {
           thinkingBudget: 0,
           includeThoughts: false,
         },
       }),  tools: {
     vectorQueryTool,
+    hybridVectorSearchTool,
+    enhancedVectorQueryTool,
+    graphRAGTool,
+    graphRAGUpsertTool,
     chunkerTool,
     rerankTool,
+    mem0RememberTool,
+    mem0MemorizeTool,
     ...await getMCPToolsByServer('filesystem'),
+    ...await getMCPToolsByServer('git'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('puppeteer'),
+    ...await getMCPToolsByServer('github'),
+    ...await getMCPToolsByServer('memoryGraph'),
+    ...await getMCPToolsByServer('neo4j'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily'),
+    ...await getMCPToolsByServer('nodeCodeSandbox'),
   },
   memory: upstashMemory,
 });

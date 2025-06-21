@@ -1,13 +1,12 @@
 import { Agent } from "@mastra/core/agent";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
 import { chunkerTool } from "../tools/chunker-tool";
-import { rerankTool } from "../tools/rerank-tool";
+
+import { graphRAGTool } from "../tools/graphRAG";
 
 const logger = new PinoLogger({ name: 'managerAgent', level: 'info' });
 logger.info('Initializing managerAgent');
@@ -104,8 +103,13 @@ Use available tools to query project management patterns and best practices.`;
       }),  tools: {
     vectorQueryTool,
     chunkerTool,
-    rerankTool,
+    graphRAGTool,
     ...await getMCPToolsByServer('filesystem'),
+    ...await getMCPToolsByServer('memoryGraph'),
+    ...await getMCPToolsByServer('git'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily'),
   },
   memory: upstashMemory,
 });

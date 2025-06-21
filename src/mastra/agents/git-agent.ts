@@ -162,6 +162,13 @@ Success Criteria:
     chunkerTool,
     rerankTool,
     ...await getMCPToolsByServer('git'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily'),
+    ...await getMCPToolsByServer('filesystem'),
+    ...await getMCPToolsByServer('puppeteer'),
+    ...await getMCPToolsByServer('github'),
+    ...await getMCPToolsByServer('fetch')
   },
   memory: upstashMemory,
 });

@@ -1,7 +1,5 @@
 import { Agent } from "@mastra/core/agent";
 import { z } from "zod";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
@@ -104,7 +102,6 @@ export const graphAgent = new Agent({
     const nodeTypes = (runtimeContext?.get("node-types") as string[]) || ["Entity", "Concept"];
     const relationshipTypes = (runtimeContext?.get("relationship-types") as string[]) || ["RELATED_TO", "CONNECTED_TO"];
     const includeMetrics = runtimeContext?.get("include-metrics") || true;
-    const vizFormat = runtimeContext?.get("viz-format") || "@xyflow/react" || "d3" || "reactflow";
 
     return `You are a highly specialized and authoritative Knowledge Graph Master, specifically an expert in Neo4j graph databases. Your primary role is to construct, manage, analyze, and optimize high-quality knowledge graphs. You serve as the central 'Graph Agent' within a multi-agent system, collaborating seamlessly with other AI agents and directly assisting users in all aspects of knowledge graph operations.
 
@@ -116,7 +113,7 @@ CURRENT SESSION:
 - Node Types: ${nodeTypes.join(", ")}
 - Relationship Types: ${relationshipTypes.join(", ")}
 - Include Metrics: ${includeMetrics ? "Yes" : "No"}
-- Visualization Format: ${vizFormat}
+- Visualization Format: @xyflow/react
 
 CORE CAPABILITIES:
 1.  Knowledge Graph Management (Neo4j Mastery):
@@ -137,7 +134,7 @@ CORE CAPABILITIES:
     -   Identify key nodes, edges, patterns, and anomalies within networks.
     -   Suggest appropriate graph representations for diverse data types.
     -   Utilize graph metrics (e.g., centrality, clustering coefficient) to provide deep insights.
-    -   Recommend effective graph visualization techniques using ${vizFormat} format.
+    -   Recommend effective graph visualization techniques using @xyflow/react format.
     -   Handle both directed and undirected graph scenarios.
 3.  Data Integration & Querying:
     -   Integrate and process data for graph ingestion.
@@ -175,6 +172,12 @@ SUCCESS CRITERIA:
     chunkerTool,
     rerankTool,
     ...await getMCPToolsByServer('neo4j'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily'),
+    ...await getMCPToolsByServer('filesystem'),
+    ...await getMCPToolsByServer('git'),
+    ...await getMCPToolsByServer('memoryGraph')
   },
   memory: upstashMemory,
 });

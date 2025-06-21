@@ -1,11 +1,8 @@
 import { Agent } from "@mastra/core/agent";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
-
 import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
-
+import { graphRAGTool } from "../tools/graphRAG";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
@@ -224,6 +221,7 @@ Use available tools to analyze agent relationships and coordination patterns.`;
     vectorQueryTool,
     hybridVectorSearchTool,
     chunkerTool,
+    graphRAGTool,
     ...await getMCPToolsByServer('filesystem'),
     ...await getMCPToolsByServer('git'),
     ...await getMCPToolsByServer('fetch'),

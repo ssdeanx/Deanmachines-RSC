@@ -1,12 +1,9 @@
 import { Agent } from "@mastra/core/agent";
 import { z } from "zod";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
-import { graphRAGTool } from '../tools/graphRAG';
-import { vectorQueryTool } from "../tools/vectorQueryTool";
+import { graphRAGTool, graphRAGUpsertTool } from '../tools/graphRAG';
+import { vectorQueryTool, hybridVectorSearchTool, enhancedVectorQueryTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
-import { rerankTool } from "../tools/rerank-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
@@ -162,11 +159,22 @@ Success Criteria:
   tools: {
     graphRAGTool,
     chunkerTool,
-    rerankTool,
     mem0RememberTool,
     mem0MemorizeTool,
     vectorQueryTool,
+    hybridVectorSearchTool,
+    enhancedVectorQueryTool,
+    graphRAGUpsertTool,
+    ...await getMCPToolsByServer('nodeCodeSandbox'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily'),
     ...await getMCPToolsByServer('filesystem'),
+    ...await getMCPToolsByServer('git'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('puppeteer'),
+    ...await getMCPToolsByServer('github')
+
+
   },
   memory: upstashMemory,
 });

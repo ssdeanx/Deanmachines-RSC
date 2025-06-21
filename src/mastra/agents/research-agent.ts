@@ -143,6 +143,13 @@ Use available tools to access knowledge graphs and perform comprehensive searche
     vectorQueryTool,
     chunkerTool,
     ...await getMCPToolsByServer('filesystem'),
+    ...await getMCPToolsByServer('memgraph'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('github'),
+    ...await getMCPToolsByServer('puppeteer'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('tavily'),
+
   }, 
   memory: upstashMemory,
 });

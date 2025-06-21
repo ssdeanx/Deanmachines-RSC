@@ -1,6 +1,4 @@
 import { Agent } from "@mastra/core/agent";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
@@ -185,7 +183,7 @@ User: "Find and fix the performance issue in our React application"
 
 Remember: Always be explicit about your reasoning process and use the available tools effectively to gather information and take actions.`;
   },
-  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
+  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
     thinkingConfig: {
       thinkingBudget: 0,
       includeThoughts: false,
@@ -198,7 +196,9 @@ Remember: Always be explicit about your reasoning process and use the available 
     ...await getMCPToolsByServer('filesystem'),
     ...await getMCPToolsByServer('git'),
     ...await getMCPToolsByServer('fetch'),
-    ...await getMCPToolsByServer('ddgsearch'),
+    ...await getMCPToolsByServer('memoryGraph'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily'),
     ...await getMCPToolsByServer('nodeCodeSandbox'),
   },
   memory: upstashMemory,
