@@ -25,6 +25,8 @@ export type AnalyzerAgentRuntimeContext = {
   "session-id": string;
   /** Analysis type focus */
   "analysis-type": "statistical" | "trend" | "comparative" | "predictive" | "diagnostic" | "exploratory";
+  /** Data source preference */
+  "data-source": "internal" | "external" | "hybrid";
   /** Data depth preference */
   "data-depth": "surface" | "detailed" | "comprehensive" | "exhaustive";
   /** Visualization preference */
@@ -67,6 +69,7 @@ const analyzerAgentConfigSchema = z.object({
     'user-id': z.string().describe('User identifier'),
     'session-id': z.string().describe('Session identifier'),
     'analysis-type': z.enum(["statistical", "trend", "comparative", "predictive", "diagnostic", "exploratory"]).describe('Analysis type focus'),
+    'data-source': z.enum(["internal", "external", "hybrid"]).describe('Data source preference'),
     'data-depth': z.enum(["surface", "detailed", "comprehensive", "exhaustive"]).describe('Data depth preference'),
     'visualization': z.enum(["charts", "graphs", "tables", "dashboards", "reports", "interactive"]).describe('Visualization preference'),
     'speed-accuracy': z.enum(["fast", "balanced", "thorough", "comprehensive"]).describe('Analysis speed vs accuracy'),
@@ -88,6 +91,7 @@ export const analyzerAgent = new Agent({
     const userId = runtimeContext?.get("user-id") || "anonymous";
     const sessionId = runtimeContext?.get("session-id") || "default";
     const analysisType = runtimeContext?.get("analysis-type") || "exploratory";
+    const dataSource = runtimeContext?.get("data-source") || "hybrid";
     const dataDepth = runtimeContext?.get("data-depth") || "detailed";
     const visualization = runtimeContext?.get("visualization") || "charts";
     const speedAccuracy = runtimeContext?.get("speed-accuracy") || "balanced";
@@ -99,6 +103,7 @@ CURRENT SESSION:
 - User: ${userId}
 - Session: ${sessionId}
 - Analysis Type: ${analysisType}
+- Data Source: ${dataSource}
 - Data Depth: ${dataDepth}
 - Visualization: ${visualization}
 - Speed vs Accuracy: ${speedAccuracy}
@@ -117,17 +122,112 @@ When responding:
 - Provide clear explanations of analytical results.
 - Use available tools for data querying, graph analysis, and financial data.`;
   },
-  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17',  {
+  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
     responseModalities: ["TEXT"],
     thinkingConfig: {
       thinkingBudget: 0, // -1 means dynamic thinking budget
       includeThoughts: false, // Include thoughts for debugging and monitoring purposes
     },
-  }), 
+    useSearchGrounding: true, // Enable Google Search integration for current events
+    // Dynamic retrieval configuration
+    dynamicRetrieval: true, // Let model decide when to use search grounding
+    // Safety settings level
+    safetyLevel: 'OFF', // Options: 'STRICT', 'MODERATE', 'PERMISSIVE', 'OFF'
+    // Structured outputs for better tool integration
+    structuredOutputs: true, // Enable structured JSON responses
+    agentName: 'analyzer',
+    tags: [
+      // Agent Classification
+      'analyzer-agent',
+      'orchestrator',
+      'problem-solver',
+      'enterprise-agent',
+
+      // Capabilities
+      'multi-tool',
+      'mcp-enabled',
+      'graph-rag',
+      'vector-search',
+      'memory-management',
+      'weather-data',
+      'stock-data',
+      'file-operations',
+      'git-operations',
+      'web-automation',
+      'database-operations',
+
+      // Model Features
+      'thinking-disabled',
+      'search-grounding',
+      'dynamic-retrieval',
+      'safety-off',
+      'structured-outputs',
+
+      // Scale & Scope
+      '50-plus-tools',
+      '11-mcp-servers',
+      'full-stack-capable',
+      'enterprise-scale'
+    ],
+    metadata: {
+      agentType: 'analyzer',
+      capabilities: [
+        // Core Mastra Tools
+        'graph-rag',
+        'vector-search',
+        'hybrid-vector-search',
+        'memory-management',
+        'mem0-remember',
+        'mem0-memorize',
+        'chunker-tool',
+        'weather-data',
+        'stock-prices',
+
+        // MCP Server Capabilities (50+ tools across 11 servers)
+        'file-operations',      // filesystem MCP
+        'git-operations',       // git MCP
+        'web-fetch',           // fetch MCP
+        'browser-automation',   // puppeteer MCP
+        'github-integration',   // github MCP
+        'memory-graph',        // memoryGraph MCP
+        'web-search',          // ddgsearch MCP
+        'neo4j-database',      // neo4j MCP
+        'sequential-thinking', // sequentialThinking MCP
+        'tavily-search',       // tavily MCP
+        'code-sandbox'         // nodeCodeSandbox MCP
+      ],
+      toolCount: '50+', // Actual count with all MCP tools
+      coreTools: 8,     // Direct Mastra tools
+      mcpServers: 5,   // MCP server count
+      mcpServerList: [
+        'filesystem',
+        'git',
+        'fetch',
+        'sequentialThinking',
+        'tavily',
+      ],
+      modelConfig: {
+        thinkingBudget: 'dynamic',
+        safetyLevel: 'OFF',
+        searchGrounding: true,
+        dynamicRetrieval: true,
+        structuredOutputs: true,
+        responseModalities: ['TEXT']
+      },
+      complexity: 'enterprise',
+      domain: 'general',
+      scope: 'full-stack-development-and-operations'
+    },
+    traceName: 'analyzer-agent-operations'
+  }),
   tools: {
     vectorQueryTool,
     chunkerTool,
     ...await getMCPToolsByServer('filesystem'),
+    ...await getMCPToolsByServer('git'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily'),
   },
   memory: upstashMemory,
 });

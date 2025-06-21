@@ -34,6 +34,8 @@ export type MasterAgentRuntimeContext = {
   "user-id": string;
   "session-id": string;
   "project-context": string;
+  "model-version": string;
+  "model-provider": string;
   "debug-mode": boolean;
 };
 
@@ -83,8 +85,29 @@ const masterAgentConfigSchema = z.object({
 
 /**
  * Master Agent - Primary debugging and problem-solving assistant
- *
- * Enhanced with comprehensive Zod validation to prevent ZodNull errors
+ * 
+ * @file master-agent.ts
+ * @author Mastra Team
+ * @license MIT
+ * @version 1.0.0
+ * @since 2025-06-20
+ * @module master-agent
+ * @requires @mastra/core
+ * 
+ * @summary The Master Agent is a highly capable AI assistant designed to handle complex problem-solving tasks across various domains.
+ * 
+ * @description
+ * The Master Agent is a highly capable AI assistant designed to handle complex problem-solving tasks across various domains. It integrates advanced capabilities such as:
+ * - Graph-based knowledge retrieval
+ * - Vector similarity search
+ * - File system operations via MCP
+ * - Git repository management
+ * - Real-time data access (weather, stock prices)
+ * - Comprehensive debugging and technical assistance
+ * - Enhanced with comprehensive Zod validation to prevent ZodNull errors
+ * This agent is built to be flexible, efficient, and user-friendly, providing accurate and actionable responses to user queries. It leverages the latest Gemini 2.5 model features, including dynamic retrieval and structured outputs, to enhance its problem-solving capabilities.
+ * The agent is designed to work seamlessly with Mastra's telemetry and logging systems, allowing for detailed tracking of actions, tool usage, and decision-making processes. It also includes advanced evaluation metrics to assess performance, consistency, and content quality.
+ * 
  * and ensure type safety across all operations.
  *
  * @mastra Enhanced master agent with input/output validation
@@ -95,6 +118,8 @@ export const masterAgent = new Agent({
     const userId = runtimeContext?.get("user-id") || "anonymous";
     const sessionId = runtimeContext?.get("session-id") || "default";
     const projectContext = runtimeContext?.get("project-context") || "";
+    const modelVersion = runtimeContext?.get("model-version") || "gemini-2.5-flash-lite-preview-06-17";
+    const modelProvider = runtimeContext?.get("model-provider") || "google";
     const debugMode = runtimeContext?.get("debug-mode") || false;
 
     return `You are the Master Agent - an Advanced AI Problem-Solver and Technical Assistant. You are extremely flexible and can handle any task by leveraging your comprehensive knowledge and specialized tools.
@@ -103,6 +128,8 @@ CURRENT SESSION:
 - User: ${userId}
 - Session: ${sessionId}
 ${projectContext ? `- Project: ${projectContext}` : ""}
+- Model Version: ${modelVersion}
+- Model Provider: ${modelProvider}
 ${debugMode ? "- Debug Mode: ENABLED" : ""}
 
 CORE CAPABILITIES:
@@ -126,34 +153,27 @@ SUCCESS CRITERIA:
 - Accuracy & Completeness: Responses are factually correct, comprehensive, and directly address the user's request.
 - Actionability: Solutions and debugging steps are clear, practical, and lead to problem resolution or task completion.
 - Efficiency: Tasks are completed and problems are diagnosed in a timely and resource-effective manner.
-- User Satisfaction: The user's problem is resolved, their question is answered, and they feel effectively supported.`;
+- User Satisfaction: The user's problem is resolved, their question is answered, and they feel effectively supported.
+`;
   },
-
   model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
     // Response modalities - what types of content the model can generate
     responseModalities: ["TEXT"], // Can also include "IMAGE" for image generation
-
     // Thinking configuration for enhanced reasoning
     thinkingConfig: {
       thinkingBudget: -1, // -1 = dynamic budget, 0 = disabled, 1-24576 = fixed budget
       includeThoughts: true, // Include reasoning process in response for debugging
     },
-
     // Search grounding for real-time information access
     useSearchGrounding: true, // Enable Google Search integration for current events
-
     // Dynamic retrieval configuration
     dynamicRetrieval: true, // Let model decide when to use search grounding
-
     // Safety settings level
     safetyLevel: 'OFF', // Options: 'STRICT', 'MODERATE', 'PERMISSIVE', 'OFF'
-
     // Structured outputs for better tool integration
     structuredOutputs: true, // Enable structured JSON responses
-
     // Cached content for cost optimization (if you have cached content)
     // cachedContent: 'your-cache-id', // Uncomment if using explicit caching
-
     // Langfuse tracing configuration
     agentName: 'master',
     tags: [
@@ -284,7 +304,6 @@ SUCCESS CRITERIA:
       'transformation', 'evolution', 'progress', 'development']),
     contentSimilarity: new ContentSimilarityMetric(),
     textualDifference: new TextualDifferenceMetric(),
-
 //    customEval: new CustomEvalMetric(createGemini25Provider('gemini-2.5-flash-preview-05-20', {
 //      thinkingConfig: {
 //        thinkingBudget: 0,
@@ -292,7 +311,6 @@ SUCCESS CRITERIA:
 //      },
 //    })),
   },
-
 });
 
 /**

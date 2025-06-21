@@ -272,19 +272,24 @@ export const mcpStdio = new MCPClient({
       }
     },
     nodeCodeSandbox: {
-        command: "cmd",
-        args: ["/c", "npx", "-y", "node-code-sandbox-mcp"],
-        env: {
-          "FILES_DIR": "C:\\Users\\dm\\Documents\\deanmachines-rsc\\data",
-          "SANDBOX_MEMORY_LIMIT": "4g",
-          "SANDBOX_DISK_LIMIT": "2g",
-          "SANDBOX_CPU_LIMIT": "0.75"
-        },
+      command: "docker",
+        args: [
+          "run",
+          "-i",
+          "--rm",
+          "-v",
+          "/var/run/docker.sock:/var/run/docker.sock",
+          "-v",
+          "C:\\Users\\dm\\Documents\\node-code-sandbox-mcp\\workspace:/workspace",
+          "--env-file",
+          "C:\\Users\\dm\\Documents\\node-code-sandbox-mcp\\.env",
+          "node-code-sandbox-mcp"
+        ],
         timeout: 75000,
         enableServerLogs: true,
         logger: (logMessage) => {
           logger.info(`[MCP:nodeCodeSandbox] ${logMessage.message}`, { level: logMessage.level });
-      }
+        }
       },
 //  terminalController: {
 //    command: "uvx",

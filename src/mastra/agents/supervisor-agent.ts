@@ -2,10 +2,10 @@ import { Agent } from "@mastra/core/agent";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
-import { graphRAGTool } from '../tools/graphRAG';
+
 import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
-import { rerankTool } from "../tools/rerank-tool";
+
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
@@ -131,21 +131,106 @@ When responding:
 
 Use available tools to analyze agent relationships and coordination patterns.`;
   },
-  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
-        responseModalities: ["TEXT"],
-        thinkingConfig: {
-          thinkingBudget: 0,
-          includeThoughts: false,
-        },
-      }),  tools: {
-    graphRAGTool,
+  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
+    responseModalities: ["TEXT"],
+    thinkingConfig: {
+      thinkingBudget: 0, // -1 means dynamic thinking budget
+      includeThoughts: false, // Include thoughts for debugging and monitoring purposes
+    },
+    useSearchGrounding: true, // Enable Google Search integration for current events
+    // Dynamic retrieval configuration
+    dynamicRetrieval: true, // Let model decide when to use search grounding
+    // Safety settings level
+    safetyLevel: 'OFF', // Options: 'STRICT', 'MODERATE', 'PERMISSIVE', 'OFF'
+    // Structured outputs for better tool integration
+    structuredOutputs: true, // Enable structured JSON responses
+    agentName: 'supervisor',
+    tags: [
+      // Agent Classification
+      'supervisor-agent',
+      'orchestrator',
+      'problem-solver',
+      'enterprise-agent',
+
+      // Capabilities
+      'multi-tool',
+      'mcp-enabled',
+      'graph-rag',
+      'vector-search',
+      'memory-management',
+      'weather-data',
+      'stock-data',
+      'file-operations',
+      'git-operations',
+      'web-automation',
+      'database-operations',
+
+      // Model Features
+      'thinking-disabled',
+      'search-grounding',
+      'dynamic-retrieval',
+      'safety-off',
+      'structured-outputs',
+
+      // Scale & Scope
+      '50-plus-tools',
+      '5-mcp-servers',
+      'full-stack-capable',
+      'enterprise-scale'
+    ],
+    metadata: {
+      agentType: 'supervisor',
+      capabilities: [
+        // Core Mastra Tools
+        'graph-rag',
+        'vector-search',
+        'hybrid-vector-search',
+        'memory-management',
+        'chunker-tool',
+
+
+        // MCP Server Capabilities (50+ tools across 11 servers)
+        'file-operations',      // filesystem MCP
+        'git-operations',       // git MCP
+        'web-fetch',           // fetch MCP
+        'sequential-thinking', // sequentialThinking MCP
+        'tavily-search',       // tavily MCP
+      ],
+      toolCount: '50+', // Actual count with all MCP tools
+      coreTools: 8,     // Direct Mastra tools
+      mcpServers: 5,   // MCP server count
+      mcpServerList: [
+        'filesystem',
+        'git',
+        'fetch',
+        'sequentialThinking',
+        'tavily',
+      ],
+      modelConfig: {
+        thinkingBudget: 'dynamic',
+        safetyLevel: 'OFF',
+        searchGrounding: true,
+        dynamicRetrieval: true,
+        structuredOutputs: true,
+        responseModalities: ['TEXT']
+      },
+      complexity: 'enterprise',
+      domain: 'general',
+      scope: 'full-stack-development-and-operations'
+    },
+    traceName: 'supervisor-agent-operations'
+  }),
+  tools: {
+    vectorQueryTool,
     hybridVectorSearchTool,
     chunkerTool,
-    rerankTool,
-    // Using vectorQueryTool for direct vector queries
-    vectorQueryTool,
     ...await getMCPToolsByServer('filesystem'),
-  },  memory: upstashMemory,
+    ...await getMCPToolsByServer('git'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily'),
+  },
+  memory: upstashMemory,
 });
 
 /**

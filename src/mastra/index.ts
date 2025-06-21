@@ -6,7 +6,8 @@ import { codeGraphMakerWorkflow } from './workflows/code-graph-maker';
 import { advancedCodeGraphMakerWorkflow } from './workflows/code-graph-maker-advanced';
 import { fullStackDevelopmentWorkflow } from './workflows/full-stack-development-workflow';
 import { researchAnalysisWorkflow } from './workflows/research-analysis-workflow';
-import { agentRegistry } from './agents';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { agentRegistry, agentMetadata } from './agents';
 import { registerCopilotKit } from "@mastra/agui";
 import { deanMachinesNetwork, DeanMachinesNetworkRuntimeContext } from './networks/dean-machines-network';
 import { baseNetwork, BaseNetworkRuntimeContext } from './networks/base-network';
@@ -88,6 +89,8 @@ export const mastra = new Mastra({
                     runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
                     runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
                     runtimeContext.set("project-context", c.req.header("X-Project-Context") || "");
+                    runtimeContext.set("model-version", c.req.header("X-Model-Version") || "gemini-2.5-flash-lite-preview-06-17");
+                    runtimeContext.set("model-provider", c.req.header("X-Model-Provider") || "google");
                     runtimeContext.set("debug-mode", c.req.header("X-Debug-Mode") === "true");
                 }
             }),
@@ -113,6 +116,7 @@ export const mastra = new Mastra({
                     runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
                     runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
                     runtimeContext.set("analysis-type", (c.req.header("X-Analysis-Type") as "statistical" | "trend" | "comparative" | "predictive" | "diagnostic" | "exploratory") || "exploratory");
+                    runtimeContext.set("data-source", (c.req.header("X-Data-Source") as "internal" | "external" | "hybrid") || "hybrid");
                     runtimeContext.set("data-depth", (c.req.header("X-Data-Depth") as "surface" | "detailed" | "comprehensive" | "exhaustive") || "detailed");
                     runtimeContext.set("visualization", (c.req.header("X-Visualization") as "charts" | "graphs" | "tables" | "dashboards" | "reports" | "interactive") || "charts");
                     runtimeContext.set("speed-accuracy", (c.req.header("X-Speed-Accuracy") as "fast" | "balanced" | "thorough" | "comprehensive") || "balanced");
@@ -251,6 +255,12 @@ export const mastra = new Mastra({
                     runtimeContext.set("data-format", (c.req.header("X-Data-Format") as "json" | "csv" | "xml" | "parquet" | "avro" | "binary") || "json");
                     runtimeContext.set("pipeline-stage", (c.req.header("X-Pipeline-Stage") as "extract" | "transform" | "load" | "validate" | "analyze") || "transform");
                     runtimeContext.set("performance-mode", (c.req.header("X-Performance-Mode") as "speed" | "memory" | "accuracy" | "balanced") || "balanced");
+                    runtimeContext.set("batch-size", parseInt(c.req.header("X-Batch-Size") || "1000"));
+                    runtimeContext.set("batch-interval", parseInt(c.req.header("X-Batch-Interval") || "60"));
+                    runtimeContext.set("batch-delay", parseInt(c.req.header("X-Batch-Delay") || "0"));
+                    runtimeContext.set("concurrency-level", parseInt(c.req.header("X-Concurrency-Level") || "1"));
+                    runtimeContext.set("max-retries", parseInt(c.req.header("X-Max-Retries") || "3"));
+                    runtimeContext.set("retry-delay", parseInt(c.req.header("X-Retry-Delay") || "10"));
                     runtimeContext.set("error-handling", (c.req.header("X-Error-Handling") as "strict" | "lenient" | "skip" | "retry") || "retry");
                 }
             }),

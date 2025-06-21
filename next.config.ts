@@ -49,7 +49,8 @@ const nextConfig: NextConfig = {
     'eslint',
     'typescript',
     '@typescript-eslint/eslint-plugin',
-    '@typescript-eslint/parser'
+    '@typescript-eslint/parser',
+    'freestyle-sandboxes'
   ],
   experimental: {
     optimizeCss: true,

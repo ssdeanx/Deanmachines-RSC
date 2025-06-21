@@ -2,12 +2,11 @@ import { Agent } from "@mastra/core/agent";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
-import { vectorQueryTool } from "../tools/vectorQueryTool";
+import { graphRAGTool } from '../tools/graphRAG';
+import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
 import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
-import { graphRAGTool } from '../tools/graphRAG';
 import { chunkerTool } from "../tools/chunker-tool";
-import { rerankTool } from "../tools/rerank-tool";
 import { getMCPToolsByServer } from '../tools/mcp';
 
 import { z } from "zod";
@@ -32,8 +31,21 @@ export type ProcessingAgentRuntimeContext = {
   "pipeline-stage": "extract" | "transform" | "load" | "validate" | "analyze";
   /** Performance priority */
   "performance-mode": "speed" | "memory" | "accuracy" | "balanced";
+  /** Batch processing parameters */
+  "batch-size": number;
+  /** Batch processing interval */
+  "batch-interval": number;
+  /** Batch processing delay */
+  "batch-delay": number;
+  /** Concurrency and retry settings */
+  "concurrency-level": number;
+  /** Retry settings */
+  "max-retries": number;
+  /** Retry delay */
+  "retry-delay": number;
   /** Error handling strategy */
   "error-handling": "strict" | "lenient" | "skip" | "retry";
+  
 };
 
 /**
@@ -95,6 +107,12 @@ export const processingAgent = new Agent({
     const userId = runtimeContext?.get("user-id") || "anonymous";
     const sessionId = runtimeContext?.get("session-id") || "default";
     const processingType = runtimeContext?.get("processing-type") || "batch";
+    const batchSize = runtimeContext?.get("batch-size") || 1000;
+    const batchInterval = runtimeContext?.get("batch-interval") || 60;
+    const batchDelay = runtimeContext?.get("batch-delay") || 0;
+    const concurrencyLevel = runtimeContext?.get("concurrency-level") || 1;
+    const maxRetries = runtimeContext?.get("max-retries") || 3;
+    const retryDelay = runtimeContext?.get("retry-delay") || 10;
     const dataFormat = runtimeContext?.get("data-format") || "json";
     const pipelineStage = runtimeContext?.get("pipeline-stage") || "transform";
     const performanceMode = runtimeContext?.get("performance-mode") || "balanced";
@@ -110,6 +128,12 @@ CURRENT SESSION:
 - User: ${userId}
 - Session: ${sessionId}
 - Processing Type: ${processingType}
+- Batch Size: ${batchSize}
+- Batch Interval: ${batchInterval}
+- Batch Delay: ${batchDelay}
+- Concurrency Level: ${concurrencyLevel}
+- Max Retries: ${maxRetries}
+- Retry Delay: ${retryDelay}
 - Data Format: ${dataFormat}
 - Pipeline Stage: ${pipelineStage}
 - Performance Mode: ${performanceMode}
@@ -137,19 +161,104 @@ When responding:
 
 Use available tools to analyze data relationships and processing patterns.`;
   },
-  model: createGemini25Provider('gemini-2.5-flash-preview-05-20', {
-        thinkingConfig: {
-          thinkingBudget: 0,
-          includeThoughts: false,
-        },
-      }),  tools: {
-    chunkerTool,
-    rerankTool,
+  model: createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
+    responseModalities: ["TEXT"],
+    thinkingConfig: {
+      thinkingBudget: 0, // -1 means dynamic thinking budget
+      includeThoughts: false, // Include thoughts for debugging and monitoring purposes
+    },
+    useSearchGrounding: true, // Enable Google Search integration for current events
+    // Dynamic retrieval configuration
+    dynamicRetrieval: true, // Let model decide when to use search grounding
+    // Safety settings level
+    safetyLevel: 'OFF', // Options: 'STRICT', 'MODERATE', 'PERMISSIVE', 'OFF'
+    // Structured outputs for better tool integration
+    structuredOutputs: true, // Enable structured JSON responses
+    agentName: 'processing',
+    tags: [
+      // Agent Classification
+      'processing-agent',
+      'workflow-automation',
+      'data-processing',
+      'enterprise-agent',
+      'batch-processing',
+
+      // Capabilities
+      'multi-tool',
+      'mcp-enabled',
+      'graph-rag',
+      'vector-search',
+      'hybrid-vector-search',
+      'memory-management',
+      'file-operations',
+      'git-operations',
+      'web-automation',
+      'database-operations',
+
+      // Model Features
+      'thinking-disabled',
+      'search-grounding',
+      'dynamic-retrieval',
+      'safety-off',
+      'structured-outputs',
+
+      // Scale & Scope
+      '50-plus-tools',
+      '11-mcp-servers',
+      'full-stack-capable',
+      'enterprise-scale'
+    ],
+    metadata: {
+      agentType: 'processing',
+      capabilities: [
+        // Core Mastra Tools
+        'graph-rag',
+        'vector-search',
+        'hybrid-vector-search',
+        'memory-management',
+
+        // MCP Server Capabilities (50+ tools across 11 servers)
+        'file-operations',      // filesystem MCP
+        'git-operations',       // git MCP
+
+        'sequential-thinking', // sequentialThinking MCP
+        'tavily-search',       // tavily MCP
+      ],
+      toolCount: '50+', // Actual count with all MCP tools
+      coreTools: 4,     // Direct Mastra tools
+      mcpServers: 5,   // MCP server count
+      mcpServerList: [
+        'filesystem',
+        'git',
+        'fetch',
+        'sequentialThinking',
+        'tavily',
+      ],
+      modelConfig: {
+        thinkingBudget: '0',
+        safetyLevel: 'OFF',
+        searchGrounding: true,
+        dynamicRetrieval: true,
+        structuredOutputs: true,
+        responseModalities: ['TEXT']
+      },
+      complexity: 'enterprise',
+      domain: 'general',
+      scope: 'full-stack-development-and-operations'
+    },
+    traceName: 'processing-agent-operations'
+  }),
+  tools: {
     graphRAGTool,
     vectorQueryTool,
+    hybridVectorSearchTool,
+    chunkerTool,
     ...await getMCPToolsByServer('filesystem'),
+    ...await getMCPToolsByServer('git'),
+    ...await getMCPToolsByServer('fetch'),
+    ...await getMCPToolsByServer('sequentialThinking'),
+    ...await getMCPToolsByServer('tavily'),
   },
-
   memory: upstashMemory,
 });
 
