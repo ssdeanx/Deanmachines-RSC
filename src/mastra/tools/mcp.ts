@@ -132,11 +132,11 @@ function transformMCPToolsForGoogleAI(tools: Record<string, unknown>): Record<st
 }
 
 /**
- * Primary MCP Client for Stdio-based servers (filesystem, docker, local tools)
- * These use direct command execution and are more reliable
+ * Mastra MCPClient - Proper implementation following Mastra documentation
+ * Replaces the custom MCP wrapper with the official Mastra MCPClient
  */
-export const mcpStdio = new MCPClient({
-  id: 'stdio-servers',
+export const mcpClient = new MCPClient({
+  id: 'deanmachines-mcp-client',
   timeout: 60000,
   servers: {
     filesystem: {
@@ -313,257 +313,50 @@ export const mcpStdio = new MCPClient({
 });
 
 /**
- * Main MCP interface - routes operations to appropriate client (Stdio or Smithery)
- * This maintains backward compatibility while adding dual-client support
+ * Enhanced MCP interface with Google AI compatibility
+ * Wraps the MCPClient to ensure ZodNull types are transformed
  */
-export const mcp = {  /**
-   * Get all tools from both clients as an object (for Agent compatibility)
+export const mcp = {
+  /**
+   * Get all tools with Google AI compatibility transformations
    */
   async getTools(): Promise<Record<string, unknown>> {
-    const allTools: Record<string, unknown> = {};
-
-    try {
-      const stdioTools = await mcpStdio.getTools();
-      // Filter out null/undefined tools and validate
-      if (stdioTools && typeof stdioTools === 'object') {
-        for (const [key, tool] of Object.entries(stdioTools)) {
-          if (tool != null && typeof tool === 'object') {
-            allTools[key] = tool;
-          }
-        }
-      }
-    } catch (error) {
-      logger.error('Failed to get Stdio MCP tools', { error: error instanceof Error ? error.message : 'Unknown error' });
-    }
-
-//    if (mcpSmithery) {
-//      try {
-//        const smitheryTools = await mcpSmithery.getTools();
-//        // Filter out null/undefined tools and validate
-//        if (smitheryTools && typeof smitheryTools === 'object') {
-//          for (const [key, tool] of Object.entries(smitheryTools)) {
-//            if (tool != null && typeof tool === 'object') {
-//              allTools[key] = tool;
-//            }
-//          }
-//        }
-//      } catch (error) {
-//        logger.error('Failed to get Smithery MCP tools', { error: error instanceof Error ? error.message : 'Unknown error' });
-//      }
-//    }
-
-    // Transform tools to ensure Google AI compatibility (remove ZodNull types)
-    const transformedTools = transformMCPToolsForGoogleAI(allTools);
-    logger.info(`Transformed ${Object.keys(transformedTools).length} MCP tools for Google AI compatibility`);
-
-    return transformedTools;
-  },/**   * Get all tools as a flat array (for internal processing)
-   */
-  async getToolsArray(): Promise<unknown[]> {
-    const tools: unknown[] = [];
-
-    try {
-      const stdioTools = await mcpStdio.getTools();
-      if (stdioTools && typeof stdioTools === 'object') {
-        // Filter out null/undefined tools before adding to array
-        const validTools = Object.values(stdioTools).filter(tool => tool != null && typeof tool === 'object');
-        tools.push(...validTools);
-      }
-    } catch (error) {
-      logger.error('Failed to get Stdio MCP tools', { error: error instanceof Error ? error.message : 'Unknown error' });
-    }
-
-//    if (mcpSmithery) {
-//      try {
-//        const smitheryTools = await mcpSmithery.getTools();
-//        if (smitheryTools && typeof smitheryTools === 'object') {
-//          // Filter out null/undefined tools before adding to array
-//          const validTools = Object.values(smitheryTools).filter(tool => tool != null && typeof tool === 'object');
-//          tools.push(...validTools);
-//        }
-//      } catch (error) {
-//        logger.error('Failed to get Smithery MCP tools', { error: error instanceof Error ? error.message : 'Unknown error' });
-//      }
-//    }
-
-    return tools;
-  },
-  /**
-   * Get all toolsets from both clients
-   */
-  async getToolsets() {
-    const toolsets = {};
-
-    try {
-      const stdioToolsets = await mcpStdio.getToolsets();
-      Object.assign(toolsets, stdioToolsets);
-    } catch (error) {
-      logger.error('Failed to get Stdio MCP toolsets', { error: error instanceof Error ? error.message : 'Unknown error' });
-    }
-
-//    if (mcpSmithery) {
-//      try {
-//        const smitheryToolsets = await mcpSmithery.getToolsets();
-//        Object.assign(toolsets, smitheryToolsets);
-//     } catch (error) {
-//        logger.error('Failed to get Smithery MCP toolsets', { error: error instanceof Error ? error.message : 'Unknown error' });
-//      }
-//    }
-
-    return toolsets;
+    const rawTools = await mcpClient.getTools();
+    return transformMCPToolsForGoogleAI(rawTools);
   },
 
   /**
-   * Call a tool on the appropriate server
+   * Get toolsets with Google AI compatibility transformations
    */
-  async callTool(server: string, toolName: string, args: Record<string, unknown> = {}) {
-    const client = this.getClientForServer(server);
-    if (!client) {
-      throw new Error(`Server '${server}' not found in any MCP client`);
+  async getToolsets(): Promise<Record<string, unknown>> {
+    const rawToolsets = await mcpClient.getToolsets();
+    const transformedToolsets: Record<string, unknown> = {};
+
+    for (const [serverName, toolset] of Object.entries(rawToolsets)) {
+      if (toolset && typeof toolset === 'object') {
+        transformedToolsets[serverName] = transformMCPToolsForGoogleAI(toolset as Record<string, unknown>);
+      }
     }
 
-    const toolsets = await client.getToolsets();
-    const serverToolset = toolsets[server];
-    if (!serverToolset || !serverToolset[toolName]) {
-      throw new Error(`Tool '${toolName}' not found on server '${server}'`);
-    }
-
-    return await serverToolset[toolName](args);
-  },
-  /**
-   * List tools for a specific server
-   */
-  async listTools(server: string) {
-    const client = this.getClientForServer(server);
-    if (!client) {
-      throw new Error(`Server '${server}' not found in any MCP client`);
-    }
-
-    const tools = await client.getTools();
-    return tools[server] || [];
-  },
-  /**
-   * Safely disconnect all MCP clients
-   */
-  async disconnect() {
-    const promises = [];
-
-    try {
-      promises.push(mcpStdio.disconnect());
-    } catch (error) {
-      logger.error('Error disconnecting Stdio MCP client', { error: error instanceof Error ? error.message : 'Unknown error' });
-    }
-
-//     if (mcpSmithery) {
-//      try {
-//        promises.push(mcpSmithery.disconnect());
-//      } catch (error) {
-//        logger.error('Error disconnecting Smithery MCP client', { error: error instanceof Error ? error.message : 'Unknown error' });
-//      }
-//    }
-
-    await Promise.allSettled(promises);
-    logger.info('All MCP clients disconnected');
+    return transformedToolsets;
   },
 
   /**
-   * Get the appropriate client for a server
+   * Disconnect from MCP servers
    */
-  getClientForServer(server: string) {
-    const stdioServers = ['filesystem', 'git', 'time', 'fetch', 'puppeteer',
-      'github', 'memoryGraph', 'ddgsearch', 'neo4j', 'tavily', 'nodeCodeSandbox'];
-
-
-    if (stdioServers.includes(server)) {
-      return mcpStdio;
-    }
-    return null;
+  async disconnect(): Promise<void> {
+    return await mcpClient.disconnect();
   },
 
   /**
-   * Resources interface for both clients
+   * Access to resources (pass-through)
    */
-  resources: {
-    async list() {
-      const resources = {};
+  resources: mcpClient.resources,
 
-      try {
-        const stdioResources = await mcpStdio.resources.list();
-        Object.assign(resources, stdioResources);
-      } catch (error) {
-        logger.error('Failed to list Stdio MCP resources', { error: error instanceof Error ? error.message : 'Unknown error' });
-      }
-
-//      if (mcpSmithery) {
-//        try {
-//          const smitheryResources = await mcpSmithery.resources.list();
-//          Object.assign(resources, smitheryResources);
-//        } catch (error) {
-//          logger.error('Failed to list Smithery MCP resources', { error: error instanceof Error ? error.message : 'Unknown error' });
-//        }
-//      }
-
-      return resources;
-    },
-
-    async templates() {
-      const templates = {};
-
-      try {
-        const stdioTemplates = await mcpStdio.resources.templates();
-        Object.assign(templates, stdioTemplates);
-      } catch (error) {
-        logger.error('Failed to get Stdio MCP resource templates', { error: error instanceof Error ? error.message : 'Unknown error' });
-      }
-
-//      if (mcpSmithery) {
-//        try {
-//          const smitheryTemplates = await mcpSmithery.resources.templates();
-//          Object.assign(templates, smitheryTemplates);
-//        } catch (error) {
-//          logger.error('Failed to get Smithery MCP resource templates', { error: error instanceof Error ? error.message : 'Unknown error' });
-//        }
-//      }
-
-      return templates;
-    },
-
-    async read(server: string, uri: string) {
-      const client = this.getClientForServer(server);
-      if (!client) {
-        throw new Error(`Server '${server}' not found in any MCP client`);
-      }
-      return await client.resources.read(server, uri);
-    },
-
-    async subscribe(server: string, uri: string) {
-      const client = this.getClientForServer(server);
-      if (!client) {
-        throw new Error(`Server '${server}' not found in any MCP client`);
-      }
-      return await client.resources.subscribe(server, uri);
-    },
-
-    async unsubscribe(server: string, uri: string) {
-      const client = this.getClientForServer(server);
-      if (!client) {
-        throw new Error(`Server '${server}' not found in any MCP client`);
-      }
-      return await client.resources.unsubscribe(server, uri);
-    },
-
-    getClientForServer(server: string) {
-      const stdioServers = ['filesystem', 'git', 'time', 'fetch', 'puppeteer',
-        'github', 'memoryGraph', 'ddgsearch', 'neo4j', 'tavily', 'nodeCodeSandbox'];
-
-      if (stdioServers.includes(server)) {
-        return mcpStdio;
-//      } else if (smitheryServers.includes(server) && mcpSmithery) {
-//        return mcpSmithery;
-      }
-      return null;
-    }
-  }
+  /**
+   * Access to prompts (pass-through)
+   */
+  prompts: mcpClient.prompts
 };
 
 /**
@@ -778,7 +571,7 @@ export const traceMCPOperation = async <T>(
 };
 
 /**
- * Traced MCP tool execution
+ * Traced MCP tool execution using proper Mastra MCPClient
  *
  * @param server - MCP server name
  * @param toolName - Tool to execute
@@ -793,14 +586,16 @@ export const executeTracedMCPTool = async (
   return await traceMCPOperation(
     server,
     'callTool',
-    async () => {      const tools = await mcp.listTools(server);
-      const tool = tools.find((t: { name: string }) => t.name === toolName);
+    async () => {
+      // Get tools for this specific server
+      const serverTools = await getMCPToolsByServer(server);
+      const tool = serverTools[toolName];
 
-      if (!tool) {
+      if (!tool || typeof tool !== 'function') {
         throw new Error(`Tool '${toolName}' not found on server '${server}'`);
       }
 
-      return await mcp.callTool(server, toolName, args);
+      return await (tool as (args: Record<string, unknown>) => Promise<unknown>)(args);
     },
     toolName
   );
@@ -827,7 +622,7 @@ export const getTracedMCPResource = async (
   );
 };
 /**
- * Traced MCP server tools listing
+ * Traced MCP server tools listing using proper Mastra MCPClient
  *
  * @param server - MCP server name
  * @returns Available tools with tracing
@@ -837,32 +632,126 @@ export const listTracedMCPTools = async (server: string): Promise<{ name: string
     server,
     'listTools',
     async () => {
-      return await mcp.listTools(server);
+      const serverTools = await getMCPToolsByServer(server);
+      return Object.keys(serverTools).map(name => ({ name, description: `Tool from ${server} server` }));
     }
   );
 };
 /**
+ * Debug function to inspect MCP tool structure
+ */
+async function debugMCPTools() {
+  try {
+    logger.info('=== MCP DEBUG: Inspecting tool structure ===');
+
+    // Check what getTools() actually returns
+    const allTools = await mcp.getTools();
+    logger.info(`Total tools from getTools(): ${Object.keys(allTools).length}`);
+    logger.info(`Tool names: ${Object.keys(allTools).slice(0, 10).join(', ')}...`);
+
+    // Check what getToolsets() returns
+    const toolsets = await mcp.getToolsets();
+    logger.info(`Total toolsets from getToolsets(): ${Object.keys(toolsets).length}`);
+    logger.info(`Toolset names: ${Object.keys(toolsets).join(', ')}`);
+
+    // Inspect first toolset structure
+    const firstToolsetName = Object.keys(toolsets)[0];
+    if (firstToolsetName) {
+      const firstToolset = toolsets[firstToolsetName];
+      if (firstToolset && typeof firstToolset === 'object') {
+        const toolsetObj = firstToolset as Record<string, unknown>;
+        logger.info(`First toolset '${firstToolsetName}' has ${Object.keys(toolsetObj).length} tools`);
+        logger.info(`Tools in '${firstToolsetName}': ${Object.keys(toolsetObj).slice(0, 5).join(', ')}...`);
+      }
+    }
+
+    logger.info('=== END MCP DEBUG ===');
+  } catch (error) {
+    logger.error('MCP Debug failed:', { error: error instanceof Error ? error.message : 'Unknown error' });
+  }
+}
+
+// Track if debug has been run
+let debugHasRun = false;
+
+/**
  * Get MCP tools for a specific server as Mastra-compatible tools
+ * Uses proper Mastra MCPClient pattern with server-specific filtering
  * @param serverName - Name of the MCP server
  * @returns Tools from the specified server formatted for Mastra
  */
 export async function getMCPToolsByServer(serverName: string): Promise<Record<string, unknown>> {
   try {
-    const tools = await mcp.listTools(serverName);
+    // Run debug on first call to understand structure
+    if (!debugHasRun) {
+      await debugMCPTools();
+      debugHasRun = true;
+    }
+
+    // Try getToolsets() approach first (recommended by Mastra docs)
+    const toolsets = await mcp.getToolsets();
+
+    if (toolsets[serverName]) {
+      const serverTools = toolsets[serverName] as Record<string, unknown>;
+      logger.info(`Loaded ${Object.keys(serverTools).length} tools from MCP server '${serverName}' via toolsets`);
+      return serverTools;
+    }
+
+    // Fallback: try filtering from getTools() with different naming patterns
+    const allTools = await mcp.getTools();
     const serverTools: Record<string, unknown> = {};
 
-    for (const tool of tools) {
-      if (tool.name) {
-        serverTools[tool.name] = async (args: Record<string, unknown>) => {
-          return await mcp.callTool(serverName, tool.name, args);
-        };
+    // Try different naming patterns
+    const patterns = [
+      `${serverName}_`,  // serverName_toolName
+      `${serverName}.`,  // serverName.toolName
+      `${serverName}-`,  // serverName-toolName
+    ];
+
+    for (const [toolName, tool] of Object.entries(allTools)) {
+      for (const pattern of patterns) {
+        if (toolName.startsWith(pattern)) {
+          const originalToolName = toolName.replace(pattern, '');
+          serverTools[originalToolName] = tool;
+          break;
+        }
       }
     }
 
-    logger.info(`Loaded ${Object.keys(serverTools).length} tools from MCP server '${serverName}'`);
+    logger.info(`Loaded ${Object.keys(serverTools).length} tools from MCP server '${serverName}' via filtering`);
     return serverTools;
   } catch (error) {
     logger.warn(`Failed to load tools from MCP server '${serverName}':`, error as Record<string, unknown>);
+    return {};
+  }
+}
+
+/**
+ * Get all MCP tools using the recommended Mastra pattern
+ * @returns All MCP tools properly formatted for Mastra agents
+ */
+export async function getAllMCPTools(): Promise<Record<string, unknown>> {
+  try {
+    const allTools = await mcp.getTools();
+    logger.info(`Loaded ${Object.keys(allTools).length} total MCP tools from all servers`);
+    return allTools;
+  } catch (error) {
+    logger.error('Failed to load MCP tools:', error as Record<string, unknown>);
+    return {};
+  }
+}
+
+/**
+ * Get MCP toolsets for dynamic usage (recommended for multi-user scenarios)
+ * @returns MCP toolsets for use with agent.generate() or agent.stream()
+ */
+export async function getMCPToolsets(): Promise<Record<string, unknown>> {
+  try {
+    const toolsets = await mcp.getToolsets();
+    logger.info(`Loaded MCP toolsets from ${Object.keys(toolsets).length} servers`);
+    return toolsets;
+  } catch (error) {
+    logger.error('Failed to load MCP toolsets:', error as Record<string, unknown>);
     return {};
   }
 }
@@ -897,7 +786,7 @@ export const getTracedMCPToolsets = async (): Promise<Record<string, unknown>> =
   );
 };
 /**
- * Traced MCP tools retrieval for static usage
+ * Traced MCP tools retrieval for static usage using proper Mastra MCPClient
  *
  * @returns All tools from all servers with tracing
  */
@@ -906,22 +795,11 @@ export const getTracedMCPTools = async (): Promise<{ name: string; description?:
     'all-servers',
     'getTools',
     async () => {
-      const tools = await mcp.getToolsArray();
-      return tools.map((tool: unknown) => {
-        // Type guard for tool objects
-        if (typeof tool === 'object' && tool !== null) {
-          const toolObj = tool as Record<string, unknown>;
-          const inputSchema = toolObj.inputSchema as Record<string, unknown> | undefined;
-          return {
-            name: (toolObj.id as string) || (toolObj.label as string) || (toolObj.name as string) || 'unnamed-tool',
-            description: (toolObj.description as string) || (inputSchema?.description as string) || undefined
-          };
-        }
-        return {
-          name: 'unknown-tool',
-          description: undefined
-        };
-      });
+      const allTools = await mcp.getTools();
+      return Object.keys(allTools).map(toolName => ({
+        name: toolName,
+        description: `MCP tool: ${toolName}`
+      }));
     }
   );
 };

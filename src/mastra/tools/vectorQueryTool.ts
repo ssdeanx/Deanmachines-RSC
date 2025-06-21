@@ -1,32 +1,39 @@
 /**
  * Vector Query Tools for Dean Machines RSC
- * 
+ *
  * This module provides tools for querying vector stores with semantic search,
  * hybrid filtering, and metadata search. It includes a basic vector query tool,
  * an enhanced tool that integrates with agent memory, and a hybrid search tool
  * that combines semantic and metadata filtering.
- * 
+ *
  * Key Features:
  * - Semantic search using embeddings
  * - Hybrid filtering based on metadata
  * - Integration with agent memory for context-aware search
  * - Runtime context support for personalized search preferences
  * - Comprehensive validation and error handling
- * 
+ *
  * @author SSD
- * @date 2025-06-18
- * @version 1.0.0
- * 
+ * @date 2025-06-21
+ * @version 1.0.1
+ *
  * [EDIT: 2025-06-18] [BY: SSD]
  */
 import { createVectorQueryTool } from "@mastra/rag";
 import { createTool, ToolExecutionContext } from '@mastra/core/tools';
 import { RuntimeContext } from '@mastra/core/di';
 import { z } from 'zod';
-import { agentVector, searchMessages } from '../agentMemory';
+import {
+  searchUpstashMessages,
+  queryVectors,
+  VECTOR_CONFIG,
+  type VectorQueryResult,
+  type MetadataFilter
+} from '../upstashMemory';
+import type { UIMessage, CoreMessage } from 'ai';
 import { PinoLogger } from '@mastra/loggers';
 import { embedMany } from 'ai';
-import { google } from '@ai-sdk/google';
+import { fastembed } from '@mastra/fastembed';
 
 // Define runtime context type for vector query tools
 export type VectorQueryRuntimeContext = {
@@ -52,7 +59,7 @@ const vectorQueryInputSchema = z.object({
   after: z.number().int().min(0).default(1).describe('Number of messages after each match to include for context'),
   includeMetadata: z.boolean().default(true).describe('Whether to include metadata in results'),
   enableFilter: z.boolean().default(false).describe('Enable filtering based on metadata'),
-  filter: z.record(z.any()).optional().describe('Optional metadata filters to apply'),
+  filter: z.record(z.any()).optional().describe('Optional metadata filter using Upstash-compatible MongoDB/Sift query syntax. Supports: $eq, $ne, $gt, $gte, $lt, $lte, $in, $nin, $and, $or, $not, $nor, $exists, $contains, $regex. Field keys limited to 512 chars, no null values.'),
 }).strict();
 
 const vectorQueryResultSchema = z.object({
@@ -71,27 +78,26 @@ const vectorQueryOutputSchema = z.object({
   queryEmbedding: z.array(z.number()).optional().describe('The embedding vector of the query'),
 }).strict();
 
-// Basic vector query tool using Mastra's createVectorQueryTool for compatibility
+// Basic vector query tool using Mastra's createVectorQueryTool for compatibility with Upstash
 export const vectorQueryTool = createVectorQueryTool({
-  vectorStoreName: "agentVector",
-  indexName: "context", 
-  model: google.textEmbeddingModel('gemini-embedding-exp-03-07'),
+  vectorStoreName: "upstashVector",
+  indexName: VECTOR_CONFIG.DEFAULT_INDEX_NAME,
+  model: fastembed,
   enableFilter: true,
-  description: "Search for semantically similar content in the vector store using embeddings. Supports filtering, ranking, and context retrieval."
+  description: "Search for semantically similar content in the Upstash vector store using embeddings with sparse cosine similarity. Supports filtering, ranking, and context retrieval."
 });
 
-// Enhanced vector query tool that integrates with agentMemory
+// Enhanced vector query tool that integrates with UpstashMemory
 export const enhancedVectorQueryTool = createTool({
   id: 'enhanced_vector_query',
   description: 'Advanced vector search with hybrid filtering, metadata search, and agent memory integration',
   inputSchema: vectorQueryInputSchema,
   outputSchema: vectorQueryOutputSchema,
-  execute: async ({ input, runtimeContext }: ToolExecutionContext<typeof vectorQueryInputSchema> & { 
+  execute: async ({ input, runtimeContext }: ToolExecutionContext<typeof vectorQueryInputSchema> & {
     input: z.infer<typeof vectorQueryInputSchema>;
-    runtimeContext?: RuntimeContext<VectorQueryRuntimeContext>; 
+    runtimeContext?: RuntimeContext<VectorQueryRuntimeContext>;
   }): Promise<z.infer<typeof vectorQueryOutputSchema>> => {
     const startTime = Date.now();
-    
     try {
       // Validate input
       const validatedInput = vectorQueryInputSchema.parse(input);        // Get runtime context values for personalization
@@ -100,9 +106,8 @@ export const enhancedVectorQueryTool = createTool({
       const searchPreference = runtimeContext?.get('search-preference') || 'semantic';
       const qualityThreshold = Number(runtimeContext?.get('quality-threshold')) || validatedInput.minScore;
       const debug = runtimeContext?.get('debug') || false;
-      
       if (debug) {
-        logger.info('Vector query input validated', { 
+        logger.info('Vector query input validated', {
           query: validatedInput.query,
           userId,
           sessionId,
@@ -114,30 +119,51 @@ export const enhancedVectorQueryTool = createTool({
       const results: z.infer<typeof vectorQueryResultSchema>[] = [];
       let relevantContext = '';
 
-      // If threadId is provided, use agent memory search
+      // If threadId is provided, use Upstash memory search
       if (validatedInput.threadId) {
-        logger.info('Searching within thread using agent memory', { threadId: validatedInput.threadId });
-        
-        const memoryResults = await searchMessages(
+        logger.info('Searching within thread using Upstash memory', { threadId: validatedInput.threadId });
+
+        const memoryResults = await searchUpstashMessages(
           validatedInput.threadId,
           validatedInput.query,
           validatedInput.topK,
           validatedInput.before,
-          validatedInput.after
+          validatedInput.after,
+          validatedInput.enableFilter ? (validatedInput.filter as MetadataFilter) : undefined
         );
 
-        // Transform memory results to match our schema
-        memoryResults.messages.forEach((message, index) => {
+        // Transform memory results to match our schema - use both CoreMessage and UIMessage data
+        memoryResults.messages.forEach((message: CoreMessage, index: number) => {
           results.push({
             id: `msg-${index}`,
             content: typeof message.content === 'string' ? message.content : JSON.stringify(message.content),
             score: 1.0 - (index * 0.1), // Simulate decreasing relevance
-            metadata: { 
+            metadata: {
               role: message.role,
               threadId: validatedInput.threadId,
               timestamp: new Date().toISOString(),
               userId,
-              sessionId
+              sessionId,
+              messageType: 'core'
+            },
+            threadId: validatedInput.threadId,
+          });
+        });
+
+        // Also include UIMessage data for enhanced context
+        memoryResults.uiMessages.forEach((uiMessage: UIMessage, index: number) => {
+          results.push({
+            id: `ui-msg-${index}`,
+            content: typeof uiMessage.content === 'string' ? uiMessage.content : JSON.stringify(uiMessage.content),
+            score: 1.0 - (index * 0.1), // Simulate decreasing relevance
+            metadata: {
+              role: uiMessage.role,
+              threadId: validatedInput.threadId,
+              timestamp: new Date().toISOString(),
+              userId,
+              sessionId,
+              messageType: 'ui',
+              uiMessageId: uiMessage.id
             },
             threadId: validatedInput.threadId,
           });
@@ -146,30 +172,31 @@ export const enhancedVectorQueryTool = createTool({
         relevantContext = results.map(r => r.content).join('\n\n');
         
       } else {
-        // Use direct vector store search
-        logger.info('Performing direct vector store search');
-        
-        // Create query embedding using Google's embedding model
+        // Use direct Upstash vector store search with sparse cosine similarity
+        logger.info('Performing direct Upstash vector store search');
+
+        // Create query embedding using Google's embedding model (384 dimensions for fastembed compatibility)
         const { embeddings } = await embedMany({
-          model: google.textEmbeddingModel('gemini-embedding-exp-03-07'),
+          model: fastembed,
           values: [validatedInput.query]
         });
 
         const queryEmbedding = embeddings[0];
 
-        // Query the vector store directly
-        const vectorResults = await agentVector.query({
-          indexName: 'context',
-          queryVector: queryEmbedding,
-          topK: validatedInput.topK,
-          filter: validatedInput.enableFilter ? validatedInput.filter : undefined
-        });
+        // Query the Upstash vector store directly with sparse cosine similarity
+        const vectorResults = await queryVectors(
+          VECTOR_CONFIG.DEFAULT_INDEX_NAME,
+          queryEmbedding,
+          validatedInput.topK,
+          validatedInput.enableFilter ? (validatedInput.filter as MetadataFilter) : undefined,
+          false // Don't include vectors in response for performance
+        );
 
         // Transform vector results to match our schema with runtime context
-        vectorResults.forEach((result, index) => {
-          const content = result.metadata?.text || result.metadata?.content || '';
+        vectorResults.forEach((result: VectorQueryResult, index: number) => {
+          const content = String(result.metadata?.text || result.metadata?.content || '');
           const score = result.score || 0;
-          
+
           if (score >= qualityThreshold) {
             results.push({
               id: result.id || `vec-${index}`,
@@ -209,7 +236,7 @@ export const enhancedVectorQueryTool = createTool({
       return vectorQueryOutputSchema.parse(output);
 
     } catch (error) {
-      logger.error('Vector query failed', { 
+      logger.error('Vector query failed', {
         error: error instanceof Error ? error.message : String(error)
       });
       throw new Error(`Vector query failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -244,30 +271,26 @@ export const hybridVectorSearchTool = createTool({
   }),
   outputSchema: vectorQueryOutputSchema.extend({
     hybridScores: z.array(hybridScoreSchema).describe('Breakdown of hybrid scoring'),
-  }),  execute: async ({ context, runtimeContext }: { 
+  }),  execute: async ({ context, runtimeContext }: {
     context: z.infer<typeof vectorQueryInputSchema> & {
       metadataQuery?: Record<string, unknown>;
       semanticWeight?: number;
       metadataWeight?: number;
-    }; 
-    runtimeContext?: RuntimeContext<VectorQueryRuntimeContext> 
+    };
+    runtimeContext?: RuntimeContext<VectorQueryRuntimeContext>
   }) => {
     const startTime = Date.now();
-    
     try {
       const extendedSchema = vectorQueryInputSchema.extend({
         metadataQuery: z.record(z.any()).optional(),
         semanticWeight: z.number().min(0).max(1).default(0.7),
         metadataWeight: z.number().min(0).max(1).default(0.3),
       });
-      
       const validatedInput = extendedSchema.parse(context);
-
       // Get runtime context values
       const userId = runtimeContext?.get('user-id') || 'anonymous';
       const sessionId = runtimeContext?.get('session-id') || 'default';
       const searchPreference = runtimeContext?.get('search-preference') || 'hybrid';
-
       logger.info('Hybrid vector search initiated', { 
         query: validatedInput.query,
         semanticWeight: validatedInput.semanticWeight,
@@ -298,7 +321,6 @@ export const hybridVectorSearchTool = createTool({
         },
         runtimeContext: runtimeContext || new RuntimeContext<VectorQueryRuntimeContext>()
       });
-
       // Transform basic results to match our hybrid scoring format
       const semanticResults = {
         relevantContext: basicResults.relevantContext || '',
@@ -317,7 +339,6 @@ export const hybridVectorSearchTool = createTool({
       if (validatedInput.metadataQuery) {
         semanticResults.results.forEach((result: HybridVectorResult) => {
           const semanticScore = result.score;
-          
           // Simple metadata matching score (can be enhanced)
           let metadataScore = 0;
           if (result.metadata && validatedInput.metadataQuery) {

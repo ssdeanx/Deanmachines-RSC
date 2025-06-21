@@ -41,6 +41,7 @@ const nextConfig: NextConfig = {
     '@copilotkit/runtime',
     'quick-lru',
     'langfuse-vercel',
+    'langfuse',
     '@mastra/agui',
     '@inquirer/prompts',
     'simple-git',

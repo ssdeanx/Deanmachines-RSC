@@ -1,10 +1,10 @@
 /**
  * GraphRAG Tool - Production-ready implementation for Dean Machines RSC
- * Uses createGraphRAGTool from @mastra/rag with LibSQL vector store integration
+ * Uses createGraphRAGTool from @mastra/rag with Upstash Vector store integration
  * Supports chunking, embedding, upserting, and graph-based querying
- * 
+ *
  * @author Dean Machines RSC Project
- * @version 2.0.0 - Complete rewrite using correct Mastra patterns
+ * @version 2.0.1 - Complete rewrite using correct Mastra patterns
  */
 
 import { createTool, ToolExecutionContext } from '@mastra/core/tools';
@@ -14,9 +14,14 @@ import { generateId } from 'ai';
 import { PinoLogger } from '@mastra/loggers';
 import { RuntimeContext } from "@mastra/core/runtime-context";
 
-import { agentVector } from '../agentMemory';
+import {
+  upsertVectors,
+  createVectorIndex,
+  VECTOR_CONFIG,
+  VectorStoreError
+} from '../upstashMemory';
 import { embedMany } from 'ai';
-import { google } from '@ai-sdk/google';
+import { fastembed } from '@mastra/fastembed';
 
 const logger = new PinoLogger({ name: 'GraphRAGTool' });
 
@@ -100,7 +105,7 @@ export type GraphRAGRuntimeContext = {
  */
 export const graphRAGUpsertTool = createTool({
   id: 'graph_rag_upsert',
-  description: 'Chunk documents, create embeddings, and upsert them to the LibSQL vector store for GraphRAG retrieval',
+  description: 'Chunk documents, create embeddings, and upsert them to the Upstash Vector store for GraphRAG retrieval',
   inputSchema: upsertInputSchema,
   outputSchema: upsertOutputSchema,
   execute: async ({ input, runtimeContext }: ToolExecutionContext<typeof upsertInputSchema> & { 
@@ -170,21 +175,22 @@ export const graphRAGUpsertTool = createTool({
       // Create embeddings
       const chunkTexts = chunks.map(chunk => chunk.text);
       const { embeddings } = await embedMany({
-        model: google.textEmbeddingModel('gemini-embedding-exp-03-07'),
+        model: fastembed,
         values: chunkTexts
       });
 
-      // Create index if needed
+      // Create index if needed (Upstash Vector auto-creates indexes)
       if (validatedInput.createIndex) {
         try {
-          await agentVector.createIndex({
-            indexName: validatedInput.indexName,
-            dimension: 1536 // fastembed.base dimension
-          });
-          logger.info('Index created or already exists', { indexName: validatedInput.indexName });
+          await createVectorIndex(
+            validatedInput.indexName,
+            VECTOR_CONFIG.EMBEDDING_DIMENSION, // 384 dimensions for fastembed compatibility
+            VECTOR_CONFIG.DISTANCE_METRIC // cosine similarity
+          );
+          logger.info('Upstash Vector index validated', { indexName: validatedInput.indexName });
         } catch (error) {
           // Index might already exist, continue
-          logger.warn('Index creation warning (might already exist)', { 
+          logger.warn('Index validation warning (might already exist)', {
             indexName: validatedInput.indexName,
             error: error instanceof Error ? error.message : String(error)
           });
@@ -208,11 +214,13 @@ export const graphRAGUpsertTool = createTool({
         };
       });
 
-      await agentVector.upsert({
-        indexName: validatedInput.indexName,
-        vectors: embeddings,
-        metadata: metadataArray
-      });
+      // Upsert vectors to Upstash Vector with sparse cosine similarity
+      await upsertVectors(
+        validatedInput.indexName,
+        embeddings,
+        metadataArray,
+        chunkIds
+      );
 
       const processingTime = Date.now() - startTime;
       
@@ -228,32 +236,35 @@ export const graphRAGUpsertTool = createTool({
       return upsertOutputSchema.parse(result);
 
     } catch (error) {
-      logger.error('Document upsert failed', { 
-        error: error instanceof Error ? error.message : String(error)
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error('Document upsert failed', {
+        error: errorMessage,
+        indexName: input.indexName || 'context'
       });
-      
-      const result = {
-        success: false,
-        chunksProcessed: 0,
-        indexName: input.indexName || 'context',
-        processingTime: Date.now() - startTime,
-        chunkIds: []
-      };
-      
-      return upsertOutputSchema.parse(result);
+
+      // Throw VectorStoreError for better error handling
+      throw new VectorStoreError(
+        `GraphRAG document upsert failed: ${errorMessage}`,
+        'operation_failed',
+        {
+          indexName: input.indexName || 'context',
+          documentType: input.document?.type,
+          processingTime: Date.now() - startTime
+        }
+      );
     }
   }
 });
 
 /**
- * GraphRAG query tool - Uses createGraphRAGTool with LibSQL vector store
+ * GraphRAG query tool - Uses createGraphRAGTool with Upstash Vector store and sparse cosine similarity
  */
 export const graphRAGTool = createGraphRAGTool({
-  vectorStoreName: 'agentVector',
-  indexName: 'context',
-  model: google.textEmbeddingModel('gemini-embedding-exp-03-07'),
+  vectorStoreName: 'upstashVector',
+  indexName: VECTOR_CONFIG.DEFAULT_INDEX_NAME,
+  model: fastembed,
   graphOptions: {
-    dimension: 1536,
+    dimension: VECTOR_CONFIG.EMBEDDING_DIMENSION, // 384 dimensions for fastembed
     threshold: 0.7
   }
 });
@@ -355,25 +366,23 @@ export const graphRAGQueryTool = createTool({
       return queryOutputSchema.parse(result);
 
     } catch (error) {
-      logger.error('GraphRAG query failed', { 
-        error: error instanceof Error ? error.message : String(error),
-        query: input.query
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      logger.error('GraphRAG query failed', {
+        error: errorMessage,
+        query: input.query,
+        indexName: input.indexName
       });
-      
-      // Return empty results on error
-      const result = {
-        relevantContext: '',
-        sources: [],
-        totalResults: 0,
-        graphStats: {
-          nodes: 0,
-          edges: 0,
-          avgScore: 0
-        },
-        processingTime: Date.now() - startTime
-      };
-      
-      return queryOutputSchema.parse(result);
+
+      // Throw VectorStoreError for better error handling
+      throw new VectorStoreError(
+        `GraphRAG query failed: ${errorMessage}`,
+        'operation_failed',
+        {
+          query: input.query,
+          indexName: input.indexName,
+          processingTime: Date.now() - startTime
+        }
+      );
     }
   }
 });
@@ -383,12 +392,12 @@ export const graphRAGQueryTool = createTool({
  */
 export const graphRAGRuntimeContext = new RuntimeContext<GraphRAGRuntimeContext>();
 
-// Set default runtime context values
-graphRAGRuntimeContext.set("indexName", "context");
-graphRAGRuntimeContext.set("topK", 10);
+// Set default runtime context values for Upstash Vector with sparse cosine similarity
+graphRAGRuntimeContext.set("indexName", VECTOR_CONFIG.DEFAULT_INDEX_NAME);
+graphRAGRuntimeContext.set("topK", VECTOR_CONFIG.DEFAULT_TOP_K);
 graphRAGRuntimeContext.set("threshold", 0.7);
 graphRAGRuntimeContext.set("minScore", 0.0);
-graphRAGRuntimeContext.set("dimension", 1536);
+graphRAGRuntimeContext.set("dimension", VECTOR_CONFIG.EMBEDDING_DIMENSION); // 384 for fastembed
 graphRAGRuntimeContext.set("category", "document");
 graphRAGRuntimeContext.set("debug", false);
 

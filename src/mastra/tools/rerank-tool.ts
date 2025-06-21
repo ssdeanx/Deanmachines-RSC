@@ -4,7 +4,7 @@ import { RuntimeContext } from '@mastra/core/di';
 import { rerank, type RerankResult } from '@mastra/rag';
 import { createGemini25Provider } from '../config/googleProvider';
 import { CoreMessage, UIMessage } from 'ai';
-import { agentMemory } from '../agentMemory';
+import { searchUpstashMessages } from '../upstashMemory';
 import { PinoLogger } from '@mastra/loggers';
 import { z } from 'zod';
 
@@ -16,7 +16,7 @@ const logger = new PinoLogger({ name: 'RerankTool', level: 'info' });
 export type RerankRuntimeContext = {
   'user-id'?: string;
   'session-id'?: string;
-  'model-preference'?: 'gemini-2.0-flash-exp' | 'gemini-2.5-preview-05-20' | 'gemini-2.0-flash' | 'gemini-2.0-flash-lite' | 'gemini-2.5-flash-lite-preview-06-17';
+  'model-preference'?: 'gemini-2.5-flash-lite-preview-06-17' | 'gemini-2.5-preview-05-20' | 'gemini-2.0-flash' | 'gemini-2.0-flash-lite';
   'semantic-weight'?: number;
   'vector-weight'?: number;
   'position-weight'?: number;
@@ -77,7 +77,7 @@ export const rerankTool = createTool({
       const vectorWeight = Number(runtimeContext?.get('vector-weight')) || validatedInput.vectorWeight;
       const positionWeight = Number(runtimeContext?.get('position-weight')) || validatedInput.positionWeight;
       const debug = runtimeContext?.get('debug') || false;
-      
+
       if (debug) {
         logger.info('Rerank tool executed with runtime context', {
           userId,
@@ -89,27 +89,21 @@ export const rerankTool = createTool({
         });
       }
 
-      // First, get more results than needed for reranking
-      const initialResults = await agentMemory.query({
-        threadId: validatedInput.threadId,
-        selectBy: { vectorSearchString: validatedInput.query },
-        threadConfig: {
-          semanticRecall: {
-            topK: validatedInput.topK,
-            messageRange: { 
-              before: validatedInput.before, 
-              after: validatedInput.after 
-            }
-          }
-        },
-      });
+      // First, get more results than needed for reranking using Upstash memory
+      const initialResults = await searchUpstashMessages(
+        validatedInput.threadId,
+        validatedInput.query,
+        validatedInput.topK,
+        validatedInput.before,
+        validatedInput.after
+      );
 
       // If we have more results than needed, apply reranking
       if (initialResults.messages.length > validatedInput.finalK) {
         const model = createGemini25Provider(modelPreference);
 
         // Convert memory results to the format expected by rerank function
-        const queryResults = initialResults.messages.map((msg, index) => ({
+        const queryResults = initialResults.messages.map((msg: CoreMessage, index: number) => ({
           id: `msg_${index}`,
           score: 0.5, // Default score
           metadata: {
@@ -246,7 +240,7 @@ export const rerankTool = createTool({
  * Runtime context instance for rerank tool with defaults
  */
 export const rerankRuntimeContext = new RuntimeContext<RerankRuntimeContext>();
-rerankRuntimeContext.set('model-preference', 'gemini-2.0-flash-exp');
+rerankRuntimeContext.set('model-preference', 'gemini-2.5-flash-lite-preview-06-17');
 rerankRuntimeContext.set('semantic-weight', 0.6);
 rerankRuntimeContext.set('vector-weight', 0.3);
 rerankRuntimeContext.set('position-weight', 0.1);
@@ -267,30 +261,27 @@ export async function rerankSearchMessages(
   const startTime = Date.now();
 
   try {
-    // First, get more results than needed for reranking
-    const initialResults = await agentMemory.query({
+    // First, get more results than needed for reranking using Upstash memory
+    const initialResults = await searchUpstashMessages(
       threadId,
-      selectBy: { vectorSearchString },
-      threadConfig: {
-        semanticRecall: {
-          topK,
-          messageRange: { before, after }
-        }
-      },
-    });
+      vectorSearchString,
+      topK,
+      before,
+      after
+    );
 
     // Use Mastra's rerank function with Google model for better relevance
     if (initialResults.messages.length > finalK) {
       const model = createGemini25Provider('gemini-2.5-flash-lite-preview-06-17', {
         responseModalities: ["TEXT"],
         thinkingConfig: {
-          thinkingBudget: -1, // -1 means dynamic thinking budget
-          includeThoughts: true, // Include thoughts for debugging and monitoring purposes
+          thinkingBudget: 0, // Fixed thinking budget
+          includeThoughts: false, // Disable thoughts for debugging and monitoring purposes
         },
       });
-      
+
       // Convert memory results to the format expected by rerank function
-      const queryResults = initialResults.messages.map((msg, index) => ({
+      const queryResults = initialResults.messages.map((msg: CoreMessage, index: number) => ({
         id: `msg_${index}`,
         score: 0.5, // Default score
         metadata: {

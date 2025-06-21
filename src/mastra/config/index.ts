@@ -19,6 +19,10 @@ import { PinoLogger } from '@mastra/loggers';
 import { createMastraGoogleProvider } from './googleProvider';
 import { formatISO } from 'date-fns';
 
+// Langfuse imports
+import { LangfuseExporter } from "langfuse-vercel";
+import { Langfuse } from "langfuse";
+
 /**
  * Observability logger for tracing and monitoring
  */
@@ -35,6 +39,20 @@ export const langsmithConfig = {
   project: process.env.LANGSMITH_PROJECT || 'pr-warmhearted-jewellery-74',
   endpoint: process.env.LANGSMITH_ENDPOINT || 'https://api.smith.langchain.com',
   tracingEnabled: process.env.LANGSMITH_TRACING === 'true',
+};
+
+/**
+ * Langfuse configuration using environment variables
+ * Provides comprehensive observability and tracing for Mastra agents
+ */
+export const langfuseConfig = {
+  publicKey: process.env.LANGFUSE_PUBLIC_KEY,
+  secretKey: process.env.LANGFUSE_SECRET_KEY,
+  baseUrl: process.env.LANGFUSE_HOST || 'https://cloud.langfuse.com',
+  tracingEnabled: process.env.LANGFUSE_TRACING !== 'false', // Default to true
+  flushAt: parseInt(process.env.LANGFUSE_FLUSH_AT || '1'),
+  flushInterval: parseInt(process.env.LANGFUSE_FLUSH_INTERVAL || '1000'),
+  debug: process.env.NODE_ENV === 'development',
 };
 
 /**

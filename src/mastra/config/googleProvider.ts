@@ -136,6 +136,7 @@ export const baseGoogleModel = (
         'mastra',
         'google',
         'gemini-2.5',
+        'dean-machines',
         ...(agentName ? [agentName] : []),
         ...tags
       ],
@@ -143,6 +144,7 @@ export const baseGoogleModel = (
         modelId,
         provider: 'google',
         framework: 'mastra',
+        project: 'dean-machines-rsc',
         agentName: agentName || 'unknown',
         thinkingBudget: 'dynamic',
         safetyLevel,

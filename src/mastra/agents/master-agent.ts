@@ -15,7 +15,7 @@ import {
   KeywordCoverageMetric,
   CompletenessMetric,
   ContentSimilarityMetric,
-  TextualDifferenceMetric                       
+  TextualDifferenceMetric
 } from '@mastra/evals/nlp';
 import { createGemini25Provider } from '../config/googleProvider';
 // Langfuse tracing is automatically enabled via Mastra's telemetry configuration
@@ -274,7 +274,7 @@ SUCCESS CRITERIA:
     vectorQueryTool,
     weatherTool,
     stockPriceTool,
-    // MCP Tools by individual servers
+    // MCP Tools by individual servers (selective assignment)
     ...await getMCPToolsByServer('filesystem'),
     ...await getMCPToolsByServer('git'),
     ...await getMCPToolsByServer('fetch'),
@@ -286,9 +286,9 @@ SUCCESS CRITERIA:
     ...await getMCPToolsByServer('sequentialThinking'),
     ...await getMCPToolsByServer('tavily'),
     ...await getMCPToolsByServer('nodeCodeSandbox'),
-  },  
+  },
   memory: upstashMemory,
-  evals: {  
+  evals: {
     toneConsistency: new ToneConsistencyMetric(),
     keywordCoverage: new KeywordCoverageMetric(),
     completeness: new CompletenessMetric(),

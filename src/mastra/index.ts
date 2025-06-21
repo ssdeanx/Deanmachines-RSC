@@ -37,6 +37,7 @@ import {
   ReactAgentRuntimeContext
 } from './agents';
 import { LangfuseExporter } from "langfuse-vercel";
+import { langfuseConfig } from './config/langfuseConfig';
 
 
 /* * This is the main entry point for the Mastra framework, which initializes
@@ -59,20 +60,20 @@ export const mastra = new Mastra({
     }),
     telemetry: {
         serviceName: "ai",
-        enabled: true,
+        enabled: langfuseConfig.tracingEnabled,
         sampling: {
             type: "always_on",
-            },
+        },
         export: {
             type: "custom",
             tracerName: "ai",
             exporter: new LangfuseExporter({
-                publicKey: process.env.LANGFUSE_PUBLIC_KEY,
-                secretKey: process.env.LANGFUSE_SECRET_KEY,
-                baseUrl: process.env.LANGFUSE_HOST,
+                publicKey: langfuseConfig.publicKey,
+                secretKey: langfuseConfig.secretKey,
+                baseUrl: langfuseConfig.baseUrl,
             }),
-            },
         },
+    },
         server: {
             cors: {
                 origin: "*",

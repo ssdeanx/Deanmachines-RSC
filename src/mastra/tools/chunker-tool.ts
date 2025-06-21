@@ -4,6 +4,15 @@ import { z } from 'zod';
 import { generateId } from 'ai';
 import { PinoLogger } from '@mastra/loggers';
 import { RuntimeContext } from '@mastra/core/runtime-context';
+import {
+  upsertVectors,
+  createVectorIndex,
+  VECTOR_CONFIG,
+  extractChunkMetadata,
+  type ExtractParams
+} from '../upstashMemory';
+import { embedMany } from 'ai';
+import { fastembed } from '@mastra/fastembed';
 
 const logger = new PinoLogger({ name: 'ChunkerTool', level: 'info' });
 
@@ -38,7 +47,33 @@ const chunkerInputSchema = z.object({
   document: documentInputSchema,
   chunkParams: chunkParamsSchema.optional().describe('Parameters for document chunking'),
   outputFormat: z.enum(['simple', 'detailed', 'embeddings']).default('detailed').describe('Format of output chunks'),
-  includeStats: z.boolean().default(true).describe('Whether to include chunking statistics')
+  includeStats: z.boolean().default(true).describe('Whether to include chunking statistics'),
+  vectorOptions: z.object({
+    createEmbeddings: z.boolean().default(false).describe('Whether to create embeddings for chunks'),
+    upsertToVector: z.boolean().default(false).describe('Whether to upsert chunks to Upstash vector store'),
+    indexName: z.string().default(VECTOR_CONFIG.DEFAULT_INDEX_NAME).describe('Vector index name for upserting'),
+    createIndex: z.boolean().default(true).describe('Whether to create the vector index if it does not exist')
+  }).optional().describe('Vector store integration options'),
+  extractParams: z.object({
+    title: z.union([z.boolean(), z.object({
+      nodes: z.number().optional(),
+      nodeTemplate: z.string().optional(),
+      combineTemplate: z.string().optional()
+    })]).optional().describe('Extract document titles'),
+    summary: z.union([z.boolean(), z.object({
+      summaries: z.array(z.enum(['self', 'prev', 'next'])).optional(),
+      promptTemplate: z.string().optional()
+    })]).optional().describe('Extract section summaries'),
+    keywords: z.union([z.boolean(), z.object({
+      keywords: z.number().optional(),
+      promptTemplate: z.string().optional()
+    })]).optional().describe('Extract keywords from chunks'),
+    questions: z.union([z.boolean(), z.object({
+      questions: z.number().optional(),
+      promptTemplate: z.string().optional(),
+      embeddingOnly: z.boolean().optional()
+    })]).optional().describe('Extract questions that chunks can answer')
+  }).optional().describe('Metadata extraction parameters following Mastra ExtractParams patterns')
 }).strict();
 
 const chunkSchema = z.object({
@@ -48,7 +83,9 @@ const chunkSchema = z.object({
   size: z.number().int().min(0).describe('Size of the chunk in characters'),
   metadata: z.record(z.any()).describe('Chunk metadata including position, type, etc.'),
   source: z.string().optional().describe('Source document identifier'),
-  tokens: z.number().int().min(0).optional().describe('Estimated token count')
+  tokens: z.number().int().min(0).optional().describe('Estimated token count'),
+  embedding: z.array(z.number()).optional().describe('Vector embedding for the chunk (384 dimensions)'),
+  vectorId: z.string().optional().describe('Vector store ID if upserted to Upstash')
 }).strict();
 
 const chunkingStatsSchema = z.object({
@@ -66,7 +103,14 @@ const chunkerOutputSchema = z.object({
   chunks: z.array(chunkSchema).describe('Array of document chunks with their content and metadata'),
   stats: chunkingStatsSchema.describe('Statistics about the chunking process'),
   originalLength: z.number().int().min(0).describe('Length of original document in characters'),
-  totalProcessed: z.number().int().min(0).describe('Total characters processed across all chunks')
+  totalProcessed: z.number().int().min(0).describe('Total characters processed across all chunks'),
+  vectorStats: z.object({
+    embeddingsCreated: z.number().int().min(0).describe('Number of embeddings created'),
+    vectorsUpserted: z.number().int().min(0).describe('Number of vectors upserted to store'),
+    indexName: z.string().optional().describe('Vector index used'),
+    embeddingDimension: z.number().int().optional().describe('Embedding vector dimension'),
+    vectorProcessingTime: z.number().min(0).optional().describe('Time taken for vector operations in milliseconds')
+  }).optional().describe('Vector processing statistics')
 }).strict();
 
 /**
@@ -87,8 +131,24 @@ export type ChunkerToolRuntimeContext = {
 
 /**
  * Comprehensive document chunker tool supporting multiple formats and strategies
- * Integrates with agentMemory.ts for optimal processing
- * 
+ * Integrates with upstashMemory.ts for optimal processing and vector storage
+ *
+ * Features:
+ * - Multiple document types: text, HTML, markdown, JSON, LaTeX, CSV, XML
+ * - Multiple chunking strategies: recursive, sentence, paragraph, fixed, semantic
+ * - ExtractParams support for metadata extraction (title, summary, keywords, questions)
+ * - Upstash Vector integration with fastembed embeddings (384 dimensions)
+ * - Runtime context support for dynamic configuration
+ * - Comprehensive error handling and logging
+ *
+ * @param input - Document and chunking configuration
+ * @param input.document - Document content and metadata
+ * @param input.chunkParams - Chunking strategy and parameters
+ * @param input.extractParams - Metadata extraction configuration (Mastra ExtractParams)
+ * @param input.vectorOptions - Vector store integration options
+ * @param runtimeContext - Dynamic runtime configuration
+ * @returns Promise resolving to chunked document with statistics and vector data
+ *
  * @example
  * ```typescript
  * const result = await chunkerTool.execute({
@@ -102,15 +162,28 @@ export type ChunkerToolRuntimeContext = {
  *       strategy: 'recursive',
  *       size: 1024,
  *       overlap: 100
+ *     },
+ *     extractParams: {
+ *       title: true,
+ *       summary: { summaries: ['self'] },
+ *       keywords: { keywords: 5 }
+ *     },
+ *     vectorOptions: {
+ *       createEmbeddings: true,
+ *       upsertToVector: true,
+ *       indexName: 'documents'
  *     }
  *   },
  *   runtimeContext
  * });
  * ```
- * 
+ *
  * @see {@link https://mastra.ai/en/examples/rag/chunking | Mastra Chunking Documentation}
- * 
- * [EDIT: 2025-06-16] & [BY: GitHub Copilot]
+ * @see {@link https://mastra.ai/en/reference/rag/extract-params | ExtractParams Reference}
+ *
+ * @version 2.0.0
+ * @author Dean Machines RSC Project
+ * @date 2025-06-21
  */
 export const chunkerTool = createTool({
   id: 'comprehensive_document_chunker',
@@ -203,10 +276,20 @@ export const chunkerTool = createTool({
       }
 
       // Transform chunks to match our schema
-      const chunks = rawChunks.map((chunk: { content?: string; text?: string; pageContent?: string; metadata?: Record<string, unknown> }, index: number) => {
+      const chunks: Array<{
+        id: string;
+        content: string;
+        index: number;
+        size: number;
+        metadata: Record<string, unknown>;
+        source: string;
+        tokens: number;
+        embedding?: number[];
+        vectorId?: string;
+      }> = rawChunks.map((chunk: { content?: string; text?: string; pageContent?: string; metadata?: Record<string, unknown> }, index: number) => {
         const chunkContent = chunk.content || chunk.text || chunk.pageContent || '';
         const chunkId = generateId();
-        
+
         return {
           id: chunkId,
           content: chunkContent,
@@ -225,6 +308,120 @@ export const chunkerTool = createTool({
           tokens: estimateTokenCount(chunkContent)
         };
       });
+
+      // Metadata extraction if requested (following Mastra ExtractParams patterns)
+      if (validatedInput.extractParams) {
+        logger.info('Starting metadata extraction for chunks', {
+          chunkCount: chunks.length,
+          extractParams: Object.keys(validatedInput.extractParams)
+        });
+
+        const enhancedChunks = await extractChunkMetadata(
+          chunks.map(chunk => ({
+            id: chunk.id,
+            content: chunk.content,
+            metadata: chunk.metadata
+          })),
+          validatedInput.extractParams as ExtractParams
+        );
+
+        // Update chunks with extracted metadata
+        enhancedChunks.forEach((enhanced, index) => {
+          if (chunks[index]) {
+            chunks[index].metadata = { ...chunks[index].metadata, ...enhanced.metadata };
+          }
+        });
+
+        logger.info('Metadata extraction completed', {
+          chunkCount: chunks.length,
+          extractedFields: Object.keys(validatedInput.extractParams)
+        });
+      }
+
+      // Vector processing if requested
+      let vectorStats;
+      const vectorStartTime = Date.now();
+
+      if (validatedInput.vectorOptions?.createEmbeddings || validatedInput.vectorOptions?.upsertToVector) {
+        logger.info('Starting vector processing for chunks', {
+          createEmbeddings: validatedInput.vectorOptions?.createEmbeddings,
+          upsertToVector: validatedInput.vectorOptions?.upsertToVector,
+          indexName: validatedInput.vectorOptions?.indexName
+        });
+
+        // Create embeddings for chunks using fastembed (384 dimensions)
+        const chunkTexts = chunks.map(chunk => chunk.content);
+        const { embeddings } = await embedMany({
+          model: fastembed,
+          values: chunkTexts
+        });
+
+        // Add embeddings to chunks
+        chunks.forEach((chunk, index) => {
+          chunk.embedding = embeddings[index];
+        });
+
+        let vectorsUpserted = 0;
+
+        // Upsert to vector store if requested
+        if (validatedInput.vectorOptions?.upsertToVector) {
+          const indexName = validatedInput.vectorOptions.indexName || VECTOR_CONFIG.DEFAULT_INDEX_NAME;
+
+          // Create index if needed
+          if (validatedInput.vectorOptions.createIndex) {
+            try {
+              await createVectorIndex(
+                indexName,
+                VECTOR_CONFIG.EMBEDDING_DIMENSION,
+                VECTOR_CONFIG.DISTANCE_METRIC
+              );
+              logger.info('Vector index validated for chunker', { indexName });
+            } catch (error) {
+              logger.warn('Vector index validation warning', {
+                indexName,
+                error: error instanceof Error ? error.message : String(error)
+              });
+            }
+          }
+
+          // Prepare metadata for vector store
+          const vectorMetadata = chunks.map((chunk, index) => ({
+            id: chunk.id,
+            text: chunk.content,
+            ...chunk.metadata,
+            chunkIndex: index,
+            totalChunks: chunks.length,
+            documentType: type,
+            strategy: chunkConfig.strategy
+          }));
+
+          // Upsert vectors with sparse cosine similarity
+          const upsertResult = await upsertVectors(
+            indexName,
+            embeddings,
+            vectorMetadata,
+            chunks.map(chunk => chunk.id)
+          );
+
+          if (upsertResult.success) {
+            vectorsUpserted = upsertResult.count || 0;
+            // Add vector IDs to chunks
+            chunks.forEach((chunk) => {
+              chunk.vectorId = chunk.id; // Vector ID is same as chunk ID
+            });
+          }
+        }
+
+        vectorStats = {
+          embeddingsCreated: embeddings.length,
+          vectorsUpserted,
+          indexName: validatedInput.vectorOptions?.indexName,
+          embeddingDimension: VECTOR_CONFIG.EMBEDDING_DIMENSION,
+          vectorProcessingTime: Date.now() - vectorStartTime
+        };
+
+        logger.info('Vector processing completed', vectorStats);
+      }
 
       const processingTime = Date.now() - startTime;
       const originalLength = content.length;
@@ -247,7 +444,8 @@ export const chunkerTool = createTool({
         chunks,
         stats,
         originalLength,
-        totalProcessed
+        totalProcessed,
+        vectorStats
       };
 
       logger.info('Document chunking completed successfully', { 
