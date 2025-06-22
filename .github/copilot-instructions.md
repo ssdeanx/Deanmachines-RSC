@@ -399,6 +399,104 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     - Replace `any` types with more specific type definitions.
     - Ensure proper handling of Wikidata API response types.
     - Use the `wikibase` library types for accurate type definitions, such as `wikibase.Entities`.
+- When analyzing a `#file:.prompt.md` file:
+  - Identify key components, configurations, and agents related to the Dean Machines RSC project.
+  - Use the following structure to present the found components:
+    ## 🎯 **Core Architecture Components Found**
+
+    ### **1. Mastra AI Framework Integration**
+      - **Main Configuration**: `src/mastra/index.ts` - Central Mastra configuration with 22+ agents, workflows, and networks
+      - **Agent Memory System**: `src/mastra/agentMemory.ts` - LibSQL/Turso storage with vector search using fastembed
+      - **Google AI Provider**: `src/mastra/config/googleProvider.ts` and `src/mastra/config/index.ts` - Traced Google AI models with LangSmith integration
+
+    ### **2. Agent Orchestration System (22+ Agents)**
+      **Core Agents:**
+      - `src/mastra/agents/master-agent.ts` - Primary orchestrator with comprehensive Zod validation
+      - `src/mastra/agents/strategizer-agent.ts` - Strategic planning and decision making
+      - `src/mastra/agents/supervisor-agent.ts` - Multi-agent coordination and quality control
+      - `src/mastra/agents/analyzer-agent.ts` - Deep analysis and pattern recognition
+
+      **Development Agents:**
+      - `src/mastra/agents/code-agent.ts` - Code analysis, generation, and optimization
+      - `src/mastra/agents/git-agent.ts` - Version control operations and repository management
+      - `src/mastra/agents/debug-agent.ts` - Error detection and debugging assistance
+      - `src/mastra/agents/documentation-agent.ts` - Technical documentation generation
+
+      **Data & Analysis Agents:**
+      - `src/mastra/agents/data-agent.ts` - Data processing and statistical analysis
+      - `src/mastra/agents/graph-agent.ts` - Knowledge graph operations and visualization
+      - `src/mastra/agents/research-agent.ts` - Information gathering and synthesis
+      - `src/mastra/agents/weather-agent.ts` - Weather data retrieval and forecasting
+
+      **Specialized Agents:**
+      - `src/mastra/agents/design-agent.ts` - UI/UX design and visual aesthetics
+      - `src/mastra/agents/docker-agent.ts` - Containerization and deployment
+      - `src/mastra/agents/marketing-agent.ts` - Content creation and marketing
+      - `src/mastra/agents/manager-agent.ts` - Project management and coordination
+      - `src/mastra/agents/processing-agent.ts` - Data transformation and workflow automation
+      - `src/mastra/agents/sysadmin-agent.ts` - System administration and DevOps
+      - `src/mastra/agents/browser-agent.ts` - Web automation with Playwright
+      - `src/mastra/agents/special-agent.ts` - Multi-domain expert for complex problems
+      - `src/mastra/agents/utility-agent.ts` - General-purpose helper functions
+      - `src/mastra/agents/evolve-agent.ts` - Continuous improvement and optimization
+
+    ### **3. Agent Network & Workflows**
+      - **Dean Machines Network**: `src/mastra/networks/dean-machines-network.ts` - LLM-based dynamic routing for 22+ agents
+      - **Workflows**:
+        - `src/mastra/workflows/weather-workflow.ts`
+        - `src/mastra/workflows/code-graph-maker.ts`
+        - `src/mastra/workflows/code-graph-maker-advanced.ts`
+
+    ### **4. Tool System (MCP Integration)**
+      - **MCP Tools**: `src/mastra/tools/mcp.ts` - Model Context Protocol integration
+      - **Graph RAG**: `src/mastra/tools/graphRAG.ts` - Document analysis with graph relationships
+      - **Vector Query**: `src/mastra/tools/vectorQueryTool.ts` - Semantic search with LibSQL/Turso
+      - **Weather Tool**: `src/mastra/tools/weather-tool.ts` - Weather data fetching
+      - **Stock Tools**: `src/mastra/tools/stock-tools.ts` - Financial data operations
+
+    ### **5. Runtime Context Integration**
+      All agents include properly typed runtime contexts for CopilotKit integration, exported from `src/mastra/agents/index.ts` with types like:
+      - `MasterAgentRuntimeContext`
+      - `CodeAgentRuntimeContext`
+      - `DataAgentRuntimeContext`
+      - And 19+ more agent-specific contexts
+
+    ### **6. Observability & Tracing**
+      - **LangSmith Integration**: Built into `src/mastra/config/index.ts` with enhanced AI SDK exporter
+      - **PinoLogger**: Used throughout all agents and tools for structured logging
+      - **OpenTelemetry**: Integrated via the Mastra configuration
+
+    ### **7. Frontend Components**
+      **CopilotKit Integration:**
+      - `src/components/copilotkit/` - Multiple components including:
+        - `AICodeGenerator.tsx`
+        - `CodeGraphChatModal.tsx`
+        - `CustomChatInterface.tsx`
+        - `InteractiveCodeGraph.tsx`
+        - `GenerativeUICanvas.tsx`
+
+      **UI Components:**
+      - `src/components/ui/` - Comprehensive UI component library
+      - `src/components/landing/` - Landing page sections
+      - `src/components/researchCanvas/` - Research-specific components
+
+    ### **8. Documentation System**
+      **Mastra Documentation:**
+      - `src/app/(public)/docs/mastra/agents/page.mdx` - Agent documentation
+      - `src/app/(public)/docs/mastra/memory/page.mdx` - Memory system docs
+      - `src/app/(public)/docs/mastra/workflows/page.mdx` - Workflow documentation
+      - `src/app/(public)/docs/mastra/tools/page.mdx` - Tools documentation
+
+    ### **9. Configuration & Environment**
+      - `src/mastra/config/environment.ts` - Environment configuration
+      - `next.config.ts` - Next.js 15 configuration
+      - `tsconfig.json` - TypeScript strict mode configuration
+      - `package.json` - npm dependencies with Mastra AI Framework
+
+    ### **10. Testing & Quality**
+      - `src/mastra/agents/index.test.ts` - Agent testing
+      - `vitest.config.ts` - Test configuration
+      - `eslint.config.mjs` - Code quality enforcement
 
 ## CODING STANDARDS
 
@@ -430,53 +528,3 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - When enhancing eval files in `src\mastra\evals`, carefully update the file using the correct Mastra metric pattern.
 - All agent implementations must be real, production-ready, and type-safe.
 - Each agent must export its runtime context type and be registered via the barrel file (`src/mastra/agents/index.ts`).
-- No mock data, no fake endpoints, and no non-functional examples are allowed in agent implementations.
-- When working on eval files, ensure that the language model is passed dynamically instead of hardcoding OpenAI. The calling code becomes responsible for supplying the configured language model instance. The language model type should be imported from `@mastra/core/llm`.
-- When working on eval files, always fetch the relevant URL that goes with the file.
-- When enhancing eval files, enhance them one at a time and specify the filename.
-- When enhancing eval files in `src\mastra\evals`, always fetch the official Mastra eval documentation link first.
-- When enhancing eval files in `src\mastra\evals`, carefully update the file using the correct Mastra metric pattern.
-- When enhancing eval files in `src\mastra\evals`, ensure that the language model is passed dynamically and is not hardcoded to OpenAI. Use the correct URL for each eval metric from `#file:mastra.prompt.md` before implementing the metric.
-- When enhancing the eval files in `src/mastra/evals`, ensure that the language model is passed dynamically instead of hardcoding OpenAI. The calling code becomes responsible for supplying the configured language model instance. The language model type should be imported from `@mastra/core/llm`.
-- When enhancing eval files in `src/mastra/evals`, carefully update the file using the correct Mastra metric pattern.
-- All agent implementations must be real, production-ready, and type-safe.
-- Each agent must export its runtime context type and be registered via the barrel file (`src/mastra/agents/index.ts`).
-- No mock data, no fake endpoints, and no non-functional examples are allowed in agent implementations.
-- When working on eval files, ensure that the language model is passed dynamically instead of hardcoding OpenAI. The calling code becomes responsible for supplying the configured language model instance. The language model type should be imported from `@mastra/core/llm`.
-- When working on eval files, always fetch the relevant URL that goes with the file.
-- When enhancing eval files, enhance them one at a time and specify the filename.
-- When enhancing eval files in `src\mastra\evals`, ensure the implementation utilizes the `@mastra/evals` package correctly, following Mastra's metric/judge pattern (e.g., defining `CustomEvalJudge` and `CustomEvalMetric` classes), fetching the official Mastra eval documentation link first, and carefully updating the file using the correct Mastra metric pattern.
-- When implementing evaluation metrics, ensure they are model-agnostic and use the dynamically injected `LanguageModel` as required. The choice of which LLM provider (OpenAI, Google, Anthropic, etc.) should be made by the calling code that instantiates and uses these metric classes, not within the metric classes themselves.
-- All eval metric implementations must be real, production-ready, and type-safe.
-- Each eval metric must have its own file, Zod schema, and function.
-- When enhancing eval files, replace stubs with real implementations for each metric, using production-ready logic.
-- When enhancing the eval files in `src/mastra/evals`, ensure that the language model is passed dynamically instead of hardcoding OpenAI. Use the correct URL for each eval metric from `#file:mastra.prompt.md` before implementing the metric.
-- Remove stubs and non-functional code from eval files.
-- When working on evaluation metrics, follow these steps:
-    1. Fetch the correct URL from `#file://mastra.prompt.md` for the specific metric.
-    2. Implement the metric using the `@mastra/evals` package.
-    3. Ensure that the language model is passed dynamically and is not hardcoded to OpenAI.
-    4. Remove any stubs or non-functional code.
-- **IMPORTANT:** All `#file://evals` files must use correct imports. Imports should look like `import { ToxicityMetric } from '@mastra/evals/llm';` and should **NOT** have aliases like `import { ToxicityMetric as MastraToxicityMetric } from '@mastra/evals/llm';`.
-- **IMPORTANT:** After modifying any `#file://evals` file, ALWAYS check for errors.
-- **IMPORTANT:** When fixing `#file://evals` files, always fetch the correct URL for the specific metric from `#file://mastra.prompt.md` before implementing the metric.
-- **IMPORTANT:** When enhancing `#file://evals` files, replace stubs with real implementations for each metric, using production-ready logic and ensuring the implementation utilizes the `@mastra/evals` package correctly, following Mastra's metric/judge pattern (e.g., defining `CustomEvalJudge` and `CustomEvalMetric` classes), fetching the official Mastra eval documentation link first, and carefully updating the file using the correct Mastra metric pattern.
-- **IMPORTANT:** When working on `#file://evals`, ensure there are no local class declarations. Use only direct imports from `@mastra/evals`.
-- **IMPORTANT:** All `#file://evals` files must use direct imports (no renaming).
-- **IMPORTANT:** When working on `#file://evals` files, if local class declarations exist, remove them.
-- **IMPORTANT:** For all `#file://evals` files, use the correct URL from `#file://mastra.prompt.md`.
-- **IMPORTANT:** When fixing `#file://evals` files, always check for errors after any modification.
-- **IMPORTANT**: If the assistant tries to create a new file, correct it, unless specifically instructed to do so, unless specifically instructed to do so.
-- **IMPORTANT**: When asked to fix or enhance `#file://metrics` files, do the following:
-    - Ensure the implementation utilizes the `@mastra/evals` package correctly.
-    - Follow Mastra's metric/judge pattern (e.g., defining `CustomEvalJudge` and `CustomEvalMetric` classes).
-    - Fetch the official Mastra eval documentation link first.
-    - Carefully update the file using the correct Mastra metric pattern.
-    - Use direct imports from `@mastra/evals` (no renaming).
-    - Remove broken stubs.
-    - Check for errors after every modification.
-- **IMPORTANT**: If asked to fix `#file://metrics` files, do not create local class wrappers. Use only direct imports.
-- **IMPORTANT**: When working with `#file://metrics` files, always fetch the corresponding URL from `#file://mastra.prompt.md` before making any changes.
-- **IMPORTANT**: The coding assistant MUST only use direct imports from `@mastra/evals` in `#file://metrics` files. Local declarations are forbidden.
-- **IMPORTANT**: The coding assistant MUST NOT create new files when asked to fix or enhance existing ones, unless specifically instructed to do so.
-- When fixing type errors related to optional parameters in eval files, ensure a default value or fallback is provided to handle undefined cases. For example, if a function expects a non-undefined options parameter but receives an optional (potentially undefined
