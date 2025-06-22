@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
   pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
   serverExternalPackages: [
     '@mastra/*',
+    '@agentic/*',
     'isolated-vm',
     '@ai-sdk/google',
     'ai',
@@ -51,7 +52,11 @@ const nextConfig: NextConfig = {
     'typescript',
     '@typescript-eslint/eslint-plugin',
     '@typescript-eslint/parser',
-    'freestyle-sandboxes'
+    'freestyle-sandboxes',
+    'fast-xml-parser',
+    'fs-extra',
+    'ky',
+    'p-throttle'
   ],
   experimental: {
     optimizeCss: true,
@@ -62,7 +67,6 @@ const nextConfig: NextConfig = {
       '@copilotkit/react-form',
       'lucide-react',
       'framer-motion',
-      '@mastra/agui'
     ]
   },
 

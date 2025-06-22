@@ -55,6 +55,15 @@ export function LightningBackground({
     setParticlesInit(true);
   }, []);
 
+  // Initialize particles engine on mount
+  useEffect(() => {
+    if (enableParticles) {
+      import('@tsparticles/engine').then(({ tsParticles }) => {
+        particlesInitialization(tsParticles);
+      });
+    }
+  }, [enableParticles, particlesInitialization]);
+
   // Generate lightning bolt with realistic jagged path
   const generateLightningBolt = useCallback((): LightningBolt => {
     const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1920;
@@ -175,7 +184,6 @@ export function LightningBackground({
         <Particles
           id="lightning-particles"
           className="absolute inset-0 z-0"
-          init={particlesInitialization}
           options={particlesConfig}
         />
       )}

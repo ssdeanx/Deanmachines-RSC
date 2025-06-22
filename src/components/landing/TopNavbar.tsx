@@ -176,7 +176,7 @@ export function TopNavbar({ className }: TopNavbarProps) {
                   "@lg:px-6 @lg:py-3" // Container query responsive
                 )}
               >
-                <Link href="/playground">🚀 Playground</Link>
+                <Link href="/p">🚀 Playground</Link>
               </Button>
             </motion.div>
           </div>

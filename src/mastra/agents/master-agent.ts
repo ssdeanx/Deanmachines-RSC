@@ -1,7 +1,7 @@
 import { Agent } from "@mastra/core/agent";
 import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool, graphRAGUpsertTool } from '../tools/graphRAG';
-import { vectorQueryTool, hybridVectorSearchTool, enhancedVectorQueryTool } from "../tools/vectorQueryTool";
+import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
 import { mem0RememberTool, mem0MemorizeTool } from "../tools/mem0-tool";
 import { PinoLogger } from "@mastra/loggers";
 import { weatherTool } from "../tools/weather-tool";
@@ -284,7 +284,6 @@ SUCCESS CRITERIA:
     mem0RememberTool,
     mem0MemorizeTool,
     chunkerTool,
-    enhancedVectorQueryTool,
     vectorQueryTool,
     hybridVectorSearchTool,
     weatherTool,

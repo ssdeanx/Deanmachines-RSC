@@ -60,6 +60,12 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - simple-git
 - ESLint
 - TypeScript compiler
+- fast-xml-parser
+- ky
+- fs-extra
+- @agentic/core
+- @agentic/mastra
+- @mastra/loggers
 
 ## PROJECT DOCUMENTATION & CONTEXT SYSTEM
 
@@ -385,6 +391,14 @@ This file contains the rules and guidelines for the AI coding assistant to follo
   - Update environment configuration to support dual-memory requirements.
 - When encountering "used before declaration" errors, especially in `upstashMemory.ts`, ensure that class declarations are placed before their instantiation or usage.
 - Use `#file://base-network.ts` to reference the base network file.
+- When working with Next.js 13+ App Router, be aware of route groups indicated by parentheses in the directory structure (e.g., `(playground)`). Route groups are for organization and do not create URL segments. This means that `src/app/(playground)/page.tsx` is accessible at the root `/`, not `/playground`.
+- When the user asks to create a main playground dashboard page, ensure the playground route structure is correctly set up in Next.js, considering route groups and potential conflicts with the root page. If a `(playground)` route group exists, the main playground page at `src/app/(playground)/page.tsx` will be accessible at the root `/`.
+- When the user specifies `#file:playground`, this refers to the `(playground)` route group in Next.js.
+- When asked to fix errors in `#file:wikidata-client.ts`, use the following guidelines:
+    - Replace `namespace` with individual type exports using ES2015 module syntax.
+    - Replace `any` types with more specific type definitions.
+    - Ensure proper handling of Wikidata API response types.
+    - Use the `wikibase` library types for accurate type definitions, such as `wikibase.Entities`.
 
 ## CODING STANDARDS
 
@@ -465,10 +479,4 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - **IMPORTANT**: When working with `#file://metrics` files, always fetch the corresponding URL from `#file://mastra.prompt.md` before making any changes.
 - **IMPORTANT**: The coding assistant MUST only use direct imports from `@mastra/evals` in `#file://metrics` files. Local declarations are forbidden.
 - **IMPORTANT**: The coding assistant MUST NOT create new files when asked to fix or enhance existing ones, unless specifically instructed to do so.
-- When fixing type errors related to optional parameters in eval files, ensure a default value or fallback is provided to handle undefined cases. For example, if a function expects a non-undefined options parameter but receives an optional (potentially undefined) value, provide a default options object using the schema's default values.
-- When fixing "Expected 0 arguments, but got 1" errors in eval files, remove the unnecessary arguments from the constructor call.
-- When fixing "Expected 0 arguments, but got 2" errors in eval files, examine the constructor signature and remove the unnecessary arguments from the constructor call.
-- When encountering the TypeScript error "Object literal may only specify known properties, and 'reference' does not exist in type 'Metric'", ensure that the object being defined adheres strictly to the properties defined in the `Metric` type or interface. Verify all property names and types for accuracy and completeness.
-- When a configuration error related to `reference` not existing on the `Metric` type occurs, ensure that the evaluation configuration uses the correct properties (`input` and `expected` instead of `reference` and `output`).
-- When configuring the `evals` property in agent configurations, use actual `Metric` instances (e.g., `new ToneConsistencyMetric()`) instead of test data objects. Do not use configuration objects with properties like `reference`, `input`, or `output` directly in the `evals` configuration.
-- When importing evaluation metrics, import the actual metric classes directly from `@mastra/evals/nlp` (e.g., `import { ToneConsistencyMetric } from '@mastra/evals/nlp';`) instead of importing evaluation functions.
+- When fixing type errors related to optional parameters in eval files, ensure a default value or fallback is provided to handle undefined cases. For example, if a function expects a non-undefined options parameter but receives an optional (potentially undefined

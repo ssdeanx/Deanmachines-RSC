@@ -10,33 +10,32 @@ import { agentRegistry } from './agents';
 import { registerCopilotKit } from "@mastra/agui";
 import { deanMachinesNetwork, DeanMachinesNetworkRuntimeContext } from './networks/dean-machines-network';
 import { baseNetwork, BaseNetworkRuntimeContext } from './networks/base-network';
-import { 
-  MasterAgentRuntimeContext,
-  WeatherAgentRuntimeContext,
-  CodeAgentRuntimeContext,
-  ResearchAgentRuntimeContext,
-  GitAgentRuntimeContext,
-  DataAgentRuntimeContext,
-  DebugAgentRuntimeContext,
-  GraphAgentRuntimeContext,
-  DesignAgentRuntimeContext,
-  MarketingAgentRuntimeContext,
-  ManagerAgentRuntimeContext,
-  BrowserAgentRuntimeContext,
-  DockerAgentRuntimeContext,
-  DocumentationAgentRuntimeContext,
-  ProcessingAgentRuntimeContext,
-  SpecialAgentRuntimeContext,
-  SupervisorAgentRuntimeContext,
-  StrategizerAgentRuntimeContext,
-  EvolveAgentRuntimeContext,
-  AnalyzerAgentRuntimeContext,
-  SysadminAgentRuntimeContext,
-  UtilityAgentRuntimeContext,
-  ReactAgentRuntimeContext
+import {
+MasterAgentRuntimeContext,
+WeatherAgentRuntimeContext,
+CodeAgentRuntimeContext,
+ResearchAgentRuntimeContext,
+GitAgentRuntimeContext,
+DataAgentRuntimeContext,
+DebugAgentRuntimeContext,
+GraphAgentRuntimeContext,
+DesignAgentRuntimeContext,
+MarketingAgentRuntimeContext,
+ManagerAgentRuntimeContext,
+BrowserAgentRuntimeContext,
+DockerAgentRuntimeContext,
+DocumentationAgentRuntimeContext,
+ProcessingAgentRuntimeContext,
+SpecialAgentRuntimeContext,
+SupervisorAgentRuntimeContext,
+StrategizerAgentRuntimeContext,
+EvolveAgentRuntimeContext,
+AnalyzerAgentRuntimeContext,
+SysadminAgentRuntimeContext,
+UtilityAgentRuntimeContext,
+ReactAgentRuntimeContext
 } from './agents';
 import { LangfuseExporter } from "langfuse-vercel";
-import { langfuseConfig } from './config/langfuseConfig';
 
 
 /* * This is the main entry point for the Mastra framework, which initializes
@@ -59,7 +58,7 @@ export const mastra = new Mastra({
     }),
     telemetry: {
         serviceName: "ai",
-        enabled: langfuseConfig.tracingEnabled,
+        enabled: true,
         sampling: {
             type: "always_on",
         },
@@ -67,9 +66,9 @@ export const mastra = new Mastra({
             type: "custom",
             tracerName: "ai",
             exporter: new LangfuseExporter({
-                publicKey: langfuseConfig.publicKey,
-                secretKey: langfuseConfig.secretKey,
-                baseUrl: langfuseConfig.baseUrl,
+            publicKey: process.env.LANGFUSE_PUBLIC_KEY,
+            secretKey: process.env.LANGFUSE_SECRET_KEY,
+            baseUrl: process.env.LANGFUSE_HOST,
             }),
         },
     },
@@ -245,7 +244,6 @@ export const mastra = new Mastra({
                     runtimeContext.set("node-types", (c.req.header("X-Node-Types") || "all").split(","));
                     runtimeContext.set("relationship-types", (c.req.header("X-Relationship-Types") || "all").split(","));
                     runtimeContext.set("include-metrics", c.req.header("X-Include-Metrics") !== "false");
-                    runtimeContext.set("viz-format", (c.req.header("X-Viz-Format") as "d3" | "cytoscape" | "graphviz" | "networkx") || "d3");
                 }
             }),
             // Processing Agent - Data processing
