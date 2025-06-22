@@ -24,6 +24,7 @@
     "@copilotkit/react-ui": "^1.9.1",
     "@copilotkit/runtime": "^1.9.1",
     "@formkit/auto-animate": "^0.8.2",
+    "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^5.1.1",
     "@inquirer/prompts": "^7.5.3",
     "@isomorphic-git/lightning-fs": "^4.6.2",

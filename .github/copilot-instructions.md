@@ -340,7 +340,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     2. Accessing the runtime context within the instructions function using `({ runtimeContext })`.
     3. Using personalized context variables within the instructions.
 - Use `#fetch https://mastra.ai/en/examples/agents/hierarchical-multi-agent` to understand hierarchical multi-agent patterns.
-- Use `#fetch https://mastra.ai/en/reference/agents/createTool`, `#fetch https://mastra.ai/en/reference/tools/create-tool`, `#fetch https://mastra.ai/en/examples/agents/hierarchical-multi-agent`, `#fetch https://ai/en/examples/agents/using-a-tool`, and `#fetch https://ai/en/docs/agents/runtime-variables` for understanding agent and tool creation.
+- Use `#fetch https://mastra.ai/en/reference/agents/createTool`, `#fetch https://ai/en/reference/tools/create-tool`, `#fetch https://ai/en/examples/agents/hierarchical-multi-agent`, `#fetch https://ai/en/examples/agents/using-a-tool`, and `#fetch https://ai/en/docs/agents/runtime-variables` for understanding agent and tool creation.
 - When the user asks to create `#file:delegate-tools.ts`, use the following guidelines:
     - The coding assistant MUST use both tool runtime context and agent runtime context.
     - The coding assistant MUST import `RuntimeContext` from `@mastra/core/di`.
@@ -349,13 +349,13 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     - The coding assistant MUST fetch the relevant documentation URLs to understand the correct Mastra patterns before creating the file.
 - When the user specifies `#file:instructions` in conjunction with `#fetch https://mastra.ai/en/reference/networks/agent-network`, analyze both the local instructions file and the fetched documentation to understand the project's agent architecture and how it can be enhanced using Mastra's `AgentNetwork` patterns.
 - When analyzing `#file:instructions` in conjunction with `#fetch https://mastra.ai/en/reference/networks/agent-network`, note that Mastra's `AgentNetwork` is experimental and provides LLM-based routing for dynamic agent selection.
-- When analyzing `#file:instructions` in conjunction with `#fetch https://mastra.ai/en/reference/networks/agent-network`, consider the trade-offs between using `AgentNetwork` (dynamic routing) and predefined workflows (explicit control).
+- When analyzing `#file:instructions` in conjunction with `#fetch https://ai/en/reference/networks/agent-network`, consider the trade-offs between using `AgentNetwork` (dynamic routing) and predefined workflows (explicit control).
 - When debugging agent execution issues, especially when the "Agent not found" error occurs, ensure that the agent is correctly imported and registered within the agent network configuration.
 - **IMPORTANT:** Ensure consistent naming between the agent's `name` property in the agent definition (e.g., `master-agent.ts`) and how the network references the agent when executing. Use title case with spaces (e.g., "Master Agent").
-- Use `#fetch https://mastra.ai/en/reference/workflows/workflow`, `#fetch https://mastra.ai/en/reference/workflows/map`, `#fetch https://mastra.ai/en/reference/workflows/commit`, `#fetch https://mastra.ai/en/reference/workflows/create-run`, `#fetch https://mastra.ai/en/reference/workflows/snapshots`, `#fetch https://mastra.ai/en/reference/workflows/watch`, `#fetch https://mastra.ai/en/reference/workflows/stream`, and `#fetch https://mastra.ai/en/reference/workflows/execute` when working with workflows.
+- Use `#fetch https://mastra.ai/en/reference/workflows/workflow`, `#fetch https://ai/en/reference/workflows/map`, `#fetch https://ai/en/reference/workflows/commit`, `#fetch https://ai/en/reference/workflows/create-run`, `#fetch https://ai/en/reference/workflows/snapshots`, `#fetch https://ai/en/reference/workflows/stream`, and `#fetch https://ai/en/reference/workflows/execute` when working with workflows.
 - Use `#fetch https://mastra.ai/en/docs/workflows/overview` when working with workflows.
 - When the user specifies `#file:mastraWorkflows.prompt.md` and asks for help with workflows, fetch the key documentation to understand the current workflow patterns and requirements.
-- When the user specifies `#file:research-analysis-workflow.ts` and asks to fix it, fetch the workflow documentation to understand the correct patterns. The following URLs should be fetched: `https://mastra.ai/en/reference/workflows/map`, `https://mastra.ai/en/reference/workflows/commit`, `https://mastra.ai/en/reference/workflows/create-run`, `https://mastra.ai/en/reference/workflows/snapshots`, `https://mastra.ai/en/reference/workflows/watch`, `https://mastra.ai/en/reference/workflows/stream`, `https://mastra.ai/en/reference/workflows/execute`, `https://mastra.ai/en/reference/workflows/resume`, `https://mastra.ai/en/reference/workflows/start`, `https://mastra.ai/en/reference/workflows/step`, `https://mastra.ai/en/reference/workflows/then`, `https://mastra.ai/en/reference/workflows/parallel`, `https://mastra.ai/en/reference/workflows/branch`, `https://mastra.ai/en/reference/workflows/dowhile`, `https://mastra.ai/en/reference/workflows/dountil`, `https://mastra.ai/en/reference/workflows/foreach`.
+- When the user specifies `#file:research-analysis-workflow.ts` and asks to fix it, fetch the workflow documentation to understand the correct patterns. The following URLs should be fetched: `https://mastra.ai/en/reference/workflows/map`, `https://ai/en/reference/workflows/commit`, `https://ai/en/reference/workflows/create-run`, `https://ai/en/reference/workflows/snapshots`, `https://ai/en/reference/workflows/execute`, `https://ai/en/reference/workflows/resume`, `https://ai/en/reference/workflows/start`, `https://ai/en/reference/workflows/step`, `https://ai/en/reference/workflows/then`, `https://ai/en/reference/workflows/parallel`, `https://ai/en/reference/workflows/branch`, `https://ai/en/reference/workflows/dowhile`, `https://ai/en/reference/workflows/dountil`, `https://ai/en/reference/workflows/foreach`.
 - When improving a workflow, check the current errors in the workflow file first, then improve it by removing the unnecessary agents and following the patterns from the documentation and master agents.
 - When improving a workflow, the research agent can browse the web, so the documentation agent is not needed.
 - When improving a workflow, processing agent and master agent should be incorporated to finalize the workflow.
@@ -478,7 +478,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
       **UI Components:**
       - `src/components/ui/` - Comprehensive UI component library
       - `src/components/landing/` - Landing page sections
-      - `src/components/researchCanvas/` - Research-specific components
+      - `src/components/components/researchCanvas/` - Research-specific components
 
     ### **8. Documentation System**
       **Mastra Documentation:**
@@ -527,4 +527,16 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - When enhancing eval files in `src\mastra\evals`, always fetch the official Mastra eval documentation link first.
 - When enhancing eval files in `src\mastra\evals`, carefully update the file using the correct Mastra metric pattern.
 - All agent implementations must be real, production-ready, and type-safe.
-- Each agent must export its runtime context type and be registered via the barrel file (`src/mastra/agents/index.ts`).
+- Each agent must export its runtime context type and be registered via the barrel file (`src/mastra/agents/index.ts`
+- When working with the Polygon API via the `polygon.ts` tool, use the following guidelines:
+    - Define the `TickerParams` interface
+- When using the Google AI SDK, prefer the latest `thinkingConfig` pattern via provider options:
+   ```typescript
+   // Current pattern (working but not latest)
+   const model = baseGoogle(modelId, { /* options */ });
+   
+   // Latest AI SDK pattern
+   const result = await generateText({
+     model: google('
+```
+- When adding

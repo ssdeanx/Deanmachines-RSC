@@ -2,7 +2,13 @@ import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { BraveSearchClient } from "@agentic/brave-search";
 import { env } from "process";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { createMastraTools } from "@agentic/mastra";
+import { PinoLogger } from '@mastra/loggers';
+
+const logger = new PinoLogger({ name: 'brave-search', level: 'info' });
+
+
 /**
  * Configuration for Brave search
  */
@@ -48,7 +54,14 @@ export function createBraveSearchTool(config: BraveSearchConfig = {}) {
       ),
     }),
     execute: async ({ context }) => {
+      logger.info('Starting Brave search', { 
+        query: context.query, 
+        maxResults: context.maxResults 
+      });
+
       try {
+        logger.debug('Calling Brave Search API', { query: context.query });
+        
         // BraveSearchClient.search only accepts query string
         const response = await braveSearch.search(context.query);
 
@@ -62,8 +75,20 @@ export function createBraveSearchTool(config: BraveSearchConfig = {}) {
             // score is optional and not directly provided by this API result structure
           }));
 
+        logger.info('Brave search completed successfully', { 
+          query: context.query,
+          resultCount: results.length,
+          maxResults: context.maxResults 
+        });
+
         return { results };
       } catch (error) {
+        logger.error('Brave search failed', { 
+          query: context.query,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined
+        });
+        
         console.error("Brave search error:", error);
         throw new Error(
           `Brave search failed: ${error instanceof Error ? error.message : "Unknown error"}`

@@ -264,7 +264,7 @@ export class ArXivClient extends AIFunctionsProvider {
           primaryCategory: entry.primary_category,
           categories: castArray(entry.category).filter(Boolean),
           links: castArray(entry.link).filter(Boolean),
-        }))
+        })
       ),
     };
   }
@@ -304,6 +304,8 @@ export class ArXivClient extends AIFunctionsProvider {
   }
 }
 
+const logger = new PinoLogger({ name: 'arxiv-client', level: 'info' });
+
 // --- Explicit output schema for arxiv_search tool ---
 export const ArxivSearchEntrySchema = z.object({
   id: z.string(),
@@ -341,6 +343,11 @@ export const ArxivDownloadPdfOutputSchema = z.object({
   filePath: z.string(),
 });
 
+// Add interface for typing the mastra tools
+interface MastraToolWithSchema {
+  outputSchema?: z.ZodSchema;
+}
+
 /**
  * Creates a configured ArXiv client
  *
@@ -367,17 +374,31 @@ export function createMastraArxivTools(config: {
   apiBaseUrl?: string;
   ky?: KyInstance;
 } = {}) {
+  logger.info('Creating Mastra ArXiv tools', { config });
+  
   const arxivClient = createArxivClient(config);
   const mastraTools = createMastraTools(arxivClient);
+  
   if (mastraTools.arxiv_search) {
-    (mastraTools.arxiv_search as any).outputSchema = ArxivSearchOutputSchema;
+    (mastraTools.arxiv_search as MastraToolWithSchema).outputSchema = ArxivSearchOutputSchema;
+    logger.debug('Added output schema for arxiv_search tool');
   }
+  
   if (mastraTools.arxiv_pdf_url) {
-    (mastraTools.arxiv_pdf_url as any).outputSchema = ArxivPdfUrlOutputSchema;
+    (mastraTools.arxiv_pdf_url as MastraToolWithSchema).outputSchema = ArxivPdfUrlOutputSchema;
+    logger.debug('Added output schema for arxiv_pdf_url tool');
   }
+  
   if (mastraTools.arxiv_download_pdf) {
-    (mastraTools.arxiv_download_pdf as any).outputSchema = ArxivDownloadPdfOutputSchema;
+    (mastraTools.arxiv_download_pdf as MastraToolWithSchema).outputSchema = ArxivDownloadPdfOutputSchema;
+    logger.debug('Added output schema for arxiv_download_pdf tool');
   }
+  
+  logger.info('Successfully created Mastra ArXiv tools', { 
+    toolCount: Object.keys(mastraTools).length,
+    tools: Object.keys(mastraTools)
+  });
+  
   return mastraTools;
 }
 

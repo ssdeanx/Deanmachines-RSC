@@ -2,6 +2,9 @@ import { createTool } from "@mastra/core/tools";
 import { z } from "zod";
 import { TavilyClient } from "@agentic/tavily";
 import { env } from "process";
+import { PinoLogger } from '@mastra/loggers';
+
+const logger = new PinoLogger({ name: 'tavily', level: 'info' });
 
 /**
  * Configuration for Tavily search
@@ -40,10 +43,28 @@ export function createTavilySearchTool(config: TavilyConfig = {}) {
       ),
     }),
     execute: async ({ context }) => {
+      logger.info('Starting Tavily search', { 
+        query: context.query 
+      });
+
       try {
+        logger.debug('Calling Tavily API', { query: context.query });
+        
         const response = await tavily.search(context.query);
+        
+        logger.info('Tavily search completed successfully', { 
+          query: context.query,
+          resultCount: response.results.length 
+        });
+
         return { results: response.results };
       } catch (error) {
+        logger.error('Tavily search failed', { 
+          query: context.query,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined
+        });
+
         throw new Error(
           `Tavily search failed: ${error instanceof Error ? error.message : "Unknown error"}`
         );

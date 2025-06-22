@@ -9,96 +9,97 @@ import { createMastraTools } from "@agentic/mastra";
 import defaultKy, { type KyInstance } from "ky";
 import pThrottle from "p-throttle";
 import { z } from "zod";
+import { PinoLogger } from '@mastra/loggers';
 
-export namespace wikipedia {
-  // Allow up to 200 requests per second by default.
-  export const throttle = pThrottle({
-    limit: 200,
-    interval: 1000,
-  });
+const logger = new PinoLogger({ name: 'wikipedia', level: 'info' });
 
-  export interface SearchOptions {
-    query: string;
-    limit?: number;
-  }
+// Allow up to 200 requests per second by default.
+export const wikipediaThrottle = pThrottle({
+  limit: 200,
+  interval: 1000,
+});
 
-  export interface PageSearchResponse {
-    pages: Page[];
-  }
+export interface WikipediaSearchOptions {
+  query: string;
+  limit?: number;
+}
 
-  export interface Page {
-    id: number;
-    key: string;
-    title: string;
-    matched_title: null;
-    excerpt: string;
-    description: null | string;
-    thumbnail: Thumbnail | null;
-  }
+export interface WikipediaPageSearchResponse {
+  pages: WikipediaPage[];
+}
 
-  export interface Thumbnail {
-    url: string;
+export interface WikipediaPage {
+  id: number;
+  key: string;
+  title: string;
+  matched_title: null;
+  excerpt: string;
+  description: null | string;
+  thumbnail: WikipediaThumbnail | null;
+}
+
+export interface WikipediaThumbnail {
+  url: string;
+  width: number;
+  height: number;
+  mimetype: string;
+  duration: null;
+}
+
+export interface WikipediaPageSummaryOptions {
+  title: string;
+  redirect?: boolean;
+  acceptLanguage?: string;
+}
+
+export interface WikipediaPageSummaryResponse {
+  ns?: number;
+  index?: number;
+  type: string;
+  title: string;
+  displaytitle: string;
+  namespace: { id: number; text: string };
+  wikibase_item: string;
+  titles: { canonical: string; normalized: string; display: string };
+  pageid: number;
+  thumbnail: {
+    source: string;
     width: number;
     height: number;
-    mimetype: string;
-    duration: null;
-  }
-
-  export interface PageSummaryOptions {
-    title: string;
-    redirect?: boolean;
-    acceptLanguage?: string;
-  }
-
-  export interface PageSummaryResponse {
-    ns?: number;
-    index?: number;
-    type: string;
-    title: string;
-    displaytitle: string;
-    namespace: { id: number; text: string };
-    wikibase_item: string;
-    titles: { canonical: string; normalized: string; display: string };
-    pageid: number;
-    thumbnail: {
-      source: string;
-      width: number;
-      height: number;
+  };
+  originalimage: {
+    source: string;
+    width: number;
+    height: number;
+  };
+  lang: string;
+  dir: string;
+  revision: string;
+  tid: string;
+  timestamp: string;
+  description: string;
+  description_source: string;
+  content_urls: {
+    desktop: {
+      page: string;
+      revisions: string;
+      edit: string;
+      talk: string;
     };
-    originalimage: {
-      source: string;
-      width: number;
-      height: number;
+    mobile: {
+      page: string;
+      revisions: string;
+      edit: string;
+      talk: string;
     };
-    lang: string;
-    dir: string;
-    revision: string;
-    tid: string;
-    timestamp: string;
-    description: string;
-    description_source: string;
-    content_urls: {
-      desktop: {
-        page: string;
-        revisions: string;
-        edit: string;
-        talk: string;
-      };
-      mobile: {
-        page: string;
-        revisions: string;
-        edit: string;
-        talk: string;
-      };
-    };
-    extract: string;
-    extract_html: string;
-    normalizedtitle?: string;
-    coordinates?: {
-      lat: number;
-      lon: number;
-    };
-  }
+  };
+  extract: string;
+  extract_html: string;
+  normalizedtitle?: string;
+  coordinates?: {
+    lat: number;
+    lon: number;
+  };
 }
 
 // --- Zod Output Schemas for Wikipedia Tools (SCHEMA-WIKI-SEARCH, SCHEMA-WIKI-SUMMARY) ---
@@ -194,7 +195,7 @@ export class WikipediaClient extends AIFunctionsProvider {
     this.apiBaseUrl = apiBaseUrl;
     this.apiUserAgent = apiUserAgent;
 
-    const throttledKy = throttle ? (throttleKy(ky, wikipedia.throttle) as typeof ky) : ky;
+    const throttledKy = throttle ? (throttleKy(ky, wikipediaThrottle) as typeof ky) : ky;
 
     this.ky = throttledKy.extend({
       headers: {
@@ -212,15 +213,38 @@ export class WikipediaClient extends AIFunctionsProvider {
       query: z.string().describe("Search query"),
     }),
   })
-  async search({ query, ...opts }: wikipedia.SearchOptions) {
-    return (
-      // https://www.mediawiki.org/wiki/API:REST_API
-      (this.ky
+  async search({ query, ...opts }: WikipediaSearchOptions) {
+    logger.info('Starting Wikipedia search', { 
+      query, 
+      limit: opts.limit 
+    });
+
+    try {
+      logger.debug('Calling Wikipedia search API', { query });
+      
+      const result = await this.ky
         .get("https://en.wikipedia.org/w/rest.php/v1/search/page", {
           searchParams: { q: query, ...opts },
         })
-        .json<wikipedia.PageSearchResponse>())
-    );
+        .json<WikipediaPageSearchResponse>();
+      
+      logger.info('Wikipedia search completed successfully', { 
+        query,
+        resultCount: result.pages.length,
+        limit: opts.limit 
+      });
+
+      return result;
+    } catch (error: unknown) {
+      logger.error('Wikipedia search failed', { 
+        query,
+        limit: opts.limit,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+
+      throw error;
+    }
   }
 
   /**
@@ -243,20 +267,59 @@ export class WikipediaClient extends AIFunctionsProvider {
     acceptLanguage = "en-us",
     redirect = true,
     ...opts
-  }: wikipedia.PageSummaryOptions) {
+  }: WikipediaPageSummaryOptions) {
+    const originalTitle = title;
     title = title.trim().replace(/ /g, "_");
 
-    // https://en.wikipedia.org/api/rest_v1/
-    return this.ky
-      .get(`page/summary/${title}`, {
-        prefixUrl: this.apiBaseUrl,
-        searchParams: { redirect, ...opts },
-        headers: {
-          "accept-language": acceptLanguage,
-        },
-      })
-      .json<wikipedia.PageSummaryResponse>();
+    logger.info('Starting Wikipedia page summary fetch', { 
+      originalTitle,
+      processedTitle: title,
+      acceptLanguage,
+      redirect 
+    });
+
+    try {
+      logger.debug('Calling Wikipedia page summary API', { 
+        title, 
+        acceptLanguage 
+      });
+
+      const result = await this.ky
+        .get(`page/summary/${title}`, {
+          prefixUrl: this.apiBaseUrl,
+          searchParams: { redirect, ...opts },
+          headers: {
+            "accept-language": acceptLanguage,
+          },
+        })
+        .json<WikipediaPageSummaryResponse>();
+
+      logger.info('Wikipedia page summary fetched successfully', { 
+        originalTitle,
+        processedTitle: title,
+        pageId: result.pageid,
+        extractLength: result.extract?.length || 0
+      });
+
+      return result;
+    } catch (error: unknown) {
+      logger.error('Wikipedia page summary fetch failed', { 
+        originalTitle,
+        processedTitle: title,
+        acceptLanguage,
+        redirect,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined
+      });
+
+      throw error;
+    }
   }
+}
+
+// Add interface for typing the mastra tools
+interface MastraToolWithSchema {
+  outputSchema?: unknown;
 }
 
 /**
@@ -294,15 +357,14 @@ export function createMastraWikipediaTools(config: {
   
   // Patch outputSchema for each tool
   if (mastraTools.wikipedia_search) {
-    (mastraTools.wikipedia_search as any).outputSchema = WikipediaSearchSchema;
+    (mastraTools.wikipedia_search as MastraToolWithSchema).outputSchema = WikipediaSearchSchema;
   }
   
   if (mastraTools.wikipedia_get_page_summary) {
-    (mastraTools.wikipedia_get_page_summary as any).outputSchema = WikipediaSummarySchema;
+    (mastraTools.wikipedia_get_page_summary as MastraToolWithSchema).outputSchema = WikipediaSummarySchema;
   }
   
   return mastraTools;
 }
 
-// Export adapter for convenience
-export { createMastraTools };
+

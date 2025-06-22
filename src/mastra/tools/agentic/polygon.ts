@@ -4,6 +4,16 @@ import { createMastraTools } from "@agentic/mastra";
 import { z } from "zod";
 
 /**
+ * Interface for ticker parameters used with Polygon API.
+ * Updated to match the expected TickerInput type from the Polygon client.
+ */
+interface TickerParams {
+  market?: "crypto";
+  search?: string;
+  limit?: number;
+}
+
+/**
  * Output schema for Polygon ticker details.
  */
 export const TickerDetailsSchema = z.object({
@@ -213,10 +223,10 @@ export class MastraPolygonClient extends AIFunctionsProvider {
     try {
       const details = await this.client.tickerDetails({ ticker });
       return details;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         error: true,
-        message: error?.message || "Unknown error fetching ticker details.",
+        message: error instanceof Error ? error.message : "Unknown error fetching ticker details.",
       };
     }
   }
@@ -233,10 +243,10 @@ export class MastraPolygonClient extends AIFunctionsProvider {
     try {
       const news = await this.client.tickerNews({ ticker, limit });
       return news;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         error: true,
-        message: error?.message || "Unknown error fetching ticker news.",
+        message: error instanceof Error ? error.message : "Unknown error fetching ticker news.",
       };
     }
   }
@@ -276,10 +286,10 @@ export class MastraPolygonClient extends AIFunctionsProvider {
         limit,
       });
       return aggregates;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         error: true,
-        message: error?.message || "Unknown error fetching ticker aggregates.",
+        message: error instanceof Error ? error.message : "Unknown error fetching ticker aggregates.",
       };
     }
   }
@@ -295,10 +305,10 @@ export class MastraPolygonClient extends AIFunctionsProvider {
     try {
       const prevCloseData = await this.client.previousClose(ticker);
       return prevCloseData;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         error: true,
-        message: error?.message || "Unknown error fetching ticker price.",
+        message: error instanceof Error ? error.message : "Unknown error fetching ticker price.",
       };
     }
   }
@@ -338,10 +348,10 @@ export class MastraPolygonClient extends AIFunctionsProvider {
         limit,
       });
       return aggregates;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         error: true,
-        message: error?.message || "Unknown error fetching crypto aggregates.",
+        message: error instanceof Error ? error.message : "Unknown error fetching crypto aggregates.",
       };
     }
   }
@@ -390,10 +400,10 @@ export class MastraPolygonClient extends AIFunctionsProvider {
           message: `No recent price data found for ${from}-${to}.`,
         };
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         error: true,
-        message: error?.message || "Unknown error fetching crypto price.",
+        message: error instanceof Error ? error.message : "Unknown error fetching crypto price.",
       };
     }
   }
@@ -408,15 +418,15 @@ export class MastraPolygonClient extends AIFunctionsProvider {
   })
   async cryptoTickers({ search, limit }: { search?: string; limit?: number }) {
     try {
-      const params: any = { market: "crypto" };
+      const params: TickerParams = { market: "crypto" as const };
       if (search) params.search = search;
       if (limit) params.limit = limit;
       const result = await this.client.tickers(params);
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         error: true,
-        message: error?.message || "Unknown error fetching crypto tickers.",
+        message: error instanceof Error ? error.message : "Unknown error fetching crypto tickers.",
       };
     }
   }
@@ -471,26 +481,26 @@ export function createMastraPolygonTools(config: { apiKey?: string } = {}) {
   const polygonClient = new MastraPolygonClient({ apiKey });
   const mastraTools = createMastraTools(polygonClient);
   if (mastraTools.tickerDetails) {
-    (mastraTools.tickerDetails as any).outputSchema = TickerDetailsSchema;
+    (mastraTools.tickerDetails as { outputSchema?: unknown }).outputSchema = TickerDetailsSchema;
   }
   if (mastraTools.tickerNews) {
-    (mastraTools.tickerNews as any).outputSchema = TickerNewsSchema;
+    (mastraTools.tickerNews as { outputSchema?: unknown }).outputSchema = TickerNewsSchema;
   }
   if (mastraTools.tickerAggregates) {
-    (mastraTools.tickerAggregates as any).outputSchema = TickerAggregatesSchema;
+    (mastraTools.tickerAggregates as { outputSchema?: unknown }).outputSchema = TickerAggregatesSchema;
   }
   if (mastraTools.cryptoTickers) {
-    (mastraTools.cryptoTickers as any).outputSchema = CryptoTickersSchema;
+    (mastraTools.cryptoTickers as { outputSchema?: unknown }).outputSchema = CryptoTickersSchema;
   }
   // if (mastraTools.cryptoSnapshotAll) {
-  //   (mastraTools.cryptoSnapshotAll as any).outputSchema = CryptoSnapshotAllSchema;
-  //   (mastraTools.cryptoSnapshotTicker as any).outputSchema = CryptoSnapshotTickerSchema;
+  //   (mastraTools.cryptoSnapshotAll as { outputSchema?: unknown }).outputSchema = CryptoSnapshotAllSchema;
+  //   (mastraTools.cryptoSnapshotTicker as { outputSchema?: unknown }).outputSchema = CryptoSnapshotTickerSchema;
   // }
   if (mastraTools.tickerPreviousClose) {
-    (mastraTools.tickerPreviousClose as any).outputSchema = PreviousCloseSchema;
+    (mastraTools.tickerPreviousClose as { outputSchema?: unknown }).outputSchema = PreviousCloseSchema;
   }
   if (mastraTools.cryptoAggregates) {
-    (mastraTools.cryptoAggregates as any).outputSchema = CryptoAggregatesSchema;
+    (mastraTools.cryptoAggregates as { outputSchema?: unknown }).outputSchema = CryptoAggregatesSchema;
   }
   // Note: cryptoPrice does not have a dedicated schema defined above,
   // but its return type is implicitly defined in the method.

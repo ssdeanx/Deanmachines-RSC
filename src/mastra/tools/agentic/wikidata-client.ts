@@ -150,6 +150,14 @@ export class WikidataClient extends AIFunctionsProvider {
 }
 
 /**
+ * Interface for Mastra tool with outputSchema property
+ */
+interface MastraToolWithSchema<T = unknown> {
+  outputSchema?: z.ZodSchema<T>;
+  [key: string]: unknown;
+}
+
+/**
  * Helper function to create a Mastra-compatible Wikidata client
  *
  * @param config - Configuration options for the Wikidata client
@@ -166,12 +174,12 @@ export function createMastraWikidataTools(config: {
 
   // Patch outputSchema for getEntityById
   if (mastraTools.wikidata_get_entity_by_id) {
-    (mastraTools.wikidata_get_entity_by_id as any).outputSchema = WikidataEntitySchema;
+    (mastraTools.wikidata_get_entity_by_id as unknown as MastraToolWithSchema<SimplifiedEntity>).outputSchema = WikidataEntitySchema;
   }
 
   // Patch outputSchema for getEntitiesByIds
   if (mastraTools.wikidata_get_entities_by_ids) {
-    (mastraTools.wikidata_get_entities_by_ids as any).outputSchema = WikidataEntityMapSchema;
+    (mastraTools.wikidata_get_entities_by_ids as unknown as MastraToolWithSchema<SimplifiedEntityMap>).outputSchema = WikidataEntityMapSchema;
   }
 
   return mastraTools;
