@@ -70,6 +70,12 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - `pino-elasticsearch`
 - `@axiomhq/pino`
 - `@langfuse/pino-transport`
+- "@mdx-js/react": "^3.1.0"
+- "@mdx-js/loader": "^3.1.0"
+- "@next/mdx": "^15.3.4"
+- Mastra Core (version >= v0.10.6)
+- AI SDK's LangChain adapter
+- `@langchain/langgraph`
 
 ## PROJECT DOCUMENTATION & CONTEXT SYSTEM
 
@@ -333,116 +339,31 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     - `src/mastra/agents/git-agent.ts` - Version control operations and repository management
     - `src/mastra/agents/debug-agent.ts` - Error detection and debugging assistance
     - `src/mastra/agents/documentation`
-- When the user specifies `#file://../../src/mastra/index.ts`, analyze all of the specified files to understand the project structure and requirements.
-- When the user specifies `#file:rerank-tool.ts`, analyze the specified file.
-- When the user specifies `#file:mastra.prompt.md`, analyze the specified file.
-- When the user specifies `#file:vectorQueryTool.ts #file:rerank-tool.ts #file:chunker-tool.ts`, analyze all of the specified files.
-- When the user specifies `#file:instructions #file:index.ts #file:copilotkit #file:agents`, analyze all of those files before starting.
-- **IMPORTANT:** When asked to work on multiple agent files simultaneously, ensure that each agent's runtime context is correctly implemented and utilized within the agent's logic, following the pattern observed in `master-agent.ts`.
-- When analyzing multiple agent files simultaneously and updating them to follow the `master-agent.ts` pattern, ensure that each agent's instructions are using runtime context by:
-    1. Defining the runtime context type at the top of the file.
-    2. Accessing the runtime context within the instructions function using `({ runtimeContext })`.
-    3. Using personalized context variables within the instructions.
-- Use `#fetch https://mastra.ai/en/examples/agents/hierarchical-multi-agent` to understand hierarchical multi-agent patterns.
-- Use `#fetch https://mastra.ai/en/reference/agents/createTool`, `#fetch https://ai/en/reference/tools/create-tool`, `#fetch https://ai/en/examples/agents/hierarchical-multi-agent`, `#fetch https://ai/en/examples/agents/using-a-tool`, and `#fetch https://ai/en/docs/agents/runtime-variables` for understanding agent and tool creation.
-- When the user asks to create `#file:delegate-tools.ts`, use the following guidelines:
-    - The coding assistant MUST use both tool runtime context and agent runtime context.
-    - The coding assistant MUST import `RuntimeContext` from `@mastra/core/di`.
-    - The coding assistant MUST import agents directly from the index file (e.g., `agentRegistry`) and MUST NOT use a local `AGENT_REGISTRY` object.
-    - The coding assistant MUST include `#file:supervisor-agent.ts`.
-    - The coding assistant MUST fetch the relevant documentation URLs to understand the correct Mastra patterns before creating the file.
-- When the user specifies `#file:instructions` in conjunction with `#fetch https://mastra.ai/en/reference/networks/agent-network`, analyze both the local instructions file and the fetched documentation to understand the project's agent architecture and how it can be enhanced using Mastra's `AgentNetwork` patterns.
-- When analyzing `#file:instructions` in conjunction with `#fetch https://ai/en/reference/networks/agent-network`, note that Mastra's `AgentNetwork` is experimental and provides LLM-based routing for dynamic agent selection.
-- When analyzing `#file:instructions` in conjunction with `#fetch https://ai/en/reference/networks/agent-network`, consider the trade-offs between using `AgentNetwork` (dynamic routing) and predefined workflows (explicit control).
-- When debugging agent execution issues, especially when the "Agent not found" error occurs, ensure that the agent is correctly imported and registered within the agent network configuration.
-- **IMPORTANT:** Ensure consistent naming between the agent's `name` property in the agent definition (e.g., `master-agent.ts`) and how the network references the agent when executing. Use title case with spaces (e.g., "Master Agent").
-- Use `#fetch https://mastra.ai/en/reference/workflows/workflow`, `#fetch https://ai/en/reference/workflows/map`, `#fetch https://ai/en/reference/workflows/commit`, `#fetch https://ai/en/reference/workflows/create-run`, `#fetch https://ai/en/reference/workflows/snapshots`, `#fetch https://ai/en/reference/workflows/stream`, and `#fetch https://ai/en/reference/workflows/execute` when working with workflows.
-- Use `#fetch https://mastra.ai/en/docs/workflows/overview` when working with workflows.
-- When the user specifies `#file:mastraWorkflows.prompt.md` and asks for help with workflows, fetch the key documentation to understand the current workflow patterns and requirements.
-- When the user specifies `#file:research-analysis-workflow.ts` and asks to fix it, fetch the workflow documentation to understand the correct patterns. The following URLs should be fetched: `https://mastra.ai/en/reference/workflows/map`, `https://ai/en/reference/workflows/commit`, `https://ai/en/reference/workflows/create-run`, `https://ai/en/reference/workflows/snapshots`, `https://ai/en/reference/workflows/execute`, `https://ai/en/reference/workflows/resume`, `https://ai/en/reference/workflows/start`, `https://ai/en/reference/workflows/step`, `https://ai/en/reference/workflows/then`, `https://ai/en/reference/workflows/parallel`, `https://ai/en/reference/workflows/branch`, `https://ai/en/reference/workflows/dowhile`, `https://ai/en/reference/workflows/dountil`, `https://ai/en/reference/workflows/foreach`.
-- When improving a workflow, check the current errors in the workflow file first, then improve it by removing the unnecessary agents and following the patterns from the documentation and master agents.
-- When improving a workflow, the research agent can browse the web, so the documentation agent is not needed.
-- When improving a workflow, processing agent and master agent should be incorporated to finalize the workflow.
-- When asked to analyze `#file:code-graph-maker-advanced.ts`, confirm it's using the correct modern Mastra workflow patterns.
-- When creating a full-stack workflow using coding, git, docker, debug, documentation, and other agents:
-    - Utilize all relevant agents from the project.
-    - Follow a structured approach, including strategic planning, architecture design, code generation, testing, deployment, and documentation.
-    - Ensure proper error handling and comprehensive logging.
-    - Update the workflows index file to export the new workflow.
-    - Add the new full-stack development workflow to the main Mastra index, including import and registration.
-- When asked to improve logging in `#file:dean-machines-network.ts` (or any other file) for Langfuse, focus on adding strategic logging points that are valuable for observability and debugging without over-bloating the code. This should include:
-    - Network initialization logging with agent count and configuration details.
-    - Task execution tracking with a unique task ID, start time, structured logging with metadata (taskId, messageCount, duration, event tags, success boolean).
-    - Error handling that preserves context while propagating the original error.
-- I'll add a new section for improving the CopilotKit and playground functionality.
-- When working with the CopilotKit and playground:
-    - Focus on completing the playground functionality with proper CopilotKit integration.
-    - Ensure the multi-agent playground works seamlessly with `dean-machines-network.ts` using the CopilotKit route.
-    - Optimize `route.ts` for better performance and runtime context, including better error handling and context management.
-    - Create reusable components for testing and visualization (agent tester, tool executor, workflow visualizer).
-    - Ensure proper integration between Mastra, AGUI, CopilotKit, and the user, following the flow: Mastra -> AGUI -> CopilotKit -> User.
-    - Properly integrate the Dean Machines Network with the runtime context types.
-    - Enhance the CopilotKit route (`route.ts`) with better AGUI integration.
-    - Optimize agent registration and context handling in the Mastra index.
-    - Aim for full functionality in the multi-agent playground with network routing.
-    - Use shared components across all playground sections for reusability.
-    - The flow is Mastra (Backend AI Framework) → AGUI → CopilotKit → User (Frontend).
-- When building a dual-memory system with Upstash and Supabase:
-  - Use `#file:upstashMemory.ts` for the Upstash backend implementation.
-  - Ensure the system can switch between backends.
-  - Implement comprehensive error handling and logging.
-  - Create tasks for testing and validation.
-  - Update environment configuration to support dual-memory requirements.
-- When encountering "used before declaration" errors, especially in `upstashMemory.ts`, ensure that class declarations are placed before their instantiation or usage.
-- Use `#file://base-network.ts` to reference the base network file.
-- When working with Next.js 13+ App Router, be aware of route groups indicated by parentheses in the directory structure (e.g., `(playground)`). Route groups are for organization and do not create URL segments. This means that `src/app/(playground)/page.tsx` is accessible at the root `/`, not `/playground`.
-- When the user asks to create a main playground dashboard page, ensure the playground route structure is correctly set up in Next.js, considering route groups and potential conflicts with the root page. If a `(playground)` route group exists, the main playground page at `src/app/(playground)/page.tsx` will be accessible at the root `/`.
-- When the user specifies `#file:playground`, this refers to the `(playground)` route group in Next.js.
-- When asked to fix errors in `#file:wikidata-client.ts`, use the following guidelines:
-    - Replace `namespace` with individual type exports using ES2015 module syntax.
-    - Replace `any` types with more specific type definitions.
-    - Ensure proper handling of Wikidata API response types.
-    - Use the `wikibase` library types for accurate type definitions, such as `wikibase.Entities`.
-- When analyzing a `#file:.prompt.md` file:
-  - Identify key components, configurations, and agents related to the Dean Machines RSC project.
-  - Use the following structure to present the found components:
-    ## 🎯 **Core Architecture Components Found**
+- When analyzing `.prompt.md` files, use the following structure to present the found components:
+  ## 🎯 **Core Architecture Components Found**
 
-    ### **1. Mastra AI Framework Integration**
-      - **Main Configuration**: `src/mastra/index.ts` - Central Mastra configuration with 22+ agents, workflows, and networks
-      - **Agent Memory System**: `src/mastra/agentMemory.ts` - LibSQL/Turso storage with vector search using fastembed
-      - **Google AI Provider**: `src/mastra/config/googleProvider.ts` and `src/mastra/config/index.ts` - Traced Google AI models with LangSmith integration
+  ### **1. Mastra AI Framework Integration**
+    - **Main Configuration**: `src/mastra/index.ts` - Central Mastra configuration with 22+ agents, workflows, and networks
+    - **Agent Memory System**: `src/mastra/agentMemory.ts` - LibSQL/Turso storage with vector search using fastembed
+    - **Google AI Provider**: `src/mastra/config/googleProvider.ts` and `src/mastra/config/index.ts` - Traced Google AI models with LangSmith integration
 
-    ### **2. Agent Orchestration System (22+ Agents)**
-      **Core Agents:**
-      - `src/mastra/agents/master-agent.ts` - Primary orchestrator with comprehensive Zod validation
-      - `src/mastra/agents/strategizer-agent.ts` - Strategic planning and decision making
-      - `src/mastra/agents/supervisor-agent.ts` - Multi-agent coordination and quality control
-      - `src/mastra/agents/analyzer-agent.ts` - Deep analysis and pattern recognition
+    **Data & Analysis Agents:**
+    - `src/mastra/agents/data-agent.ts` - Data processing and statistical analysis
+    - `src/mastra/agents/graph-agent.ts` - Knowledge graph operations and visualization
+    - `src/mastra/agents/research-agent.ts` - Information gathering and synthesis
+    - `src/mastra/agents/weather-agent.ts` - Weather data retrieval and forecasting
 
-      **Development Agents:**
-      - `src/mastra/agents/code-agent.ts` - Code analysis, generation, and optimization
-      - `src/mastra/agents/git-agent.ts` - Version control operations and repository management
-      - `src/mastra/agents/debug-agent.ts` - Error detection and debugging assistance
-      - `src/mastra/agents/documentation-agent.ts` - Technical documentation generation
-
-      **Data & Analysis Agents:**
-      - `src/mastra/agents/data-agent.ts` - Data processing and statistical analysis
-      - `src/mastra/agents/graph-agent.ts` - Knowledge graph operations and visualization
-      - `src/mastra/agents/research-agent.ts` - Information gathering and synthesis
-      - `src/mastra/agents/weather-agent.ts` - Weather data retrieval and forecasting
-
-      **Specialized Agents:**
-      - `src/mastra/agents/design-agent.ts` - UI/UX design and visual aesthetics
-      - `src/mastra/agents/docker-agent.ts` - Containerization and deployment
-      - `src/mastra/agents/marketing-agent.ts` - Content creation and marketing
-      - `src/mastra/agents/manager-agent.ts` - Project management and coordination
-      - `src/mastra/agents/processing-agent.ts` - Data transformation and workflow automation
-      - `src/mastra/agents/sysadmin-agent.ts` - System administration and DevOps
-      - `src/mastra/agents/browser-agent.ts` - Web automation with Playwright
-      - `src/mastra/agents/special-agent.ts` - Multi-domain expert for complex problems
-      - `src/mastra/agents/utility-agent.ts` - General-purpose helper functions
-      - `src/mastra/agents/evolve-agent.ts` - Continuous improvement and optimization
+    **Specialized Agents:**
+    - `src/mastra/agents/design-agent.ts` - UI/UX design and visual aesthetics
+    - `src/mastra/agents/docker-agent.ts` - Containerization and deployment
+    - `src/mastra/agents/marketing-agent.ts` - Content creation and marketing
+    - `src/mastra/agents/manager-agent.ts` - Project management and coordination
+    - `src/mastra/agents/processing-agent.ts` - Data transformation and workflow automation
+    - `src/mastra/agents/sysadmin-agent.ts` - System administration and DevOps
+    - `src/mastra/agents/browser-agent.ts` - Web automation with Playwright
+    - `src/mastra/agents/special-agent.ts` - Multi-domain expert for complex problems
+    - `src/mastra/agents/utility-agent.ts` - General-purpose helper functions
+    - `src/mastra/agents/evolve-agent.ts` - Continuous improvement and optimization
 
     ### **3. Agent Network & Workflows**
       - **Dean Machines Network**: `src/mastra/networks/dean-machines-network.ts` - LLM-based dynamic routing for 22+ agents
@@ -501,40 +422,120 @@ This file contains the rules and guidelines for the AI coding assistant to follo
       - `src/mastra/agents/index.test.ts` - Agent testing
       - `vitest.config.ts` - Test configuration
       - `eslint.config.mjs` - Code quality enforcement
+- When the user specifies `#file://../../src/mastra/index.ts`, analyze all of the specified files to understand the project structure and requirements.
+- When the user specifies `#file:rerank-tool.ts`, analyze the specified file.
+- When the user specifies `#file:mastra.prompt.md`, analyze the specified file.
+- When the user specifies `#file:vectorQueryTool.ts #file:rerank-tool.ts #file:chunker-tool.ts`, analyze all of the specified files.
+- When the user specifies `#file:instructions #file:index.ts #file:copilotkit #file:agents`, analyze all of those files before starting.
+- **IMPORTANT:** When asked to work on multiple agent files simultaneously, ensure that each agent's runtime context is correctly implemented and utilized within the agent's logic, following the pattern observed in `master-agent.ts`.
+- When analyzing multiple agent files simultaneously and updating them to follow the `master-agent.ts` pattern, ensure that each agent's instructions are using runtime context by:
+    1. Defining the runtime context type at the top of the file.
+    2. Accessing the runtime context within the instructions function using `({ runtimeContext })`.
+    3. Using personalized context variables within the instructions.
+- Use `#fetch https://mastra.ai/en/examples/agents/hierarchical-multi-agent` to understand hierarchical multi-agent patterns.
+- Use `#fetch https://mastra.ai/en/reference/agents/createTool`, `#fetch https://ai/en/reference/tools/create-tool`, `#fetch https://ai/en/examples/agents/hierarchical-multi-agent`, `#fetch https://ai/en/examples/agents/using-a-tool`, and `#fetch https://ai/en/docs/agents/runtime-variables` for understanding agent and tool creation.
+- When the user asks to create `#file:delegate-tools.ts`, use the following guidelines:
+    - The coding assistant MUST use both tool runtime context and agent runtime context.
+    - The coding assistant MUST import `RuntimeContext` from `@mastra/core/di`.
+    - The coding assistant MUST import agents directly from the index file (e.g., `agentRegistry`) and MUST NOT use a local `AGENT_REGISTRY` object.
+    - The coding assistant MUST include `#file:supervisor-agent.ts`.
+    - The coding assistant MUST fetch the relevant documentation URLs to understand the correct Mastra patterns before creating the file.
+- When the user specifies `#file:instructions` in conjunction with `#fetch https://mastra.ai/en/reference/networks/agent-network`, analyze both the local instructions file and the fetched documentation to understand the project's agent architecture and how it can be enhanced using Mastra's `AgentNetwork` patterns.
+- When analyzing `#file:instructions` in conjunction with `#fetch https://ai/en/reference/networks/agent-network`, note that Mastra's `AgentNetwork` is experimental and provides LLM-based routing for dynamic agent selection.
+- When analyzing `#file:instructions` in conjunction with `#fetch https://ai/en/reference/networks/agent-network`, consider the trade-offs between using `AgentNetwork` (dynamic routing) and predefined workflows (explicit control).
+- When debugging agent execution issues, especially when the "Agent not found" error occurs, ensure that the agent is correctly imported and registered within the agent network configuration.
+- **IMPORTANT:** Ensure consistent naming between the agent's `name` property in the agent definition (e.g., `master-agent.ts`) and how the network references the agent when executing. Use title case with spaces (e.g., "Master Agent").
+- Use `#fetch https://mastra.ai/en/reference/workflows/workflow`, `#fetch https://ai/en/reference/workflows/map`, `#fetch https://ai/en/reference/workflows/commit`, `#fetch https://ai/en/reference/workflows/create-run`, `#fetch https://ai/en/reference/workflows/snapshots`, `#fetch https://ai/en/reference/workflows/stream`, and `#fetch https://ai/en/reference/workflows/execute` when working with workflows.
+- Use `#fetch https://mastra.ai/en/docs/workflows/overview` when working with workflows.
+- When the user specifies `#file:mastraWorkflows.prompt.md` and asks for help with workflows, fetch the key documentation to understand the current workflow patterns and requirements.
+- When the user specifies `#file:research-analysis-workflow.ts` and asks to fix it, fetch the workflow documentation to understand the correct patterns. The following URLs should be fetched: `https://mastra.ai/en/reference/workflows/map`, `https://ai/en/reference/workflows/commit`, `https://ai/en/reference/workflows/create-run`, `https://ai/en/reference/workflows/snapshots`, `https://ai/en/reference/workflows/execute`, `https://ai/en/reference/workflows/resume`, `https://ai/en/reference/workflows/start`, `https://ai/en/reference/workflows/step`, `https://ai/en/reference/workflows/then`, `https://ai/en/reference/workflows/parallel`, `https://ai/en/reference/workflows/branch`, `https://ai/en/reference/workflows/dowhile`.
+- When improving a workflow, check the current errors in the workflow file first, then improve it by removing the unnecessary agents and following the patterns from the documentation and master agents.
+- When improving a workflow, the research agent can browse the web, so the documentation agent is not needed.
+- When improving a workflow, processing agent and master agent should be incorporated to finalize the workflow.
+- When asked to analyze `#file:code-graph-maker-advanced.ts`, confirm it's using the correct modern Mastra workflow patterns.
+- When creating a full-stack workflow using coding, git, docker, debug, documentation, and other agents:
+    - Utilize all relevant agents from the project.
+    - Follow a structured approach, including strategic planning, architecture design, code generation, testing, deployment, and documentation.
+    - Ensure proper error handling and comprehensive logging.
+    - Update the workflows index file to export the new workflow.
+    - Add the new full-stack development workflow to the main Mastra index, including import and registration.
+- When asked to improve logging in `#file:dean-machines-network.ts` (or any other file) for Langfuse, focus on adding strategic logging points that are valuable for observability and debugging without over-bloating the code. This should include:
+    - Network initialization logging with agent count and configuration details.
+    - Task execution tracking with a unique task ID, start time, structured logging with metadata (taskId, messageCount, duration, event tags, success boolean).
+    - Error handling that preserves context while propagating the original error.
+- I'll add a new section for improving the CopilotKit and playground functionality.
+- When working with the CopilotKit and playground:
+    - Focus on completing the playground functionality with proper CopilotKit integration.
+    - Ensure the multi-agent playground works seamlessly with `dean-machines-network.ts` using the CopilotKit route.
+    - Optimize `route.ts` for better performance and runtime context, including better error handling and context management.
+    - Create reusable components for testing and visualization (agent tester, tool executor, workflow visualizer).
+    - Ensure proper integration between Mastra, AGUI, CopilotKit, and the user, following the flow: Mastra -> AGUI -> CopilotKit -> User.
+    - Properly integrate the Dean Machines Network with the runtime context types.
+    - Enhance the CopilotKit route (`route.ts`) with better AGUI integration.
+    - Optimize agent registration and context handling in the Mastra index.
+    - Aim for full functionality in the multi-agent playground with network routing.
+    - Use shared components across all playground sections for reusability.
+    - The flow is Mastra (Backend AI Framework) → AGUI → CopilotKit → User (Frontend).
+- When building a dual-memory system with Upstash and Supabase:
+  - Use `#file:upstashMemory.ts` for the Upstash backend implementation.
+  - Ensure the system can switch between backends.
+  - Implement comprehensive error handling and logging.
+  - Create tasks for testing and validation.
+  - Update environment configuration to support dual-memory requirements.
+- When encountering "used before declaration" errors, especially in `upstashMemory.ts`, ensure that class declarations are placed before their instantiation or usage.
+- Use `#file://base-network.ts` to reference the base network file.
+- When working with Next.js 13+ App Router, be aware of route groups indicated by parentheses in the directory structure (e.g., `(playground)`). Route groups are for organization and do not create URL segments. This means that `src/app/playground)/page.tsx` is accessible at the root `/`, not `/playground`.
+- When the user asks to create a main playground dashboard page, ensure the playground route structure is correctly set up in Next.js, considering route groups and potential conflicts with the root page. If a `(playground)` route group exists, the main playground page at `src/app/playground)/page.tsx` will be accessible at the root `/`.
+- When the user specifies `#file:playground`, this refers to the `(playground)` route group in Next.js.
+- When asked to fix errors in `#file:wikidata-client.ts`, use the following guidelines:
+    - Replace `namespace` with individual type exports using ES2015 module syntax.
+    - Replace `any` types with more specific type definitions.
+    - Ensure proper handling of Wikidata API response types.
+    - Use the `wikibase` library types for accurate type definitions, such as `wikibase.Entities`.
+- When analyzing a `#file:.prompt.md` file:
+  - Identify key components, configurations, and agents related to the Dean Machines RSC project.
+  - Use the following structure to present the found components:
+    ## 🎯 **Core Architecture Components Found**
 
-## CODING STANDARDS
+    ### **1. Mastra AI Framework Integration**
+      - **Main Configuration**: `src/mastra/index.ts` - Central Mastra configuration with 22+ agents, workflows, and networks
+      - **Agent Memory System**: `src/mastra/agentMemory.ts` - LibSQL/Turso storage with vector search using fastembed
+      - **Google AI Provider**: `src/mastra/config/googleProvider.ts` and `src/mastra/config/index.ts` - Traced Google AI models with LangSmith integration
 
-- Export workflows from their respective files (e.g., `weather-workflow.ts`).
-- Re-export workflows via `index.ts` to consolidate API access.
-- Register workflow APIs as CopilotKit endpoints, following the established pattern for agents and workflows.
-- Ensure explicit import of both the CopilotKit component and its stylesheet when using CopilotKit UI components.
-- Use Zod schemas for validation of all agent actions and workflow inputs/outputs.
-- Remove inline CSS from components; use Tailwind CSS and global CSS classes for styling.
-- Use `${MASTRA_URL}` for endpoint consistency in `Actions.tsx` and related components.
-- Use TypeScript strict mode; avoid `any` types.
-- Ensure real functionality only; avoid mock data.
-- Use all imports, especially Lucide React icons.
-- Adhere to the electric neon theme consistently.
-- Use npm for package management.
-- Production-ready code quality is a must.
-- No fake simulations or mock data are allowed.
-- **IMPORTANT**: Do not generate new files unless explicitly instructed, unless specifically instructed to do so. Enhance existing components directly.
-- **IMPORTANT**: Do not attempt to rewrite entire files in one shot. Enhance existing components step by step.
-- **IMPORTANT**: Before coding, be absolutely sure what you're working on.
-- **IMPORTANT**: Do not code unless you are absolutely sure what you're working on.
-- **IMPORTANT**: After every code change, run error checks (get_errors).
-- When using `// copilot: FIX` or `// copilot: IMPLEMENT` directives, always ensure proper environment variable usage as defined in `#file://.env.example`.
-- When creating evaluation suites, prioritize modularity to facilitate future modifications and extensions. Store the suites in `src\mastra\evals`.
-- When creating evaluation suites, ensure modularity to facilitate future modifications and extensions.
-- When fixing eval metrics, ensure the implementation utilizes the `@mastra/evals` package correctly.
-- Eval metric implementations should follow Mastra's metric/judge pattern (e.g., defining `CustomEvalJudge` and `CustomEvalMetric` classes).
-- When enhancing eval files in `src\mastra\evals`, always fetch the official Mastra eval documentation link first.
-- When enhancing eval files in `src\mastra\evals`, carefully update the file using the correct Mastra metric pattern.
-- All agent implementations must be real, production-ready, and type-safe.
-- Each agent must export its runtime context type and be registered via the barrel file (`src/mastra/agents/index.ts`
-- When working with the Polygon API via the `polygon.ts` tool, use the following guidelines:
-    - Define the `TickerParams` interface
-- When using the Google AI SDK, prefer the latest `thinkingConfig` pattern via provider options:
-   ```typescript
-   // Current pattern (working but not latest)
-   const model = baseGoogle(modelId, { /*
+    ### **2. Agent Orchestration System (22+ Agents)**
+      **Core Agents:**
+      - `src/mastra/agents/master-agent.ts` - Primary orchestrator with comprehensive Zod validation
+      - `src/mastra/agents/strategizer-agent.ts` - Strategic planning and decision making
+      - `src/mastra/agents/supervisor-agent.ts` - Multi-agent coordination and quality control
+      - `src/mastra/agents/analyzer-agent.ts` - Deep analysis and pattern recognition
+
+      **Development Agents:**
+      - `src/mastra/agents/code-agent.ts` - Code analysis, generation, and optimization
+      - `src/mastra/agents/git-agent.ts` - Version control operations and repository management
+      - `src/mastra/agents/debug-agent.ts` - Error detection and debugging assistance
+      - `src/mastra/agents/documentation-agent.ts` - Technical documentation generation
+
+      **Data & Analysis Agents:**
+      - `src/mastra/agents/data-agent.ts` - Data processing and statistical analysis
+      - `src/mastra/agents/graph-agent.ts` - Knowledge graph operations and visualization
+      - `src/mastra/agents/research-agent.ts` - Information gathering and synthesis
+      - `src/mastra/agents/weather-agent.ts` - Weather data retrieval and forecasting
+
+      **Specialized Agents:**
+      - `src/mastra/agents/design-agent.ts` - UI/UX design and visual aesthetics
+      - `src/mastra/agents/docker-agent.ts` - Containerization and deployment
+      - `src/mastra/agents/marketing-agent.ts` - Content creation and marketing
+      - `src/mastra/agents/manager-agent.ts` - Project management and coordination
+      - `src/mastra/agents/processing-agent.ts` - Data transformation and workflow automation
+      - `src/mastra/agents/sysadmin-agent.ts` - System administration and DevOps
+      - `src/mastra/agents/browser-agent.ts` - Web automation with Playwright
+      - `src/mastra/agents/special-agent.ts` - Multi-domain expert for complex problems
+      - `src/mastra/agents/utility-agent.ts` - General-purpose helper functions
+      - `src/mastra/agents/evolve-agent.ts` - Continuous improvement and optimization
+
+    ### **3. Agent Network & Workflows**
+      - **Dean Machines Network**: `src/mastra/networks/dean-machines-network.ts` - LLM-based dynamic routing for 22+ agents
+      - **Workflows**:
+        - `src/mastra/workflows/weather-workflow.ts`
+        - `src/mastra/workflows/code-graph-maker.ts`
+        - `src/mastra/workflows/code

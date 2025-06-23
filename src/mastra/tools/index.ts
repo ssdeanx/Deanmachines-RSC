@@ -1,4 +1,11 @@
 // Export all tools for the Mastra system
+export * from './agentic/arxiv';
+export * from './agentic/tavily';
+export * from './agentic/wikibase';
+export * from './agentic/wikidata-client';
+export * from './agentic/brave-search';
+export * from './agentic/reddit';
+
 export * from './chunker-tool';
 export * from './code-execution-tool';
 export * from './file-manager-tools';
@@ -11,6 +18,7 @@ export * from './stock-tools';
 export * from './vectorQueryTool';
 export * from './weather-tool';
 export * from './web-browser-tools';
+// Export all tool types for the Mastra system
 
 // Export all tool runtime context types
 export type { ChunkerToolRuntimeContext } from './chunker-tool';

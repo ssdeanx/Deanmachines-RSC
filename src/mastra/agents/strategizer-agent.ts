@@ -5,11 +5,11 @@ import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryToo
 import { chunkerTool } from "../tools/chunker-tool";
 import { stockPriceTool } from "../tools/stock-tools";
 import { mem0RememberTool, mem0MemorizeTool } from "../tools/mem0-tool";
-import { PinoLogger } from "@mastra/loggers";
+import { createAgentDualLogger } from '../config/upstashLogger';
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
 
-const logger = new PinoLogger({ name: 'strategizerAgent', level: 'info' });
+const logger = createAgentDualLogger('strategizerAgent');
 logger.info('Initializing strategizerAgent');
 
 /**

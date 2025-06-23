@@ -4,12 +4,12 @@ import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
-import { PinoLogger } from "@mastra/loggers";
+import { createAgentDualLogger } from '../config/upstashLogger';
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
 
-const logger = new PinoLogger({ name: 'evolveAgent', level: 'info' });
-logger.info('Initializing evolveAgent');
+const logger = createAgentDualLogger('EvolveAgent');
+logger.info('Initializing EvolveAgent');
 
 /**
  * Runtime context for the Evolve Agent

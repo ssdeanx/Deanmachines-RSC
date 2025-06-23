@@ -3,7 +3,7 @@ import { Agent } from "@mastra/core/agent";
 import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
-import { PinoLogger } from "@mastra/loggers";
+import { createAgentDualLogger } from '../config/upstashLogger';
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
 import { chunkerTool } from "../tools/chunker-tool";
@@ -36,8 +36,8 @@ export type GitAgentRuntimeContext = {
   "hosting-service": "github" | "gitlab" | "bitbucket" | "other";
 };
 
-const logger = new PinoLogger({ name: 'gitAgent', level: 'info' });
-logger.info('Initializing gitAgent');
+const logger = createAgentDualLogger('GitAgent');
+logger.info('Initializing GitAgent');
 
 /**
  * Comprehensive Zod schemas for Git Agent validation

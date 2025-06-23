@@ -186,10 +186,11 @@ export type ChunkerToolRuntimeContext = {
  * @date 2025-06-21
  */
 export const chunkerTool = createTool({
-  id: 'comprehensive_document_chunker',
+  id: 'comprehensive_chunker',
   description: 'Advanced document chunking tool supporting multiple formats (text, HTML, Markdown, JSON, LaTeX, CSV, XML) with configurable strategies and runtime context integration',
   inputSchema: chunkerInputSchema,
-  outputSchema: chunkerOutputSchema,  execute: async ({ context, runtimeContext }) => {
+  outputSchema: chunkerOutputSchema,  
+  execute: async ({ context, runtimeContext }) => {
     const startTime = Date.now();
     
     try {

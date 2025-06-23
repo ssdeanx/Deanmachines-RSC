@@ -5,7 +5,7 @@ import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
-import { PinoLogger } from "@mastra/loggers";
+import { createAgentDualLogger } from '../config/upstashLogger';
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
 
@@ -36,8 +36,8 @@ export type GraphAgentRuntimeContext = {
   "viz-format": "d3" | "cytoscape" | "graphviz" | "networkx" | "reactflow" | "@xyflow/react" | "other";
 };
 
-const logger = new PinoLogger({ name: 'graphAgent', level: 'info' });
-logger.info('Initializing graphAgent');
+const logger = createAgentDualLogger('GraphAgent');
+logger.info('Initializing GraphAgent');
 
 /**
  * Comprehensive Zod schemas for Graph Agent validation

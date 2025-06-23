@@ -89,7 +89,7 @@ export const vectorQueryTool = createVectorQueryTool({
 
 // Enhanced vector query tool that integrates with UpstashMemory
 export const enhancedVectorQueryTool = createTool({
-  id: 'enhanced_vector_query',
+  id: 'vector_query',
   description: 'Advanced vector search with hybrid filtering, metadata search, and agent memory integration',
   inputSchema: vectorQueryInputSchema,
   outputSchema: vectorQueryOutputSchema,
@@ -262,7 +262,7 @@ const hybridScoreSchema = z.object({
 
 // Hybrid vector search tool that combines semantic and metadata filtering
 export const hybridVectorSearchTool = createTool({
-  id: 'hybrid_vector_search',
+  id: 'hybrid_vector_query',
   description: 'Hybrid search combining vector similarity with metadata filtering for precise results',
   inputSchema: vectorQueryInputSchema.extend({
     metadataQuery: z.record(z.any()).optional().describe('Specific metadata query parameters'),

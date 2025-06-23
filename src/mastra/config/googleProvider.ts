@@ -47,8 +47,10 @@ export const GEMINI_CONFIG = {
   MODELS: {
     // Main model - Latest 2.5 Flash Lite with 1M context, thinking, and all features
     GEMINI_2_5_FLASH_LITE: 'gemini-2.5-flash-lite-preview-06-17', // Primary model
-    GEMINI_2_5_PRO: 'gemini-2.5-pro-preview-05-06',
-    GEMINI_2_5_FLASH: 'gemini-2.5-flash-preview-05-20'
+    GEMINI_2_5_PRO_PREVIEW: 'gemini-2.5-pro-preview-05-06',
+    GEMINI_2_5_FLASH_PREVIEW: 'gemini-2.5-flash-preview-05-20',
+    GEMINI_2_5_PRO: 'gemini-2.5-pro',
+    GEMINI_2_5_FLASH: 'gemini-2.5-flash',
   },
 
   // Embedding models with dimension support
@@ -94,11 +96,11 @@ export type GoogleModelCacheableId =
   | 'gemini-2.5-pro-preview-05-06'     // Your GEMINI_2_5_PRO
   | 'gemini-2.5-flash-preview-05-20'   // Your GEMINI_2_5_FLASH
   | 'gemini-2.5-flash-lite-preview-06-17' // Your GEMINI_2_5_FLASH_LITE
-  | 'models/gemini-2.5-pro'            // Standard API format
-  | 'models/gemini-2.5-flash'          // Standard API format
-  | 'models/gemini-2.0-flash'
-  | 'models/gemini-1.5-flash-001'
-  | 'models/gemini-1.5-pro-001';
+  | 'gemini-2.5-pro'            // Standard API format
+  | 'gemini-2.5-flash'          // Standard API format
+  | 'gemini-2.0-flash'
+  | 'gemini-1.5-flash-001'
+  | 'gemini-1.5-pro-001';
 
 // Log provider initialization
 logger.info('Google provider configuration loaded', {
@@ -563,11 +565,11 @@ export function supportsExplicitCaching(modelId: string): modelId is GoogleModel
     'gemini-2.5-flash-preview-05-20',
     'gemini-2.5-flash-lite-preview-06-17',
     // Standard API format models
-    'models/gemini-2.5-pro',
-    'models/gemini-2.5-flash',
-    'models/gemini-2.0-flash',
-    'models/gemini-1.5-flash-001',
-    'models/gemini-1.5-pro-001'
+    'gemini-2.5-pro',
+    'gemini-2.5-flash',
+    'gemini-2.0-flash',
+    'gemini-1.5-flash-001',
+    'gemini-1.5-pro-001'
   ];
   
   return cacheableModels.includes(modelId as GoogleModelCacheableId);

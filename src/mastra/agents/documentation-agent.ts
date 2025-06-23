@@ -4,7 +4,7 @@ import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
-import { PinoLogger } from "@mastra/loggers";
+import { createAgentDualLogger } from '../config/upstashLogger';
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
 import { chunkerTool } from "../tools/chunker-tool";
@@ -12,8 +12,8 @@ import { rerankTool } from "../tools/rerank-tool";
 
 import { z } from "zod";
 
-const logger = new PinoLogger({ name: 'documentationAgent', level: 'info' });
-logger.info('Initializing documentationAgent');
+const logger = createAgentDualLogger('DocumentationAgent');
+logger.info('Initializing DocumentationAgent');
 
 /**
  * Runtime context type for the Documentation Agent

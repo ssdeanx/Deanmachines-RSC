@@ -5,9 +5,10 @@ import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
-import { PinoLogger } from "@mastra/loggers";
+import { createAgentDualLogger } from '../config/upstashLogger';
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
+
 import { z } from 'zod';
 
 
@@ -37,7 +38,8 @@ export type ResearchAgentRuntimeContext = {
   "focus-area": string;
 };
 
-const logger = new PinoLogger({ name: 'researchAgent', level: 'info' });
+const logger = createAgentDualLogger('ResearchAgent');
+logger.info('Initializing ResearchAgent');
 
 const researchAgentInputSchema = z.object({
   query: z.string().min(1).describe("Research query or topic"),
@@ -162,7 +164,11 @@ export function validateResearchInput(input: unknown): z.infer<typeof researchAg
   try {
     return researchAgentInputSchema.parse(input);
   } catch (error) {
-    logger.error('Invalid research agent input', { error });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Invalid research agent input', { 
+      error: errorMessage, 
+      input: JSON.stringify(input, null, 2)
+    });
     throw error;
   }
 }
@@ -171,7 +177,11 @@ export function validateResearchOutput(output: unknown): z.infer<typeof research
   try {
     return researchAgentOutputSchema.parse(output);
   } catch (error) {
-    logger.error('Invalid research agent output', { error });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Invalid research agent output', { 
+      error: errorMessage, 
+      output: JSON.stringify(output, null, 2)
+    });
     throw error;
   }
 }
@@ -180,7 +190,11 @@ function validateResearchAgentConfig(config: unknown): z.infer<typeof researchAg
   try {
     return researchAgentConfigSchema.parse(config);
   } catch (error) {
-    logger.error('Invalid research agent config', { error });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logger.error('Invalid research agent config', { 
+      error: errorMessage, 
+      config: JSON.stringify(config, null, 2)
+    });
     throw error;
   }
 }

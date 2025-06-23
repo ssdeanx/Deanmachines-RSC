@@ -4,12 +4,12 @@ import { graphRAGTool, graphRAGUpsertTool } from '../tools/graphRAG';
 import { vectorQueryTool, hybridVectorSearchTool, enhancedVectorQueryTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
-import { PinoLogger } from "@mastra/loggers";
+import { createAgentDualLogger } from '../config/upstashLogger';
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
 
-const logger = new PinoLogger({ name: 'debugAgent', level: 'info' });
-logger.info('Initializing debugAgent');
+const logger = createAgentDualLogger('DebugAgent');
+logger.info('Initializing DebugAgent');
 
 /**
  * Runtime context type for the Debug Agent

@@ -4,10 +4,13 @@ import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool, graphRAGUpsertTool } from '../tools/graphRAG';
 import { vectorQueryTool, hybridVectorSearchTool, enhancedVectorQueryTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
-import { PinoLogger } from "@mastra/loggers";
+import { createAgentDualLogger } from '../config/upstashLogger';
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
 import { mem0RememberTool, mem0MemorizeTool } from "../tools/mem0-tool";
+
+const logger = createAgentDualLogger('CodeAgent');
+logger.info('Initializing Code Agent');
 
 /**
  * Runtime context type for the Code Agent
@@ -83,9 +86,6 @@ const codeAgentConfigSchema = z.object({
   memory: z.any().describe('Agent memory configuration'),
   workflows: z.record(z.any()).describe('Available workflows for the agent')
 }).strict();
-
-const logger = new PinoLogger({ name: 'codeAgent', level: 'info' });
-logger.info('Initializing codeAgent');
 
 /**
  * Code agent for software development, analysis, and code generation

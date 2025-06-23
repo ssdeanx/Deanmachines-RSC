@@ -2,15 +2,15 @@ import { Agent } from "@mastra/core/agent";
 import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
-import { PinoLogger } from "@mastra/loggers";
+import { createAgentDualLogger } from '../config/upstashLogger';
 import { createGemini25Provider } from '../config/googleProvider';
 import { chunkerTool } from "../tools/chunker-tool";
 import { getMCPToolsByServer } from '../tools/mcp';
 
 import { z } from "zod";
 
-const logger = new PinoLogger({ name: 'processingAgent', level: 'info' });
-logger.info('Initializing processingAgent');
+const logger = createAgentDualLogger('ProcessingAgent');
+logger.info('Initializing ProcessingAgent');
 
 /**
  * Runtime context type for the Processing Agent

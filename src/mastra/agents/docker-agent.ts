@@ -1,14 +1,14 @@
 import { Agent } from "@mastra/core/agent";
 import { upstashMemory } from '../upstashMemory';
 import { vectorQueryTool, hybridVectorSearchTool, enhancedVectorQueryTool } from "../tools/vectorQueryTool";
-import { PinoLogger } from "@mastra/loggers";
+import { createAgentDualLogger } from '../config/upstashLogger';
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
 import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
 
-const logger = new PinoLogger({ name: 'dockerAgent', level: 'info' });
-logger.info('Initializing dockerAgent');
+const logger = createAgentDualLogger('DockerAgent');
+logger.info('Initializing DockerAgent');
 
 /**
  * Runtime context for the Docker Agent

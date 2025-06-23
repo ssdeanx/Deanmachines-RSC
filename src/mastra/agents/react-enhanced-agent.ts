@@ -4,11 +4,11 @@ import { graphRAGTool } from '../tools/graphRAG';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
 import { createGemini25Provider } from '../config/googleProvider';
-import { PinoLogger } from "@mastra/loggers";
+import { createAgentDualLogger } from '../config/upstashLogger';
 import { getMCPToolsByServer } from '../tools/mcp';
 import { z } from 'zod';
 
-const logger = new PinoLogger({ name: 'reactAgent', level: 'info' });
+const logger = createAgentDualLogger('ReactAgent');
 
 /**
  * Runtime context type for React-enhanced agent

@@ -1,18 +1,17 @@
 import { Agent } from "@mastra/core/agent";
 import { upstashMemory } from '../upstashMemory';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
-import { PinoLogger } from "@mastra/loggers";
+import { createAgentDualLogger } from '../config/upstashLogger';
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
 import { chunkerTool } from "../tools/chunker-tool";
 
-const logger = new PinoLogger({ name: 'browserAgent', level: 'info' });
-logger.info('Initializing browserAgent');
+const logger = createAgentDualLogger('BrowserAgent');
+logger.info('Initializing BrowserAgent');
 
 /**
  * Runtime context for the Browser Agent
  * Stores web automation preferences, session data, and target website information
- * 
  * @mastra BrowserAgent runtime context interface
  * [EDIT: 2025-06-14] [BY: GitHub Copilot]
  */

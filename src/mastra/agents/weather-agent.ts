@@ -6,7 +6,10 @@ import { upstashMemory } from '../upstashMemory';
 import { getMCPToolsByServer } from '../tools/mcp';
 import { vectorQueryTool, hybridVectorSearchTool, enhancedVectorQueryTool } from "../tools/vectorQueryTool";
 import { graphRAGTool, graphRAGUpsertTool } from "../tools/graphRAG";
+import { createAgentDualLogger } from '../config/upstashLogger';
 
+const logger = createAgentDualLogger('weatherAgent');
+logger.info('Initializing weatherAgent');
 
 /**
  * Runtime context type for the Weather Agent

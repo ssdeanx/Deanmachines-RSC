@@ -3,7 +3,7 @@ import { Agent } from "@mastra/core/agent";
 import { agentMemory } from '../agentMemory';
 import { upstashMemory } from '../upstashMemory';
 import { vectorQueryTool } from "../tools/vectorQueryTool";
-import { PinoLogger } from "@mastra/loggers";
+import { createAgentDualLogger } from '../config/upstashLogger';
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
 import { chunkerTool } from "../tools/chunker-tool";
@@ -11,8 +11,8 @@ import { chunkerTool } from "../tools/chunker-tool";
 
 import { z } from "zod";
 
-const logger = new PinoLogger({ name: 'analyzerAgent', level: 'info' });
-logger.info('Initializing analyzerAgent');
+const logger = createAgentDualLogger('AnalyzerAgent');
+logger.info('Initializing AnalyzerAgent');
 
 /**
  * Runtime context type for the Analyzer Agent

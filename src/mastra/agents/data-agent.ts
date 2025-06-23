@@ -5,17 +5,19 @@ import { vectorQueryTool, hybridVectorSearchTool, enhancedVectorQueryTool } from
 import { chunkerTool } from "../tools/chunker-tool";
 import { rerankTool } from "../tools/rerank-tool";
 import { stockPriceTool } from "../tools/stock-tools";
-import { PinoLogger } from "@mastra/loggers";
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
 import { z } from "zod";
+import { createAgentDualLogger } from "../config/upstashLogger";
 
-const logger = new PinoLogger({ name: 'dataAgent', level: 'info' });
-logger.info('Initializing dataAgent');
+const logger = createAgentDualLogger('DataAgent');
+logger.info('Initializing DataAgent');
 
 /**
  * Runtime context type for the Data Agent
  * Stores data processing preferences and analysis context
+ * @mastra DataAgent runtime context interface
+ * [EDIT: 2025-06-14] [BY: GitHub Copilot]
  */
 export type DataAgentRuntimeContext = {
   /** Unique identifier for the user */

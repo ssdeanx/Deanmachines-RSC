@@ -58,7 +58,7 @@ const rerankOutputSchema = z.object({
  * Enhanced reranking tool using Mastra's rerank function with runtime context
  */
 export const rerankTool = createTool({
-  id: 'rerank_search_messages',
+  id: 'rerank',
   description: 'Search and rerank conversation messages using semantic similarity and configurable weights',
   inputSchema: rerankInputSchema,
   outputSchema: rerankOutputSchema,

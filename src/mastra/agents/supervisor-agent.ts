@@ -3,7 +3,7 @@ import { upstashMemory } from '../upstashMemory';
 import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
 import { graphRAGTool } from "../tools/graphRAG";
-import { PinoLogger } from "@mastra/loggers";
+import { createAgentDualLogger } from '../config/upstashLogger';
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
 import { z } from 'zod';
@@ -22,9 +22,8 @@ export type SupervisorAgentRuntimeContext = {
   "escalation-threshold": "low" | "medium" | "high" | "critical-only";
 };
 
-const logger = new PinoLogger({ name: 'supervisorAgent', level: 'info' });
+const logger = createAgentDualLogger('supervisorAgent');
 logger.info('Supervisor agent initialized');
-
 
 /**
  * Input validation schema for supervisor agent operations
