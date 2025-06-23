@@ -8,6 +8,13 @@ import { weatherTool } from "../tools/weather-tool";
 import { stockPriceTool } from "../tools/stock-tools";
 import { chunkerTool } from "../tools/chunker-tool";
 import { createMastraArxivTools } from "../tools/agentic/arxiv";
+import { createMastraRedditTools } from "../tools/agentic/reddit";
+import { createMastraWikipediaTools } from "../tools";
+import { createMastraWikidataTools } from "../tools";
+import { createBraveSearchTool } from "../tools/agentic/brave-search";
+import { createMastraHackerNewsTools } from "../tools";
+import { createMastraExaTools } from "../tools";
+import { diffbotTools } from "../tools";
 import {
   ToneConsistencyMetric,
   KeywordCoverageMetric,
@@ -290,7 +297,14 @@ SUCCESS CRITERIA:
     hybridVectorSearchTool,
     weatherTool,
     stockPriceTool,
-    ...createMastraArxivTools(),
+    ...createMastraExaTools,
+    ...createMastraArxivTools,
+    ...createMastraRedditTools,
+    ...createMastraWikipediaTools,
+    ...createBraveSearchTool,
+    ...createMastraHackerNewsTools,
+    ...createMastraWikidataTools,
+    ...diffbotTools,
     // MCP Tools by individual servers (selective assignment)
     ...await getMCPToolsByServer('filesystem'),
     ...await getMCPToolsByServer('git'),

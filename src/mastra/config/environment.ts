@@ -48,7 +48,10 @@ const envSchema = z.object({
   UPSTASH_MAX_LIST_LENGTH: z.coerce.number().min(1000).max(100000).default(10000),  
   UPSTASH_BATCH_SIZE: z.coerce.number().min(10).max(1000).default(100),
   UPSTASH_FLUSH_INTERVAL: z.coerce.number().min(1000).max(60000).default(10000),
-  
+  // Diffbot configuration for web scraping
+  DIFFBOT_API_KEY: z.string().min(1, "Diffbot API key is required"),
+  DIFFBOT_API_URL: z.string().url().default("https://api.diffbot.com"),
+  KNOWLEDGE_GRAPH_API_BASE_URL: z.string().url().default("https://kg.diffbot.com"),
   // Freestyle configuration for code execution and Git management
   FREESTYLE_API_KEY: z.string().min(1, "Freestyle API key is required"),
   FREESTYLE_TIMEOUT: z.coerce.number().min(1000).max(300000).default(30000), // 30 seconds default

@@ -5,23 +5,28 @@ export function hasProp<T>(
   return Boolean(target) && Object.prototype.hasOwnProperty.call(target, key);
 }
 
-export function getProp(
+// Add a helper function to check if value is an object
+function isObject(value: unknown): value is Record<PropertyKey, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+export function getProp<T = unknown>(
   target: unknown,
-  paths: readonly (keyof any)[],
-  defaultValue: any = undefined
-) {
-  let value: any = target;
+  paths: readonly PropertyKey[],
+  defaultValue: T | undefined = undefined
+): T | undefined {
+  let value: unknown = target;
   if (!value) {
     return undefined;
   }
 
   for (const key of paths) {
-    if (!hasProp(value, key)) {
+    if (!isObject(value) || !(key in value)) {
       return defaultValue;
     }
     value = value[key];
   }
-  return value;
+  return value as T;
 }
 
 export function castArray<T>(arr: T) {

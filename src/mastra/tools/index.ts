@@ -1,14 +1,17 @@
-// Export all tools for the Mastra system
-export * from './agentic/arxiv';
-export * from './agentic/tavily';
-export * from './agentic/wikibase';
-export * from './agentic/wikidata-client';
-export * from './agentic/brave-search';
-export * from './agentic/reddit';
+
+export * from './tavily';
+export { createMastraExaTools } from './agentic/exa-client';
+export { createMastraArxivTools } from './agentic/arxiv';
+export { createMastraRedditTools } from './agentic/reddit';
+export { createMastraWikipediaTools } from './agentic/wikibase';
+export { createBraveSearchTool } from './agentic/brave-search';
+export { createMastraHackerNewsTools } from './agentic/hacker-news-client';
+export { createMastraWikidataTools } from './agentic/wikidata-client';
+export { diffbotTools, createDiffbotClient } from './agentic/diffbot-client';
 
 export * from './chunker-tool';
 export * from './code-execution-tool';
-
+export * from './tavily'
 export * from './file-manager-tools';
 export { codeExecutor } from './freestyle-sandbox-tool';
 export * from './git-tool';

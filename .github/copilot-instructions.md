@@ -77,6 +77,8 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - AI SDK's LangChain adapter
 - `@langchain/langgraph`
 - freestyle-sandboxes
+- `@mastra/loggers`
+- `z.ZodSchema`
 
 ## PROJECT DOCUMENTATION & CONTEXT SYSTEM
 
@@ -488,11 +490,11 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - When working with Next.js 13+ App Router, be aware of route groups indicated by parentheses in the directory structure (e.g., `(playground)`). Route groups are for organization and do not create URL segments. This means that `src/app/playground)/page.tsx` is accessible at the root `/`, not `/playground`.
 - When the user asks to create a main playground dashboard page, ensure the playground route structure is correctly set up in Next.js, considering route groups and potential conflicts with the root page. If a `(playground)` route group exists, the main playground page at `src/app/playground)/page.tsx` will be accessible at the root `/`.
 - When the user specifies `#file:playground`, this refers to the `(playground)` route group in Next.js.
-- When asked to fix errors in `#file:wikidata-client.ts`, use the following guidelines:
+- When asked to fix errors in `#file:wikidata-client.ts` and `#file:hacker-news-client.ts`, use the following guidelines:
     - Replace `namespace` with individual type exports using ES2015 module syntax.
     - Replace `any` types with more specific type definitions.
-    - Ensure proper handling of Wikidata API response types.
-    - Use the `wikibase` library types for accurate type definitions, such as `wikibase.Entities`.
+    - Ensure proper handling of Wikidata and Hacker News API response types.
+    - Use the `wikibase` and other relevant library types for accurate type definitions.
 - When analyzing a `#file:.prompt.md` file:
   - Identify key components, configurations, and agents related to the Dean Machines RSC project.
   - Use the following structure to present the found components:
@@ -536,6 +538,4 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 
     ### **3. Agent Network & Workflows**
       - **Dean Machines Network**: `src/mastra/networks/dean-machines-network.ts` - LLM-based dynamic routing for 22+ agents
-      - **Workflows**:
-        - `src/mastra/workflows/weather-workflow.ts`
-        - `src/mast
+-
