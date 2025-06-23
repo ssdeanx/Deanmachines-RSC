@@ -13,7 +13,7 @@ import { createMastraWikipediaTools } from "../tools";
 import { createMastraWikidataTools } from "../tools";
 import { createBraveSearchTool } from "../tools/agentic/brave-search";
 import { createMastraHackerNewsTools } from "../tools";
-import { createMastraExaTools } from "../tools";
+import { exaTools } from "../tools";
 import { diffbotTools } from "../tools";
 import {
   ToneConsistencyMetric,
@@ -297,7 +297,7 @@ SUCCESS CRITERIA:
     hybridVectorSearchTool,
     weatherTool,
     stockPriceTool,
-    ...createMastraExaTools,
+    ...exaTools,
     ...createMastraArxivTools,
     ...createMastraRedditTools,
     ...createMastraWikipediaTools,

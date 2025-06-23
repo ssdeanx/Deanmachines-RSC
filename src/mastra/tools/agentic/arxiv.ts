@@ -231,16 +231,16 @@ export class ArXivClient extends AIFunctionsProvider {
       parsedData,
       ["feed", "entry"],
       []
-    );
+    ) || [];
     entries = castArray(entries);
 
     return {
       totalResults: Math.max(
-        getProp(parsedData, ["feed", "totalResults"], 0),
+        getProp(parsedData, ["feed", "totalResults"], 0) ?? 0,
         entries.length
       ),
-      startIndex: getProp(parsedData, ["feed", "startIndex"], 0),
-      itemsPerPage: getProp(parsedData, ["feed", "itemsPerPage"], 0),
+      startIndex: getProp(parsedData, ["feed", "startIndex"], 0) ?? 0,
+      itemsPerPage: getProp(parsedData, ["feed", "itemsPerPage"], 0) ?? 0,
       entries: entries.map((entry) =>
         pruneEmpty({
           id: extractId(entry.id),

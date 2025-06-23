@@ -939,3 +939,4 @@ This project is protected under the [MIT License](https://choosealicense.com/lic
 - **[CopilotKit](https://copilotkit.ai/)** - AI-powered user interface components
 
 ---
+C:/Users/dm/Documents/deanmachines-rsc/src/mastra/deanmachines-mcp/mcpServer.ts

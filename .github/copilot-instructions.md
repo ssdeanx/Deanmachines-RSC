@@ -79,6 +79,17 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - freestyle-sandboxes
 - `@mastra/loggers`
 - `z.ZodSchema`
+- `@agentic/core`
+- `@agentic/openai`
+- `@agentic/brave-search`
+- `@agentic/wikipedia`
+- `@agentic/wikidata`
+- `@agentic/arxiv`
+- `@agentic/reddit`
+- `@agentic/hacker-news`
+- `@agentic/diffbot`
+- `@agentic/exa`
+- `@agentic/tavily`
 
 ## PROJECT DOCUMENTATION & CONTEXT SYSTEM
 
@@ -533,9 +544,3 @@ This file contains the rules and guidelines for the AI coding assistant to follo
       - `src/mastra/agents/sysadmin-agent.ts` - System administration and DevOps
       - `src/mastra/agents/browser-agent.ts` - Web automation with Playwright
       - `src/mastra/agents/special-agent.ts` - Multi-domain expert for complex problems
-      - `src/mastra/agents/utility-agent.ts` - General-purpose helper functions
-      - `src/mastra/agents/evolve-agent.ts` - Continuous improvement and optimization
-
-    ### **3. Agent Network & Workflows**
-      - **Dean Machines Network**: `src/mastra/networks/dean-machines-network.ts` - LLM-based dynamic routing for 22+ agents
--

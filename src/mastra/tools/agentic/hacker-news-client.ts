@@ -6,8 +6,8 @@ import {
   sanitizeSearchParams
 } from '@agentic/core'
 import defaultKy, { type KyInstance } from 'ky'
+import { createMastraTools } from '@agentic/mastra'
 import { z } from 'zod'
-import { createMastraTools } from './mastra'
 
 // Constants
 export const HACKER_NEWS_API_BASE_URL = 'https://hacker-news.firebaseio.com'
@@ -193,7 +193,6 @@ export const searchSortBySchema = z.union([
 export const searchOptionsSchema = z.object({
   query: z.string().optional().describe('Full-text search query'),
   author: z.string().optional().describe("Filter by author's HN username"),
-  story: z.string().optional().describe('Filter by story id'),
   tags: z
     .array(searchTagSchema)
     .optional()
@@ -329,15 +328,15 @@ export class HackerNewsClient extends AIFunctionsProvider {
       numericFilters,
       page,
       hitsPerPage,
-      sortBy = 'relevance',
-      ...restOpts
+      sortBy = 'relevance'
     } = opts
 
     // Tags are AND'ed together; we do not support OR'ing tags via parentheses.
-    const tags = [
-      ...(restOpts.tags ?? []),
-      restOpts.story ? `story_${restOpts.story}` : undefined,
-      restOpts.author ? `author_${restOpts.author}` : undefined
+    const { author, tags, story } = opts as { author?: string; tags?: SearchTag[]; story?: string };
+    const tagsArray = [
+      ...(tags || []),
+      story ? `story_${story}` : undefined,
+      author ? `author_${author}` : undefined
     ].filter(Boolean)
 
     return this.apiSearchKy
@@ -345,7 +344,7 @@ export class HackerNewsClient extends AIFunctionsProvider {
         searchParams: sanitizeSearchParams(
           {
             query,
-            tags,
+            tags: tagsArray,
             numericFilters,
             page,
             hitsPerPage
@@ -394,52 +393,16 @@ export class HackerNewsClient extends AIFunctionsProvider {
 }
 
 /**
- * Creates a configured HackerNews client
+ * Mastra-wrapped HackerNewsClient adapter for querying HN stories and comments.
  *
- * Note: The returned client should be wrapped with `createMastraTools` from
- * @agentic/mastra when added to extraTools in index.ts.
- *
- * @param config - Configuration options for the HackerNews client
- * @returns A HackerNews client instance
- */
-export function createHackerNewsClient(config: {
-  apiBaseUrl?: string;
-  apiSearchBaseUrl?: string;
-  apiUserAgent?: string;
-  ky?: KyInstance;
-  timeoutMs?: number;
-} = {}) {
-  return new HackerNewsClient(config);
-}
-
-/**
- * Creates Mastra tools from HackerNews client for integration with Mastra agents
- * 
- * @param config - Configuration options for the HackerNews client
- * @returns Mastra tools for HackerNews integration
- * 
+ * @mastra Tool for Hacker News API integration
+ * @see https://mastra.ai/en/reference/tools/create-tool
  * @example
  * ```typescript
- * const hackerNewsTools = createMastraHackerNewsTools();
- * 
- * // Use in agent
- * const agent = new Agent({
- *   tools: [hackerNewsTools.hackerNewsSearch, hackerNewsTools.hackerNewsGetTopStories]
- * });
+ * const hnTools = createMastraHackerNewsTools();
+ * const results = await hnTools.search({ query: 'AI' });
  * ```
- * 
- * @mastra HackerNewsTools
- * [EDIT: 2025-06-23] [BY: GitHub Copilot]
+ * @edit 2025-06-23 [BY: Copilot]
  */
-export function createMastraHackerNewsTools(config: {
-  apiBaseUrl?: string;
-  apiSearchBaseUrl?: string;
-  apiUserAgent?: string;
-  ky?: KyInstance;
-  timeoutMs?: number;
-} = {}) {
-  const client = createHackerNewsClient(config);
-  return createMastraTools(client);
-}
-
-export { createMastraTools };
+export const createMastraHackerNewsTools = () =>
+  createMastraTools(new HackerNewsClient())

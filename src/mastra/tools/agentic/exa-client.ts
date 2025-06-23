@@ -6,8 +6,8 @@ import {
   pruneUndefined
 } from '@agentic/core'
 import defaultKy, { type KyInstance } from 'ky'
+import { createMastraTools } from '@agentic/mastra';
 import { z } from 'zod'
-import { createMastraTools } from './mastra'
 
 export const TextContentsOptionsSchema = z.object({
   maxCharacters: z
@@ -265,74 +265,17 @@ export class ExaClient extends AIFunctionsProvider {
   }
 }
 
-/**
- * Create Exa tools for Mastra integration
- * @param options - Configuration options for the Exa client
- * @returns Object containing Exa tools for search and content retrieval
- *
- * @example
- * ```typescript
- * const exaTools = createExaTools({
- *   apiKey: process.env.EXA_API_KEY
- * });
- *
- * // Use in agent
- * const agent = new Agent({
- *   tools: [exaTools.exaSearch, exaTools.exaFindSimilar]
- * });
- * ```
- *
- * @mastra ExaTools
- * [EDIT: 2025-06-23] [BY: GitHub Copilot]
- */
-/**
- * Creates a configured Exa client
- *
- * Note: The returned client should be wrapped with `createMastraTools` from
- * @agentic/mastra when added to extraTools in index.ts.
- *
- * @param config - Configuration options for the Exa client
- * @returns An Exa client instance
- */
-export function createExaClient(config: {
-  apiKey?: string;
-  apiBaseUrl?: string;
-  ky?: KyInstance;
-} = {}) {
-  return new ExaClient({
-    apiKey: config.apiKey ?? process.env.EXA_API_KEY,
-    apiBaseUrl: config.apiBaseUrl,
-    ky: config.ky
-  });
-}
+const exaClient = new ExaClient();
 
 /**
- * Creates Mastra tools from Exa client for integration with Mastra agents
- * 
- * @param config - Configuration options for the Exa client
- * @returns Mastra tools for Exa integration
- * 
+ * Mastra-wrapped Exa tools for semantic search and content extraction.
+ *
+ * @mastra Tool for Exa API integration
+ * @see https://mastra.ai/en/reference/tools/create-tool
  * @example
- * ```typescript
- * const exaTools = createMastraExaTools({ apiKey: 'your-api-key' });
- * 
- * // Use in agent
- * const agent = new Agent({
- *   tools: [exaTools.exaSearch, exaTools.exaGetContents]
- * });
- * ```
- * 
- * @mastra ExaTools
- * [EDIT: 2025-06-23] [BY: GitHub Copilot]
+ * import { exaTools } from './exa-client';
+ * const results = await exaTools.search({ query: 'AI' });
+ * @edit 2025-06-23 [BY: Copilot]
  */
-export function createMastraExaTools(config: {
-  apiKey?: string;
-  apiBaseUrl?: string;
-  ky?: KyInstance;
-} = {}) {
-  const client = createExaClient(config);
-  return createMastraTools(client);
-}
-
-export { createMastraTools };
+export const exaTools = createMastraTools(exaClient);
 

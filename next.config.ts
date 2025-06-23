@@ -91,7 +91,7 @@ const nextConfig: NextConfig = {
             chunks: 'all',
           },
           mastra: {
-            test: /[\\/]src[\\/]mastra[\\/]/,
+            test: /[\\/]node_modules[\\/]@mastra[\\/]/,
             name: 'mastra',
             chunks: 'all',
           }
