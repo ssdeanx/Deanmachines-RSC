@@ -56,7 +56,11 @@ const nextConfig: NextConfig = {
     'fast-xml-parser',
     'fs-extra',
     'ky',
-    'p-throttle'
+    'p-throttle',
+    'octokit',
+    'wikibase-sdk',
+    'wikibase-sdk/wikidata.org',
+    'resend'
   ],
   experimental: {
     optimizeCss: true,

@@ -2,7 +2,7 @@ import { Agent } from "@mastra/core/agent";
 import { z } from "zod";
 import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool, graphRAGUpsertTool } from '../tools/graphRAG';
-import { vectorQueryTool, hybridVectorSearchTool, enhancedVectorQueryTool } from "../tools/vectorQueryTool";
+import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
 import { createAgentDualLogger } from '../config/upstashLogger';
 import { createGemini25Provider } from '../config/googleProvider';
@@ -155,16 +155,19 @@ Success Criteria:
           thinkingBudget: 0,
           includeThoughts: false,
         },
-      }),
+      }),  
   tools: {
+    // Graph and knowledge tools
     graphRAGTool,
     chunkerTool,
+    // Memory management tools
     mem0RememberTool,
     mem0MemorizeTool,
+    // Vector search and retrieval tools
     vectorQueryTool,
     hybridVectorSearchTool,
-    enhancedVectorQueryTool,
     graphRAGUpsertTool,
+    // MCP tools for external integrations
     ...await getMCPToolsByServer('nodeCodeSandbox'),
     ...await getMCPToolsByServer('sequentialThinking'),
     ...await getMCPToolsByServer('tavily'),
@@ -173,8 +176,6 @@ Success Criteria:
     ...await getMCPToolsByServer('fetch'),
     ...await getMCPToolsByServer('puppeteer'),
     ...await getMCPToolsByServer('github')
-
-
   },
   memory: upstashMemory,
 });

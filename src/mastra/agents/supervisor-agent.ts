@@ -2,7 +2,7 @@ import { Agent } from "@mastra/core/agent";
 import { upstashMemory } from '../upstashMemory';
 import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
-import { graphRAGTool } from "../tools/graphRAG";
+import { graphRAGTool, graphRAGUpsertTool } from "../tools/graphRAG";
 import { createAgentDualLogger } from '../config/upstashLogger';
 import { createGemini25Provider } from '../config/googleProvider';
 import { getMCPToolsByServer } from '../tools/mcp';
@@ -23,7 +23,7 @@ export type SupervisorAgentRuntimeContext = {
 };
 
 const logger = createAgentDualLogger('supervisorAgent');
-logger.info('Supervisor agent initialized');
+logger.info('Initializing supervisorAgent');
 
 /**
  * Input validation schema for supervisor agent operations
@@ -221,6 +221,7 @@ Use available tools to analyze agent relationships and coordination patterns.`;
     hybridVectorSearchTool,
     chunkerTool,
     graphRAGTool,
+    graphRAGUpsertTool,
     ...await getMCPToolsByServer('filesystem'),
     ...await getMCPToolsByServer('git'),
     ...await getMCPToolsByServer('fetch'),

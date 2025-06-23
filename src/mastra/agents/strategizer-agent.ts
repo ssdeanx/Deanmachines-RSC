@@ -1,6 +1,6 @@
 import { Agent } from "@mastra/core/agent";
 import { upstashMemory } from '../upstashMemory';
-import { graphRAGTool } from '../tools/graphRAG';
+import { graphRAGTool, graphRAGUpsertTool } from '../tools/graphRAG';
 import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
 import { stockPriceTool } from "../tools/stock-tools";
@@ -99,6 +99,7 @@ SUCCESS CRITERIA:
   }), 
   tools: {
     graphRAGTool,
+    graphRAGUpsertTool,
     mem0RememberTool,
     mem0MemorizeTool,
     chunkerTool,

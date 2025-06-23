@@ -8,7 +8,9 @@ export * from './agentic/reddit';
 
 export * from './chunker-tool';
 export * from './code-execution-tool';
+
 export * from './file-manager-tools';
+export { codeExecutor } from './freestyle-sandbox-tool';
 export * from './git-tool';
 export * from './graphRAG';
 export * from './mcp';

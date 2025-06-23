@@ -7,6 +7,7 @@ import { createAgentDualLogger } from '../config/upstashLogger';
 import { weatherTool } from "../tools/weather-tool";
 import { stockPriceTool } from "../tools/stock-tools";
 import { chunkerTool } from "../tools/chunker-tool";
+import { createMastraArxivTools } from "../tools/agentic/arxiv";
 import {
   ToneConsistencyMetric,
   KeywordCoverageMetric,
@@ -289,6 +290,7 @@ SUCCESS CRITERIA:
     hybridVectorSearchTool,
     weatherTool,
     stockPriceTool,
+    ...createMastraArxivTools(),
     // MCP Tools by individual servers (selective assignment)
     ...await getMCPToolsByServer('filesystem'),
     ...await getMCPToolsByServer('git'),

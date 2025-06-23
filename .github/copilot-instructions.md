@@ -76,6 +76,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - Mastra Core (version >= v0.10.6)
 - AI SDK's LangChain adapter
 - `@langchain/langgraph`
+- freestyle-sandboxes
 
 ## PROJECT DOCUMENTATION & CONTEXT SYSTEM
 
@@ -240,19 +241,19 @@ This file contains the rules and guidelines for the AI coding assistant to follo
             ```
         - **`// copilot: AUTH`** - Add authentication/authorization
             ```typescript
-            <Dashboard /> {/* Should check if user is authenticated */}
+            <Dashboard /> {/* Should check if user is authenticated */} </Dashboard>
             ```
         - **`// copilot: LOG`** - Add logging statements
             ```typescript
-            processPayment(user, amount); {/* Should add audit log of payment details */}
+            processPayment(user, amount); {/* Should add audit log of payment details */} </processPayment>
             ```
         - **`// copilot: CACHE`** - Add caching logic
             ```typescript
-            getPosts(userId); {/* Expensive N+1 query - cache results */}
+            getPosts(userId); {/* Expensive N+1 query - cache results */} </getPosts>
             ```
         - **`// copilot: PERF`** - Performance optimizations
             ```typescript
-            <MyComponent data={expensiveData} />; {/* Avoid re-renders - use memo */}
+            <MyComponent data={expensiveData} />; {/* Avoid re-renders - use memo */} </MyComponent>
             ```
         - **`// copilot: API`** - Create API endpoint
             ```typescript
@@ -512,7 +513,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
       **Development Agents:**
       - `src/mastra/agents/code-agent.ts` - Code analysis, generation, and optimization
       - `src/mastra/agents/git-agent.ts` - Version control operations and repository management
-      - `src/mastra/agents/debug-agent.ts` - Error detection and debugging assistance
+      - `src/mastra/agents/debug-agent.ts` - Error detection, troubleshooting, and debugging assistance
       - `src/mastra/agents/documentation-agent.ts` - Technical documentation generation
 
       **Data & Analysis Agents:**
@@ -537,5 +538,4 @@ This file contains the rules and guidelines for the AI coding assistant to follo
       - **Dean Machines Network**: `src/mastra/networks/dean-machines-network.ts` - LLM-based dynamic routing for 22+ agents
       - **Workflows**:
         - `src/mastra/workflows/weather-workflow.ts`
-        - `src/mastra/workflows/code-graph-maker.ts`
-        - `src/mastra/workflows/code
+        - `src/mast

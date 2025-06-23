@@ -4,7 +4,7 @@ import { weatherTool } from '../tools/weather-tool';
 import { chunkerTool } from "../tools/chunker-tool";
 import { upstashMemory } from '../upstashMemory';
 import { getMCPToolsByServer } from '../tools/mcp';
-import { vectorQueryTool, hybridVectorSearchTool, enhancedVectorQueryTool } from "../tools/vectorQueryTool";
+import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
 import { graphRAGTool, graphRAGUpsertTool } from "../tools/graphRAG";
 import { createAgentDualLogger } from '../config/upstashLogger';
 
@@ -84,7 +84,6 @@ Use the weatherTool to fetch current weather data.`;
     chunkerTool,
     vectorQueryTool,
     hybridVectorSearchTool,
-    enhancedVectorQueryTool,
     graphRAGTool,
     graphRAGUpsertTool,
     ...await getMCPToolsByServer('filesystem'),

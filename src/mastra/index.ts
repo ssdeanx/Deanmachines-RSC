@@ -34,7 +34,8 @@ EvolveAgentRuntimeContext,
 AnalyzerAgentRuntimeContext,
 SysadminAgentRuntimeContext,
 UtilityAgentRuntimeContext,
-ReactAgentRuntimeContext
+ReactAgentRuntimeContext,
+LangGraphAgentRuntimeContext
 } from './agents';
 import { LangfuseExporter } from "langfuse-vercel";
 
@@ -493,6 +494,23 @@ export const mastra = new Mastra({
                     runtimeContext.set("cross-domain", c.req.header("X-Cross-Domain") === "true");
                     runtimeContext.set("innovation-mode", (c.req.header("X-Innovation-Mode") as "traditional" | "experimental" | "cutting-edge" | "revolutionary") || "experimental");
                     runtimeContext.set("specialization", c.req.header("X-Specialization") || "");
+                }
+            }),
+
+            // LANGGRAPH 
+            // Special Agent - Multi-domain expert
+            registerCopilotKit<LangGraphAgentRuntimeContext>({
+                path: "/copilotkit/langgraph",
+                resourceId: "langgraph",
+                setContext: (c, runtimeContext) => {
+                    runtimeContext.set("user-id", c.req.header("X-User-ID") || "anonymous");
+                    runtimeContext.set("session-id", c.req.header("X-Session-ID") || `session-${Date.now()}`);
+                    runtimeContext.set("workflow-mode", (c.req.header("X-Workflow-Mode") as "sequential" | "parallel" | "conditional" | "iterative") || "sequential");
+                    runtimeContext.set("reasoning-depth", (c.req.header("X-Reasoning-Depth") as "shallow" | "moderate" | "deep" | "exhaustive") || "deep");
+                    runtimeContext.set("step-tracking", c.req.header("X-Step-Tracking") === "true");
+                    runtimeContext.set("max-iterations", parseInt(c.req.header("X-Max-Iterations") || "10") || 10);
+                    runtimeContext.set("domain-focus", c.req.header("X-Domain-Focus") || "core");
+                    runtimeContext.set("output-format", (c.req.header("X-Output-Format") as "structured" | "narrative" | "technical" | "summary") || "structured"); 
                 }
             }),
 

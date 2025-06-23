@@ -1,6 +1,6 @@
 import { Agent } from "@mastra/core/agent";
 import { upstashMemory } from '../upstashMemory';
-import { vectorQueryTool } from "../tools/vectorQueryTool";
+import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
 import { chunkerTool } from "../tools/chunker-tool";
 import { graphRAGTool, graphRAGUpsertTool } from "../tools/graphRAG";
 import { createAgentDualLogger } from '../config/upstashLogger';
@@ -92,11 +92,13 @@ Use available tools to query system administration patterns and best practices.`
           thinkingBudget: 0,
           includeThoughts: false,
         },
-      }),  tools: {
+      }),  
+  tools: {
     vectorQueryTool,
     chunkerTool,
     graphRAGTool,
     graphRAGUpsertTool,
+    hybridVectorSearchTool,
     ...await getMCPToolsByServer('filesystem'),
     ...await getMCPToolsByServer('git'),
     ...await getMCPToolsByServer('fetch'),
