@@ -1,0 +1,9 @@
+Checking /home/runner/work/Deanmachines-RSC/Deanmachines-RSC/package.json
+
+Minor   Backwards-compatible features
+ next  15.3.4  →  15.4.0
+
+Major version zero   Anything may change
+ lucide-react  ^0.518.0  →  ^0.522.0
+
+Run npx npm-check-updates --target minor --format group -u to upgrade package.json
