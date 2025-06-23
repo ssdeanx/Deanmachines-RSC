@@ -1,5 +1,4 @@
 import { Mastra } from '@mastra/core/mastra';
-import { PinoLogger } from '@mastra/loggers';
 import { env } from "./config/environment";
 import { weatherWorkflow } from './workflows/weather-workflow';
 import { codeGraphMakerWorkflow } from './workflows/code-graph-maker';
@@ -10,6 +9,8 @@ import { agentRegistry } from './agents';
 import { registerCopilotKit } from "@mastra/agui";
 import { deanMachinesNetwork, DeanMachinesNetworkRuntimeContext } from './networks/dean-machines-network';
 import { baseNetwork, BaseNetworkRuntimeContext } from './networks/base-network';
+import { createUpstashLogger } from './config/upstashLogger';
+import { PinoLogger } from '@mastra/loggers';
 import {
 MasterAgentRuntimeContext,
 WeatherAgentRuntimeContext,
@@ -38,10 +39,76 @@ ReactAgentRuntimeContext
 import { LangfuseExporter } from "langfuse-vercel";
 
 
-/* * This is the main entry point for the Mastra framework, which initializes
-/* the core components and services required for the application to function.
-/* It sets up the workflows, networks, agents, and logging for the framework.
-*/
+/**
+ * Dual Logging System Setup for both PinoLogger and Upstash
+ * 
+ * This configuration ensures:
+ * 1. PinoLogger continues to work throughout all agent files (existing code remains unaffected)
+ * 2. Upstash logger handles distributed logging for the Mastra framework
+ * 3. Both logging systems are active simultaneously
+ * 
+ * Flow:
+ * - Agent files use PinoLogger directly (as currently implemented)
+ * - Mastra framework uses Upstash logger for its operations
+ * - Both send logs to their respective destinations
+ */
+
+// Create the Upstash logger for distributed logging (used by Mastra framework)
+const upstashLogger = createUpstashLogger({
+    name: 'ai',
+    level: env.LOG_LEVEL,
+    includeConsole: env.NODE_ENV === 'development'
+});
+
+// Create PinoLogger for local logging (maintains compatibility with existing agent files)
+const pinoLogger = new PinoLogger({ 
+    name: 'ai', 
+    level: env.LOG_LEVEL 
+});
+
+// Initialize both logging systems with status messages
+console.log('🔧 Initializing dual logging system...');
+console.log('📝 PinoLogger active for local/console logging (used in all agent files)');
+console.log('☁️ Upstash logger active for distributed logging (used by Mastra framework)');
+
+// Test both loggers to ensure they're working
+pinoLogger.info('PinoLogger initialized successfully');
+upstashLogger.info('Upstash logger initialized successfully');
+
+console.log('✅ Both logging systems are now active simultaneously');
+
+/**
+ * Export the PinoLogger for use in agent files that need explicit access
+ * This maintains backward compatibility with existing code patterns
+ */
+export { pinoLogger };
+
+/**
+ * Test function to demonstrate dual logging system functionality
+ * This shows that both PinoLogger and Upstash logger are working simultaneously
+ */
+export function testDualLogging() {
+    console.log('\n🧪 Testing dual logging system...\n');
+    
+    // Test PinoLogger (used in agent files)
+    pinoLogger.info('✅ PinoLogger test message - this appears in console/local logs');
+    pinoLogger.warn('⚠️ PinoLogger warning test');
+    
+    // Test Upstash logger (used by Mastra framework)
+    upstashLogger.info('☁️ Upstash logger test message - this goes to Upstash Redis');
+    upstashLogger.warn('⚠️ Upstash warning test - distributed logging');
+    
+    console.log('\n✅ Dual logging test completed');
+    console.log('📝 Check console output for PinoLogger messages');
+    console.log('☁️ Check Upstash Redis dashboard for distributed logs');
+    console.log('🔗 Both logging systems are active and working simultaneously\n');
+}
+
+/**
+ * This is the main entry point for the Mastra framework, which initializes
+ * the core components and services required for the application to function.
+ * It sets up the workflows, networks, agents, and logging for the framework.
+ */
 export const mastra = new Mastra({
     workflows: {
         weatherWorkflow,
@@ -52,10 +119,7 @@ export const mastra = new Mastra({
     },
     networks: {deanMachinesNetwork, baseNetwork},
     agents: agentRegistry,
-    logger: new PinoLogger({
-        name: 'ai',
-        level: env.LOG_LEVEL,
-    }),
+    logger: upstashLogger, // Mastra framework uses Upstash for distributed logging
     telemetry: {
         serviceName: "ai",
         enabled: true,

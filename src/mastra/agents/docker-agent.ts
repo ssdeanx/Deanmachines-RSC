@@ -106,7 +106,8 @@ Use available tools to query containerization patterns and deployment strategies
     ...await getMCPToolsByServer('git'),
     ...await getMCPToolsByServer('fetch'),
     ...await getMCPToolsByServer('puppeteer'),
-    ...await getMCPToolsByServer('github')
+    ...await getMCPToolsByServer('github'),
+    ...await getMCPToolsByServer('docker'),
   },
   memory: upstashMemory,
 });

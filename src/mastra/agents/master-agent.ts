@@ -3,7 +3,7 @@ import { upstashMemory } from '../upstashMemory';
 import { graphRAGTool, graphRAGUpsertTool } from '../tools/graphRAG';
 import { vectorQueryTool, hybridVectorSearchTool } from "../tools/vectorQueryTool";
 import { mem0RememberTool, mem0MemorizeTool } from "../tools/mem0-tool";
-import { PinoLogger } from "@mastra/loggers";
+import { createAgentDualLogger } from '../config/upstashLogger';
 import { weatherTool } from "../tools/weather-tool";
 import { stockPriceTool } from "../tools/stock-tools";
 import { chunkerTool } from "../tools/chunker-tool";
@@ -40,11 +40,12 @@ export type MasterAgentRuntimeContext = {
   "debug-mode": boolean;
 };
 
-const logger = new PinoLogger({ name: 'masterAgent', level: 'info' });
+// Create dual logger that sends logs to both PinoLogger (console) and Upstash (distributed)
+const logger = createAgentDualLogger('masterAgent', { level: 'info' });
 
 logger.debug("Debug message"); // Won't be logged because level is INFO
-logger.info("Master agent initialized");
-logger.error("An error occurred"); // Logged as ERROR
+logger.info("Master agent initialized - logging to both PinoLogger and Upstash");
+logger.error("An error occurred"); // Logged as ERROR to both systems
 /**
  * Comprehensive Zod schemas for Master Agent validation
  * Prevents Google AI model ZodNull validation errors

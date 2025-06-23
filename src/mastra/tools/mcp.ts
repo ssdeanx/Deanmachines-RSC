@@ -290,7 +290,21 @@ export const mcpClient = new MCPClient({
         logger: (logMessage) => {
           logger.info(`[MCP:nodeCodeSandbox] ${logMessage.message}`, { level: logMessage.level });
         }
+    },
+    docker: {
+      command: "uvx",
+      args: [
+          "mcp-server-docker"
+      ],
+      env: {
+        DOCKER_HOST: "tcp://localhost:2375"
       },
+    timeout: 75000,
+    enableServerLogs: true,
+    logger: (logMessage) => {
+      logger.info(`[MCP:docker] ${logMessage.message}`, { level: logMessage.level });
+    }
+  }
 //  terminalController: {
 //    command: "uvx",
 //    args: ["terminal_controller", "C:\\Users\\dm\\Documents\\deanmachines-rsc\\.next\\var"],

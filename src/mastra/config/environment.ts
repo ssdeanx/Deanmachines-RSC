@@ -36,10 +36,17 @@ const envSchema = z.object({
   MEM0_API_KEY: z.string().min(1, "Mem0 API key is required"),
   GITHUB_TOKEN: z.string().min(1, "GitHub API key is required"),
   LANGFUSE_PUBLIC_KEY: z.string().min(1, "Langfuse public key is required"),
-  LANGFUSE_SECRET_KEY: z.string().min(1, "Langfuse secret key is required"),
-  LANGFUSE_HOST: z.string().min(1, "Langfuse host is required"),
+  LANGFUSE_SECRET_KEY: z.string().min(1, "Langfuse secret key is required"),  LANGFUSE_HOST: z.string().min(1, "Langfuse host is required"),
   LANGFUSE_TRACING: z.string().default("true").transform((val) => val === "true"),
   TAVILY_API_KEY: z.string().min(1, "Tavily API key is required"),
+  
+  // Upstash Redis configuration (optional for logging)
+  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
+  UPSTASH_LOG_LIST_NAME: z.string().default("mastra-application-logs"),
+  UPSTASH_MAX_LIST_LENGTH: z.coerce.number().min(1000).max(100000).default(10000),
+  UPSTASH_BATCH_SIZE: z.coerce.number().min(10).max(1000).default(100),
+  UPSTASH_FLUSH_INTERVAL: z.coerce.number().min(1000).max(60000).default(10000),
 });
 // Validate environment variables
 const validateEnv = () => {

@@ -66,6 +66,10 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - @agentic/core
 - @agentic/mastra
 - @mastra/loggers
+- `pino-pretty`
+- `pino-elasticsearch`
+- `@axiomhq/pino`
+- `@langfuse/pino-transport`
 
 ## PROJECT DOCUMENTATION & CONTEXT SYSTEM
 
@@ -348,7 +352,7 @@ This file contains the rules and guidelines for the AI coding assistant to follo
     - The coding assistant MUST include `#file:supervisor-agent.ts`.
     - The coding assistant MUST fetch the relevant documentation URLs to understand the correct Mastra patterns before creating the file.
 - When the user specifies `#file:instructions` in conjunction with `#fetch https://mastra.ai/en/reference/networks/agent-network`, analyze both the local instructions file and the fetched documentation to understand the project's agent architecture and how it can be enhanced using Mastra's `AgentNetwork` patterns.
-- When analyzing `#file:instructions` in conjunction with `#fetch https://mastra.ai/en/reference/networks/agent-network`, note that Mastra's `AgentNetwork` is experimental and provides LLM-based routing for dynamic agent selection.
+- When analyzing `#file:instructions` in conjunction with `#fetch https://ai/en/reference/networks/agent-network`, note that Mastra's `AgentNetwork` is experimental and provides LLM-based routing for dynamic agent selection.
 - When analyzing `#file:instructions` in conjunction with `#fetch https://ai/en/reference/networks/agent-network`, consider the trade-offs between using `AgentNetwork` (dynamic routing) and predefined workflows (explicit control).
 - When debugging agent execution issues, especially when the "Agent not found" error occurs, ensure that the agent is correctly imported and registered within the agent network configuration.
 - **IMPORTANT:** Ensure consistent naming between the agent's `name` property in the agent definition (e.g., `master-agent.ts`) and how the network references the agent when executing. Use title case with spaces (e.g., "Master Agent").
@@ -533,10 +537,4 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - When using the Google AI SDK, prefer the latest `thinkingConfig` pattern via provider options:
    ```typescript
    // Current pattern (working but not latest)
-   const model = baseGoogle(modelId, { /* options */ });
-   
-   // Latest AI SDK pattern
-   const result = await generateText({
-     model: google('
-```
-- When adding
+   const model = baseGoogle(modelId, { /*
