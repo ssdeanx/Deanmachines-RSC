@@ -90,6 +90,8 @@ This file contains the rules and guidelines for the AI coding assistant to follo
 - `@agentic/diffbot`
 - `@agentic/exa`
 - `@agentic/tavily`
+- `@agentic/tavily`
+- serper
 
 ## PROJECT DOCUMENTATION & CONTEXT SYSTEM
 
@@ -543,4 +545,5 @@ This file contains the rules and guidelines for the AI coding assistant to follo
       - `src/mastra/agents/processing-agent.ts` - Data transformation and workflow automation
       - `src/mastra/agents/sysadmin-agent.ts` - System administration and DevOps
       - `src/mastra/agents/browser-agent.ts` - Web automation with Playwright
-      - `src/mastra/agents/special-agent.ts` - Multi-domain expert for complex problems
+
+- When fixing "Unexpected any. Specify a different

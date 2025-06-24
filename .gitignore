@@ -64,3 +64,6 @@ mastra.md
 .windsurfrules
 .windsurfrules/*
 
+.clinerules
+.clinerules/*
+*.clinerules

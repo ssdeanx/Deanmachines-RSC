@@ -9,6 +9,7 @@ export { diffbotTools, createDiffbotClient } from './agentic/diffbot-client';
 
 export { createMastraHackerNewsTools } from './agentic/hacker-news-client';
 export { exaTools } from './agentic/exa-client';
+export { serperTools } from './agentic/serper-client';
 
 export * from './chunker-tool';
 export * from './code-execution-tool';

@@ -1,6 +1,6 @@
 {
   "name": "deanmachines-rsc",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -35,7 +35,7 @@
     "@langchain/langgraph": "^0.3.5",
     "@mastra/agui": "^1.0.3",
     "@mastra/client-js": "^0.10.5",
-    "@mastra/core": "^0.10.6",
+    "@mastra/core": "^0.10.7-alpha.4",
     "@mastra/evals": "^0.10.4",
     "@mastra/fastembed": "^0.10.0",
     "@mastra/libsql": "^0.10.3",
@@ -43,10 +43,10 @@
     "@mastra/mcp": "^0.10.4",
     "@mastra/mcp-docs-server": "^0.13.1",
     "@mastra/mem0": "^0.1.3",
-    "@mastra/memory": "^0.10.4",
+    "@mastra/memory": "^0.11.0-alpha.3",
     "@mastra/pg": "^0.11.0",
     "@mastra/rag": "^1.0.0",
-    "@mastra/upstash": "^0.11.0",
+    "@mastra/upstash": "^0.12.0-alpha.3",
     "@mastra/voice-google": "^0.10.3",
     "@mdx-js/loader": "^3.1.0",
     "@mdx-js/react": "^3.1.0",
@@ -101,6 +101,7 @@
     "framer-motion": "^12.19.1",
     "freestyle-sandboxes": "^0.0.81",
     "fs-extra": "^11.3.0",
+    "googleapis": "^150.0.1",
     "gsap": "^3.13.0",
     "input-otp": "^1.4.2",
     "isolated-vm": "^5.0.4",
@@ -171,7 +172,7 @@
     "eslint-config-next": "15.3.4",
     "husky": "^9.1.7",
     "jiti": "^2.4.2",
-    "mastra": "^0.10.6",
+    "mastra": "^0.10.7-alpha.4",
     "tailwindcss": "^4.1.10",
     "tw-animate-css": "^1.3.4",
     "typescript": "^5.8.3",
@@ -189,6 +190,10 @@
     "react-dom": "^19.1.0",
     "@types/react-dom": "^19.1.6",
     "@qdrant/js-client-rest": "^1.14.1",
-    "axios": "^1.9.0"
+    "axios": "^1.9.0",
+    "@mastra/core": "^0.10.7-alpha.4",
+    "mastra": "^0.10.7-alpha.4",
+    "@opentelemetry/core": "^2.0.1",
+    "@opentelemetry/auto-instrumentations-node": "^0.60.1"
   }
 }

@@ -1162,11 +1162,23 @@ export async function queryVectors(
       validatedFilter = validateUpstashFilter(params.filter);
     }
 
+    // --- FIX: Sanitize filter for UpstashVectorFilter compatibility ---
+    const upstashCompatibleFilter = validatedFilter
+      ? sanitizeUpstashFilter(validatedFilter)
+      : undefined;
+
+    // Only pass filter if it's an object or array (not primitive)
+    const filterArg =
+      upstashCompatibleFilter &&
+      (typeof upstashCompatibleFilter === 'object' || Array.isArray(upstashCompatibleFilter))
+        ? upstashCompatibleFilter
+        : undefined;
+
     const results = await upstashVector.query({
       indexName: params.indexName,
       queryVector: params.queryVector,
       topK: params.topK,
-      filter: validatedFilter,
+      filter: filterArg,
       includeVector: params.includeVector
     });
     logger.info('Vector query completed successfully', {
@@ -1827,6 +1839,40 @@ export async function initializeUpstashMemorySystem(options: {
     logger.error(errorMessage);
     return results;
   }
+}
+
+// Helper to sanitize filter for UpstashVectorFilter compatibility
+function sanitizeUpstashFilter(
+  filter: MetadataFilter
+): Record<string, unknown> | unknown[] | string | number | boolean {
+  if (Array.isArray(filter)) {
+    return filter.map(sanitizeUpstashFilter);
+  }
+  if (typeof filter !== 'object' || filter === null) {
+    return filter;
+  }
+  const sanitized: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(filter)) {
+    if (value === undefined) continue;
+    if (key === '$nor') {
+      // $nor must always be an array (never undefined)
+      if (Array.isArray(value)) {
+        // Only map recursively if array contains objects (MetadataFilter[])
+        sanitized[key] = value.map((item) =>
+          typeof item === 'object' && item !== null
+            ? sanitizeUpstashFilter(item as MetadataFilter)
+            : item
+        );
+      } else {
+        sanitized[key] = [];
+      }
+    } else if (typeof value === 'object' && value !== null) {
+      sanitized[key] = sanitizeUpstashFilter(value as MetadataFilter);
+    } else {
+      sanitized[key] = value;
+    }
+  }
+  return sanitized;
 }
 // All vector operation functions are already exported individually above
 // This provides a comprehensive Upstash Vector implementation following Mastra patterns

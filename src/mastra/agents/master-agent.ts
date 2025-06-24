@@ -9,12 +9,13 @@ import { stockPriceTool } from "../tools/stock-tools";
 import { chunkerTool } from "../tools/chunker-tool";
 import { createMastraArxivTools } from "../tools/agentic/arxiv";
 import { createMastraRedditTools } from "../tools/agentic/reddit";
-import { createMastraWikipediaTools } from "../tools";
-import { createMastraWikidataTools } from "../tools";
+import { createMastraWikipediaTools } from "../tools/agentic/wikibase";
+import { createMastraWikidataTools } from "../tools/agentic/wikidata-client";
 import { createBraveSearchTool } from "../tools/agentic/brave-search";
-import { createMastraHackerNewsTools } from "../tools";
-import { exaTools } from "../tools";
-import { diffbotTools } from "../tools";
+import { createMastraHackerNewsTools } from "../tools/agentic/hacker-news-client";
+import { exaTools } from "../tools/agentic/exa-client";
+import { diffbotTools } from "../tools/agentic/diffbot-client";
+import { serperTools } from "../tools/agentic/serper-client";
 import {
   ToneConsistencyMetric,
   KeywordCoverageMetric,
@@ -298,6 +299,7 @@ SUCCESS CRITERIA:
     weatherTool,
     stockPriceTool,
     ...exaTools,
+    ...serperTools,
     ...createMastraArxivTools,
     ...createMastraRedditTools,
     ...createMastraWikipediaTools,

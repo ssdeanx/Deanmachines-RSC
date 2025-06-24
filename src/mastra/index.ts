@@ -5,6 +5,7 @@ import { codeGraphMakerWorkflow } from './workflows/code-graph-maker';
 import { advancedCodeGraphMakerWorkflow } from './workflows/code-graph-maker-advanced';
 import { fullStackDevelopmentWorkflow } from './workflows/full-stack-development-workflow';
 import { researchAnalysisWorkflow } from './workflows/research-analysis-workflow';
+import { vNextNetwork } from './vworkflows/vnext-workflow';
 import { agentRegistry } from './agents';
 import { registerCopilotKit } from "@mastra/agui";
 import { deanMachinesNetwork, DeanMachinesNetworkRuntimeContext } from './networks/dean-machines-network';
@@ -38,6 +39,7 @@ ReactAgentRuntimeContext,
 LangGraphAgentRuntimeContext
 } from './agents';
 import { LangfuseExporter } from "langfuse-vercel";
+
 
 
 /**
@@ -119,6 +121,7 @@ export const mastra = new Mastra({
         researchAnalysisWorkflow
     },
     networks: {deanMachinesNetwork, baseNetwork},
+    vnext_networks: { vNextNetwork },
     agents: agentRegistry,
     logger: upstashLogger, // Mastra framework uses Upstash for distributed logging
     telemetry: {
