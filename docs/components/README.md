@@ -1,5 +1,5 @@
 # Component Documentation
-Auto-generated: Sun Mar 15 03:05:00 UTC 2026
+Auto-generated: Sun Mar 22 03:04:44 UTC 2026
 
 - [providers](src/components/providers.tsx)
 - [badge](src/components/ui/badge.tsx)
