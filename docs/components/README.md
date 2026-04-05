@@ -1,5 +1,5 @@
 # Component Documentation
-Auto-generated: Sun Mar 29 03:05:40 UTC 2026
+Auto-generated: Sun Apr  5 03:05:37 UTC 2026
 
 - [ResearchCanvas](src/components/researchCanvas/ResearchCanvas.tsx)
 - [AddResourceDialog](src/components/researchCanvas/AddResourceDialog.tsx)
