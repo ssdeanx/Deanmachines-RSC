@@ -1,5 +1,5 @@
 # Component Documentation
-Auto-generated: Sun May  3 03:07:37 UTC 2026
+Auto-generated: Sun May 10 03:07:48 UTC 2026
 
 - [dialog](src/components/ui/dialog.tsx)
 - [label](src/components/ui/label.tsx)
