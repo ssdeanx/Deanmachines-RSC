@@ -1,5 +1,5 @@
 # Component Documentation
-Auto-generated: Sun Oct 11 08:15:48 UTC 2026
+Auto-generated: Sun Oct 18 06:57:17 UTC 2026
 
 - [providers](src/components/providers.tsx)
 - [dropdown-menu](src/components/ui/dropdown-menu.tsx)
