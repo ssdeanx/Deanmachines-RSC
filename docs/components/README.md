@@ -1,5 +1,5 @@
 # Component Documentation
-Auto-generated: Sun Nov  8 08:31:32 UTC 2026
+Auto-generated: Sun Nov 15 08:46:43 UTC 2026
 
 - [CodeGraphChatModal](src/components/copilotkit/CodeGraphChatModal.tsx)
 - [GenerativeUICanvas](src/components/copilotkit/GenerativeUICanvas.tsx)
